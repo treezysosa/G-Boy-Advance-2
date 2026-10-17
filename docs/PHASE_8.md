@@ -15,7 +15,33 @@ Development version 0.8.0 expands the chiptune engine and gives the retro bank e
 
 ## Validation status
 
-Initial focused retro checks pass (270 checks). Final full-bank regression, sanitizer, JUCE integration and Windows VST3/standalone/pluginval/packaging checks are running. Final results and artifact evidence will be recorded here.
+Strict GCC C++20 builds pass **7,983 DSP checks**: 1,471 engine, 161 core, 150 advanced, 138 effects, 1,076 vocal, **270 retro** and **4,717 factory** checks. Linux JUCE integration passes **181 checks**, including appended host-program selection/state restoration. Final bank analysis reports 410 dry spectral/envelope groups, no nearest-neighbor flags below 0.025 and all 205 base/Afterglow pairs above that threshold. These metrics do not certify perceptual uniqueness. All seven DSP suites pass ASan/UBSan with halt-on-error and leak detection disabled (LeakSanitizer is unsupported in this sandbox). Windows validation and artifact checks also pass, as recorded below.
+
+## Windows build and artifacts
+
+[Run 39041332464](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39041332464), application/build source `879d51bdc5ac13e79dca921372ecc09583b850c5`:
+
+- Visual Studio 2022 x64 VST3 and standalone compilation/linking: PASS.
+- CTest **8/8 PASS** in 135.25 s, including 7,983 DSP checks and **184 integration checks**. The retro suite took 5.44 s; the factory audit/excerpts took 107.38 s.
+- Actual VST3 pluginval 1.0.4 **strictness 10 SUCCESS**, seed `0xb07ab3`, version 0.8.0. Its separately configured Steinberg validator remains pending.
+- Portable ZIP and Inno Setup installer compilation: PASS. Windows artifact `12104183297`, SHA256 `239bd30be01caa42fb56e6227acf05037c0ec7dd4eaefdc7274ffc9ade3fc89d`: downloaded digest, ZIP integrity, AMD64 binaries, packaged eight-suite/pluginval logs and 410-preset payload verified. No audio or authoring banks are in the portable package.
+- Factory/vocal audition artifact `12103929157`, SHA256 `109cee45dd650456c9ce7bd8f4eff4f8dd81b48dce210573c5a3b7c2f9aeeaa2`: digest/ZIP, 29 six-second stereo 48 kHz / 16-bit PCM excerpts, two indices, 1,640 audit rows and 410 nearest-neighbor rows verified.
+- Retro audition artifact `12104068693`, SHA256 `dd06ad81017c5ac54bdc6bc8fad2a7f801500dd9e889fed56612fc18904ca243`: digest/ZIP, all **28** six-second stereo 48 kHz / 16-bit PCM excerpts and index verified. None is a runtime audio asset.
+- The [factory report](FACTORY_LIBRARY.md) is generated from the Windows CSVs: 410 dry groups, zero flags below 0.025, all 205 pairs above that threshold; overall central-note max-100ms stereo RMS spread 11.35 dB. **366/410** patches are within 0.5 dB of category targets; **48** reach the gain ceiling, including 11 retro patches. Retro central RMS is 0.009749–0.025000, peak 0.136118. This is numerical level calibration, not perceptual equal loudness.
+- Ubuntu CI CMake, all seven DSP suites and factory-data regeneration PASS. All 382 legacy identities/program positions match. Final repository changes after the tested source commit contain evidence/documentation only.
+
+Processor/DSP latency remains 16 samples in numerical tests. Pluginval's initial cached information line prints zero before preparation; separate prepared-host latency/compensation acceptance remains pending as explained in [Phase 5](PHASE_5.md).
+
+## Throughput probe
+
+An ad-hoc GCC 14.2 C++20 `-O2` Linux VM probe rendered 32 sustained chiptune voices in 64-frame blocks: pulse oscillator 1, triangle oscillator 2, duty 0.25, mix 0.3, coarse +7, brightness 0.7, effects/LFOs off. Median over three interleaved one-second renders, preparation excluded:
+
+| Rate | 0.7.0 seconds / rendered second | 0.8.0 seconds / rendered second |
+|---|---:|---:|
+| 48 kHz | 0.158 | 0.295 |
+| 96 kHz | 0.313 | 0.582 |
+
+The previous engine ignored oscillator 2 and brightness; the expanded DSP performs more work and costs more CPU. These aggregate VM measurements do not establish worst-case callback deadlines, DAW scheduling or underrun behavior. Profile the target machine, including two triangle oscillators, effects, automation and interrupted engine blends. Vocal/retro CPU optimization remains open.
 
 ## Compatibility and remaining acceptance
 
