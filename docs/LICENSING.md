@@ -3,6 +3,7 @@
 - **JUCE 8.0.6**, https://github.com/juce-framework/JUCE — dual licensed under AGPLv3 or JUCE commercial terms. Choose the applicable license and fulfill it before distributing. An unsigned development build or a public repository does not automatically satisfy AGPLv3 or qualify for a commercial license. The splash/reporting compile settings in CMake do not grant rights.
 - **Steinberg VST3 SDK**, included by JUCE's VST3 integration — review the exact bundled SDK version and license / trademark notices in the pinned JUCE tree. Retain required notices. No VST2 SDK is used.
 - **CMake**, **Visual Studio 2022 / MSVC / Windows SDK**, **Git**, and optional **Inno Setup 6** are build tools. Inno Setup is needed only to build the installer. Python 3 is needed only to regenerate presets.
+- **Official Steinberg validator**, SDK 3.7.12 (`cc2adc90382dded9e347caf74e4532f1458715db`) — separate build-time test dependency, not shipped. Review that pinned SDK license before using/distributing the tool. The plugin uses JUCE's bundled SDK integration separately.
 - **pluginval 1.0.4**, https://github.com/Tracktion/pluginval — GPL-licensed validation tool, downloaded only for build-time testing and not bundled with the instrument.
 - GitHub Actions checkout/upload actions support CI; they are not runtime dependencies.
 

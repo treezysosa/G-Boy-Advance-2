@@ -92,6 +92,13 @@ void GbaProcessor::processBlock(juce::AudioBuffer<float>& buffer,juce::MidiBuffe
     level.store(total>0?buffer.getMagnitude(0,total):0,std::memory_order_relaxed);
 }
 int GbaProcessor::getNumPrograms() {return int(gba::factoryPatches.size());}
+void GbaProcessor::processBlockBypassed(juce::AudioBuffer<float>& buffer,juce::MidiBuffer& messages) {
+    // Keep MIDI, envelopes and effects moving while the zero-input instrument
+    // is muted. In particular, note-offs during bypass must not leave held notes
+    // when the host resumes. The fixed-latency DSP path remains warm.
+    processBlock(buffer,messages);
+    buffer.clear();
+}
 void GbaProcessor::setCurrentProgram(int i) {if(i>=0&&i<getNumPrograms())pendingProgram.store(i);}
 const juce::String GbaProcessor::getProgramName(int i) {return i>=0&&i<getNumPrograms()?juce::String(gba::factoryPatches[std::size_t(i)].name):juce::String();}
 void GbaProcessor::servicePendingProgram() {int i=pendingProgram.exchange(-1);if(i>=0)presets.load(gba::factoryPatches[std::size_t(i)].id);}

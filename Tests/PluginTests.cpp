@@ -57,6 +57,13 @@ int main() {
         set(p,"amp.attack",.001f);midi.addEvent(juce::MidiMessage::noteOn(1,60,.8f),128);p.processBlock(audio,midi);
         check(audio.getMagnitude(0,0,128)==0,"MIDI sample offset was ignored");
         render(p,audio,8);check(audio.getMagnitude(0,256)>0.0001f,"Plugin wrapper produced no audio");
+        p.reset();set(p,"fx.reverb",0);set(p,"fx.delay",0);set(p,"amp.release",.02f);
+        midi.clear();midi.addEvent(juce::MidiMessage::noteOn(1,65,.8f),0);p.processBlock(audio,midi);render(p,audio,16);
+        midi.clear();midi.addEvent(juce::MidiMessage::noteOff(1,65),0);p.processBlockBypassed(audio,midi);
+        check(audio.getMagnitude(0,256)==0,"Bypassed instrument leaked audio");
+        for(int i=0;i<128;++i){midi.clear();p.processBlockBypassed(audio,midi);}
+        render(p,audio,4);check(p.voiceCount()==0&&audio.getMagnitude(0,256)<1e-5f,"Bypass dropped note-off or froze envelopes");
+        p.presets.restoreDefault();
         p.reset();p.keyboard.noteOn(1,72,.8f);render(p,audio,32);
         check(p.voiceCount()>0&&audio.getMagnitude(0,256)>0.0001f,"On-screen keyboard state did not reach the audio engine");
         p.keyboard.noteOff(1,72,0);p.panic();render(p,audio,1);

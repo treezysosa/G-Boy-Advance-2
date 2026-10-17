@@ -8,6 +8,8 @@ if (-not (Test-Path $vst) -or -not (Test-Path $standalone)) { throw 'Build the W
 $dist=Join-Path $root 'dist'
 New-Item -ItemType Directory -Force $dist | Out-Null
 $stage=Join-Path $dist 'G Boy Advance 2'
+# A clean stage prevents stale runtime files from leaking into a new archive.
+if (Test-Path -LiteralPath $stage) { Remove-Item -LiteralPath $stage -Recurse -Force }
 New-Item -ItemType Directory -Force $stage | Out-Null
 Copy-Item -Recurse -Force $vst $stage
 Copy-Item -Force $standalone,$(Join-Path $root 'README.md'),$(Join-Path $root 'docs\USER_MANUAL.md') $stage

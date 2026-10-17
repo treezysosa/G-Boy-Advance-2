@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.24)
-project(GBoyAdvance2 VERSION 0.9.0 LANGUAGES C CXX)
+project(GBoyAdvance2 VERSION 0.10.0 LANGUAGES C CXX)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
@@ -105,4 +105,18 @@ if(BUILD_TESTING)
     target_link_libraries(gba2-integration PRIVATE gba_dsp juce::juce_audio_utils juce::juce_audio_processors)
     add_test(NAME plugin-state-and-presets COMMAND gba2-integration)
     set_tests_properties(plugin-state-and-presets PROPERTIES TIMEOUT 180)
+    if(WIN32)
+        # A separate host loads the built bundle rather than linking our processor.
+        juce_add_console_app(gba2-host-tests PRODUCT_NAME "GBA2 VST3 host acceptance")
+        target_sources(gba2-host-tests PRIVATE Tests/HostTests.cpp)
+        target_include_directories(gba2-host-tests PRIVATE Source)
+        target_compile_definitions(gba2-host-tests PRIVATE JUCE_PLUGINHOST_VST3=1
+            JUCE_WEB_BROWSER=0 JUCE_USE_CURL=0 JUCE_VST3_CAN_REPLACE_VST2=0
+            JUCE_MODAL_LOOPS_PERMITTED=1)
+        target_link_libraries(gba2-host-tests PRIVATE juce::juce_audio_utils)
+        add_dependencies(gba2-host-tests GBoyAdvance2_VST3)
+        add_test(NAME vst3-host-acceptance COMMAND gba2-host-tests
+            "$<TARGET_FILE_DIR:GBoyAdvance2_VST3>/../..")
+        set_tests_properties(vst3-host-acceptance PROPERTIES TIMEOUT 180)
+    endif()
 endif()

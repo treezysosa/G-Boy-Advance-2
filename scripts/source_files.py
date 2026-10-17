@@ -5,6 +5,8 @@ ROOT = Path(__file__).resolve().parents[1]
 ROOT_FILES = {'CMakeLists.txt', 'README.md', '.gitignore', 'LICENSE', 'LICENSE.md', 'NOTICE', 'CHANGELOG.md'}
 SOURCE_DIRS = {'Source', 'Tests', 'Presets', 'scripts', 'docs', 'packaging', '.github'}
 REQUIRED = {
+    'Tests/HostTests.cpp', 'Tests/Benchmark.cpp', 'scripts/test-installer-windows.ps1',
+    'scripts/validate-steinberg-windows.ps1', 'docs/PHASE_10.md', 'docs/RELEASE_CHECKLIST.md',
     'CMakeLists.txt', 'README.md', 'Source/PluginProcessor.cpp', 'Source/PluginEditor.cpp',
     'Source/PresetManager.cpp', 'Source/dsp/SynthEngine.cpp', 'Source/dsp/Effects.cpp', 'Source/dsp/Effects.h', 'Source/dsp/VocalEngine.h', 'Source/dsp/RetroEngine.h', 'Tests/RetroTests.cpp', 'Presets/retro-designs.json', 'Source/FactoryData.h',
     'Presets/factory.json', 'Presets/instrument-designs.json', 'Presets/factory-levels.json', 'Presets/factory-index.json', 'Tests/EngineTests.cpp', 'Tests/CoreSynthesisTests.cpp', 'Tests/AdvancedSynthesisTests.cpp', 'Tests/PluginTests.cpp', 'Tests/LibraryTests.cpp', 'Tests/EffectsTests.cpp', 'Tests/PresetTests.cpp', 'Tests/VocalTests.cpp', 'Presets/vocal-designs.json',

@@ -31,6 +31,7 @@ jobs:
             build/factory-similarity.csv
   windows:
     runs-on: windows-2022
+    timeout-minutes: 40
     steps:
       - uses: actions/checkout@v4
       - uses: actions/checkout@v4
@@ -38,8 +39,14 @@ jobs:
           repository: juce-framework/JUCE
           ref: 8.0.6
           path: Dependencies/JUCE
+      - uses: actions/checkout@v4
+        with:
+          repository: steinbergmedia/vst3sdk
+          ref: cc2adc90382dded9e347caf74e4532f1458715db
+          submodules: recursive
+          path: Dependencies/vst3sdk
       - name: Configure Visual Studio 2022 x64
-        run: cmake -S . -B build -G "Visual Studio 17 2022" -A x64 -DGBA_JUCE_PATH="${{ github.workspace }}/Dependencies/JUCE" -DBUILD_TESTING=ON
+        run: cmake -S . -B build -G "Visual Studio 17 2022" -A x64 -DGBA_JUCE_PATH="${{ github.workspace }}/Dependencies/JUCE" -DBUILD_TESTING=ON -DGBA_BUILD_BENCHMARKS=ON
       - name: Build VST3, standalone and tests
         run: cmake --build build --config Release --parallel 2
       - name: Run engine and integration tests
@@ -47,9 +54,20 @@ jobs:
       - name: Validate the actual VST3 in pluginval
         shell: pwsh
         run: ./scripts/validate-windows.ps1 -Strictness 10
+      - name: Run separate official Steinberg validator
+        shell: pwsh
+        run: ./scripts/validate-steinberg-windows.ps1
+      - name: Profile 54 callback workloads
+        shell: pwsh
+        run: |
+          ./build/Release/gba2-benchmark.exe build/validation-logs/callback-profile.csv
+          if ($LASTEXITCODE -ne 0) { throw "Benchmark produced invalid audio." }
       - name: Package portable archive and installer
         shell: pwsh
         run: ./scripts/package-windows.ps1 -Iscc 'C:\Program Files (x86)\Inno Setup 6\ISCC.exe'
+      - name: Exercise install, reinstall, standalone launch and uninstall
+        shell: pwsh
+        run: ./scripts/test-installer-windows.ps1
       - uses: actions/upload-artifact@v4
         if: always()
         with:
