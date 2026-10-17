@@ -1,31 +1,14 @@
 #pragma once
 #include "Parameters.h"
 #include "DspMath.h"
+#include "Effects.h"
 #include <array>
 #include <vector>
 
 namespace gba {
-class Effects {
-public:
-    void prepare(float sampleRate);
-    void reset() noexcept;
-    void process(float& l,float& r,const Settings& s) noexcept;
-private:
-    struct Line {
-        std::vector<float> data;
-        std::size_t pos=0;
-        float damp=0;
-        float read(float delay) const noexcept;
-        void push(float value) noexcept;
-    };
-    float sr=48000,phase=0,holdL=0,holdR=0,lowL=0,lowR=0,highL=0,highR=0,prevL=0,prevR=0;
-    int counter=0;
-    std::array<Line,2> delay,mod,tape;
-    std::array<Line,4> room;
-    std::array<std::array<float,4>,2> allpass{};
-};
 class SynthEngine {
 public:
+    static constexpr int latencySamples=Effects::latencySamples;
     void prepare(double sampleRate);
     void reset() noexcept;
     void setSettings(const Settings& settings) noexcept;

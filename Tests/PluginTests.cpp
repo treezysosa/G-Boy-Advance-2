@@ -29,6 +29,7 @@ int main() {
     try {
         auto processor=std::make_unique<GbaProcessor>(root);auto& p=*processor;
         p.setRateAndBufferSizeDetails(48000,256);p.prepareToPlay(48000,256);
+        check(p.getLatencySamples()==16,"Host latency does not match the oversampled effects path");
         juce::AudioBuffer<float> audio(2,256);juce::MidiBuffer midi;
         // Verify the host wrapper splits rendering at MIDI sample offsets.
         set(p,"amp.attack",.001f);midi.addEvent(juce::MidiMessage::noteOn(1,60,.8f),128);p.processBlock(audio,midi);

@@ -1,6 +1,6 @@
 # Validation record
 
-Development snapshot 0.4.0. The earlier 0.1.1/0.2.0 Windows evidence below is retained as the previous baseline. A passing DSP test is not proof that a host can load the VST3.
+Development snapshot 0.5.0. The earlier 0.1.1/0.2.0 Windows evidence below is retained as the previous baseline. A passing DSP test is not proof that a host can load the VST3.
 
 ## Executed locally
 
@@ -124,3 +124,7 @@ Compare the real editor against the approved purple reference at 100%, 125%, 150
 - Final documentation commit changes evidence only; application/build source matches the validated commit. Manual host/device, DPI, listening and installer acceptance remain pending.
 
 AddressSanitizer and UndefinedBehaviorSanitizer pass all three DSP suites with halt-on-error. Leak detection is disabled because LeakSanitizer is unsupported by this sandbox/ptrace environment; leak freedom is not claimed.
+
+## Phase 5 effects 0.5.0
+
+The new focused effects suite covers exact bypass/latency/reset, nonlinear spectral behavior, fractional-delay bounds/precision, echo timing/feedback/crossfades, reverb decay/stereo, modulated delays, phaser frequency response, measured shelving gains, continuous wow/flutter, crusher levels/hold times, width, combined automation, zero allocations and block-size invariance. See [PHASE_5.md](PHASE_5.md). All 1,836 DSP checks and 172 Linux JUCE integration checks PASS with strict GCC C++20 compilation. All four DSP suites pass ASan/UBSan with halt-on-error and leak detection disabled (sandbox limitation). Factory data regenerates byte-for-byte. Windows build/host validation and packaging remain pending this revision's CI run.

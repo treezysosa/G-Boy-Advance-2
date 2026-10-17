@@ -2,68 +2,6 @@
 #include <limits>
 
 namespace gba {
-float Effects::Line::read(float d) const noexcept {
-    float p=float(pos)-std::clamp(d,1.0f,float(data.size()-2));
-    if(p<0) p+=float(data.size());
-    auto i=static_cast<std::size_t>(p); float f=p-float(i);
-    return data[i]+f*(data[(i+1)%data.size()]-data[i]);
-}
-void Effects::Line::push(float x) noexcept {data[pos]=x;pos=(pos+1)%data.size();}
-void Effects::prepare(float rate) {
-    sr=rate;
-    for(auto* lines:{&delay,&mod,&tape}) for(auto& l:*lines) l.data.assign(static_cast<std::size_t>(sr*1.6f)+16,0);
-    const float lengths[]{0.0297f,0.0371f,0.0411f,0.0437f};
-    for(int i=0;i<4;++i) room[i].data.assign(static_cast<std::size_t>(sr*lengths[i])+3,0);
-    reset();
-}
-void Effects::reset() noexcept {
-    for(auto* lines:{&delay,&mod,&tape}) for(auto& l:*lines) {std::fill(l.data.begin(),l.data.end(),0.0f);l.pos=0;l.damp=0;}
-    for(auto& l:room) {std::fill(l.data.begin(),l.data.end(),0.0f);l.pos=0;l.damp=0;}
-    allpass={};phase=0;counter=0;holdL=holdR=lowL=lowR=highL=highR=prevL=prevR=0;
-}
-void Effects::process(float& l,float& r,const Settings& s) noexcept {
-    phase=wrap(phase+0.27f/sr);
-    float* channels[]{&l,&r};
-    for(int c=0;c<2;++c) {
-        float x=*channels[c];
-        // Two evaluations per sample with interpolation soften aliasing in the nonlinear stages.
-        const float amount=1+10*s[Param::Drive]+22*s[Param::Distortion];
-        float& previous=c==0?prevL:prevR;
-        const auto shape=[&](float v) {return std::tanh(v*amount)/(1+0.2f*(amount-1));};
-        const float shaped=0.5f*(shape((x+previous)*0.5f)+shape(x)); previous=x;
-        x+=(shaped-x)*std::clamp((s[Param::Drive]+s[Param::Distortion])*2,0.0f,1.0f);
-        if(counter==0) {
-            const float steps=std::exp2(s[Param::CrusherBits]-1);
-            (c==0?holdL:holdR)=std::round(x*steps)/steps;
-        }
-        if(s[Param::CrusherBits]<16 || s[Param::CrusherRate]>1) x=c==0?holdL:holdR;
-        const float wobble=s[Param::Wow]*(0.0015f*sine(phase*1.37f)+0.00025f*sine(phase*29.0f));
-        tape[c].push(x);
-        if(s[Param::Wow]>0.0001f) x=tape[c].read(sr*(0.004f+wobble));
-        mod[c].push(x);
-        const float chorusDelay=sr*(0.018f+0.006f*sine(phase+0.25f*float(c)));
-        x+=s[Param::Chorus]*0.45f*(mod[c].read(chorusDelay)-x);
-        x+=s[Param::Flanger]*0.45f*mod[c].read(sr*(0.0025f+0.002f*sine(phase*0.71f+0.4f*float(c))));
-        float ap=x;
-        const float a=0.12f+0.72f*(0.5f+0.5f*sine(phase*0.61f+0.1f*float(c)));
-        for(auto& state:allpass[c]) {const float y=-a*ap+state; state=ap+a*y;ap=y;}
-        x+=s[Param::Phaser]*0.48f*ap;
-        const float echo=delay[c].read(sr*s[Param::DelayTime]);
-        delay[c].push(x+echo*s[Param::DelayFeedback]); x+=echo*s[Param::Delay];
-        float& lo=c==0?lowL:lowR; float& hi=c==0?highL:highR;
-        lo+=(1-std::exp(-tau*180/sr))*(x-lo);hi+=(1-std::exp(-tau*3800/sr))*(x-hi);
-        x+=lo*(std::pow(10.0f,s[Param::EqLow]/20)-1)+(x-hi)*(std::pow(10.0f,s[Param::EqHigh]/20)-1);
-        *channels[c]=x;
-    }
-    counter=(counter+1)%std::max(1,int(s[Param::CrusherRate]));
-    // Four-line orthogonal feedback delay network with damped feedback.
-    std::array<float,4> taps{};
-    for(int i=0;i<4;++i) {auto& line=room[i];float v=line.data[line.pos];line.damp+=0.35f*(v-line.damp);taps[i]=line.damp;}
-    float total=taps[0]+taps[1]+taps[2]+taps[3];
-    for(int i=0;i<4;++i) room[i].push((i%2==0?l:r)*0.22f+(0.5f*total-taps[i])*(0.5f+0.46f*s[Param::ReverbSize]));
-    l+=(taps[0]+taps[2])*s[Param::Reverb];r+=(taps[1]+taps[3])*s[Param::Reverb];
-    float mid=(l+r)*0.5f,side=(l-r)*0.5f*s[Param::Width];l=mid+side;r=mid-side;
-}
 void SynthEngine::prepare(double rate) {
     sampleRate=static_cast<float>(std::clamp(rate,8000.0,192000.0));
     smoothing=1-std::exp(-1/(0.015f*sampleRate));

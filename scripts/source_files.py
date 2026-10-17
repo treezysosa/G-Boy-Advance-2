@@ -6,10 +6,10 @@ ROOT_FILES = {'CMakeLists.txt', 'README.md', '.gitignore', 'LICENSE', 'LICENSE.m
 SOURCE_DIRS = {'Source', 'Tests', 'Presets', 'scripts', 'docs', 'packaging', '.github'}
 REQUIRED = {
     'CMakeLists.txt', 'README.md', 'Source/PluginProcessor.cpp', 'Source/PluginEditor.cpp',
-    'Source/PresetManager.cpp', 'Source/dsp/SynthEngine.cpp', 'Source/FactoryData.h',
-    'Presets/factory.json', 'Tests/EngineTests.cpp', 'Tests/CoreSynthesisTests.cpp', 'Tests/AdvancedSynthesisTests.cpp', 'Tests/PluginTests.cpp',
+    'Source/PresetManager.cpp', 'Source/dsp/SynthEngine.cpp', 'Source/dsp/Effects.cpp', 'Source/dsp/Effects.h', 'Source/FactoryData.h',
+    'Presets/factory.json', 'Tests/EngineTests.cpp', 'Tests/CoreSynthesisTests.cpp', 'Tests/AdvancedSynthesisTests.cpp', 'Tests/PluginTests.cpp', 'Tests/EffectsTests.cpp',
     'scripts/build-windows.ps1', 'scripts/validate-windows.ps1', 'scripts/package-windows.ps1', 'packaging/installer.iss',
-    '.github/workflows/build.yml', 'docs/PHASE_4.md',
+    '.github/workflows/build.yml', 'docs/PHASE_4.md', 'docs/PHASE_5.md',
 }
 
 
