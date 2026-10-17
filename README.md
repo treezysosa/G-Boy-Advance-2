@@ -2,7 +2,7 @@
 
 A C++20 / JUCE 8 hybrid synthesis instrument targeting Windows x64 VST3 and standalone. The purple, wide console interface uses native scalable controls. All sound is generated mathematically: there is no sampler, sample import, commercial game audio, or network dependency at runtime.
 
-**Development build 0.5.0 — Phase 5 effects.** Saturation/distortion use true 2× FIR oversampling with a fixed 16-sample host-compensated latency. Delay times crossfade between stationary taps; wow/flutter and modulation use independent bounded clocks; EQ uses proper low/high shelving biquads. Fractional-delay reads wrap integer indices before interpolation. All 64 parameter IDs and project schema 1 stay stable. Focused effects validation adds 138 numerical checks to the 1,698 existing DSP checks; all 1,836 DSP checks and 175 local processor/UI integration checks pass, including the latency contract. All four DSP suites pass ASan/UBSan with leak detection disabled. Windows validation for this revision is pending. See [Phase 5](docs/PHASE_5.md), [validation](docs/VALIDATION.md) and the [Phase 2 visual acceptance notes](docs/PHASE_2.md).
+**Development build 0.5.0 — Phase 5 effects.** Saturation/distortion use true 2× FIR oversampling with a fixed 16-sample processor latency. Delay times crossfade between stationary taps; wow/flutter and modulation use independent bounded clocks; EQ uses proper low/high shelving biquads. Precise fractional-delay indexing and parameter-derived tail reporting improve buffer safety and host integration. All 64 parameter IDs and project schema 1 stay stable. All 1,836 DSP checks and 175 Linux / 178 Windows integration checks pass. All four DSP suites pass ASan/UBSan with leak detection disabled. Windows VST3/standalone builds, five CTest suites, pluginval strictness 10 and packaging pass. See [Phase 5](docs/PHASE_5.md), [validation](docs/VALIDATION.md) and the [Phase 2 visual acceptance notes](docs/PHASE_2.md).
 
 ![G Boy Advance 2 Phase 2 native JUCE editor](docs/images/phase2-main.png)
 
@@ -18,7 +18,7 @@ cd G-Boy-Advance-2
 powershell -ExecutionPolicy Bypass -File scripts/build-windows.ps1
 ```
 
-You can also open [Build and validate in GitHub Actions](https://github.com/treezysosa/G-Boy-Advance-2/actions/workflows/build.yml), choose **Run workflow**, and download the Windows artifact after the job succeeds. The workflow and Windows script are included in the corrected source upload. The previous 0.4.0 build passed four CTest suites, pluginval strictness 10 and packaging in [run 39010199255](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39010199255). Version 0.5.0 adds a fifth CTest suite; its Windows validation is pending. Full results are recorded in VALIDATION.md.
+You can also open [Build and validate in GitHub Actions](https://github.com/treezysosa/G-Boy-Advance-2/actions/workflows/build.yml), choose **Run workflow**, and download the Windows artifact after the job succeeds. The workflow and Windows script are included in the corrected source upload. Version 0.5.0 builds and passes all five CTest suites, pluginval strictness 10 and packaging in [run 39011625622](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39011625622). Full results are recorded in VALIDATION.md.
 
 The first local build downloads the pinned JUCE 8.0.6 source. For an offline build, supply an existing checkout:
 
