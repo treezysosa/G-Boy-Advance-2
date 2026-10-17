@@ -97,7 +97,8 @@ bool PresetManager::isRecent(const juce::String& id) const {return recent.contai
 void PresetManager::remember(const juce::String& id) {recent.removeString(id);recent.insert(0,id);while(recent.size()>32)recent.remove(recent.size()-1);savePreferences();}
 void PresetManager::savePreferences() {
     auto* object=new juce::DynamicObject();juce::var data(object);juce::Array<juce::var> f,r;
-    for(const auto& id:favorites)f.add(id);for(const auto& id:recent)r.add(id);
+    for(const auto& id:favorites)f.add(id);
+    for(const auto& id:recent)r.add(id);
     object->setProperty("favorites",f);object->setProperty("recent",r);
     auto result=atomicJson(preferences,data);if(result.failed())lastError=result.getErrorMessage();
 }

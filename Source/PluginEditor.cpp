@@ -127,7 +127,9 @@ private:
     }
     int getNumRows() override {return int(visible.size());}
     void paintListBoxItem(int row,juce::Graphics& g,int width,int height,bool selected) override {
-        if(row<0||row>=int(visible.size()))return;auto* p=processor.presets.find(visible[std::size_t(row)]);if(!p)return;
+        if(row<0||row>=int(visible.size()))return;
+        auto* p=processor.presets.find(visible[std::size_t(row)]);
+        if(!p)return;
         g.fillAll(selected?purple.darker(.4f):(row%2?deep.withAlpha(.4f):ink));
         g.setColour(text);g.setFont(font(15,true));g.drawText((processor.presets.isFavorite(p->id)?"* ":"  ")+p->name,10,1,width-330,height-2,juce::Justification::centredLeft,true);
         g.setColour(text.withAlpha(.6f));g.setFont(font(12));g.drawText(p->category+(p->factory?" / FACTORY":" / USER"),width-320,0,310,height,juce::Justification::centredRight,true);
@@ -147,41 +149,118 @@ ConsoleLook::ConsoleLook() {
     setColour(juce::ComboBox::backgroundColourId,ink);setColour(juce::ComboBox::textColourId,text);setColour(juce::ComboBox::outlineColourId,purple);
     setColour(juce::PopupMenu::backgroundColourId,ink);setColour(juce::PopupMenu::textColourId,text);setColour(juce::ToggleButton::textColourId,text);setColour(juce::ToggleButton::tickColourId,purple.brighter());
 }
-void ConsoleLook::drawRotarySlider(juce::Graphics& g,int x,int y,int width,int height,float position,float start,float end,juce::Slider&) {
-    auto bounds=juce::Rectangle<float>(float(x),float(y),float(width),float(height)).reduced(float(std::min(width,height))*.13f);
-    float radius=std::min(bounds.getWidth(),bounds.getHeight())*.5f,cx=bounds.getCentreX(),cy=bounds.getCentreY();bounds={cx-radius,cy-radius,2*radius,2*radius};
-    g.setColour(juce::Colours::black.withAlpha(.65f));g.fillEllipse(bounds.translated(1,4).expanded(3));
-    g.setGradientFill(juce::ColourGradient(juce::Colour(0xfff5f4f1),cx-radius,cy-radius,juce::Colour(0xff575b64),cx+radius,cy+radius,false));g.fillEllipse(bounds);
-    g.setColour(juce::Colour(0xff11132b));g.drawEllipse(bounds.reduced(radius*.12f),std::max(2.0f,radius*.06f));
-    auto face=bounds.reduced(radius*.19f);
-    // Alternating radial highlights suggest brushed aluminium at every scale.
-    for(int segment=0;segment<96;++segment) {
-        float a=float(segment)*juce::MathConstants<float>::twoPi/96;
-        juce::Path wedge;wedge.addPieSegment(face,a,a+.067f,0);
-        float light=.54f+.29f*std::cos(a*3+.9f)+.16f*std::cos(a*6);
-        g.setColour(juce::Colour::greyLevel(juce::jlimit(.18f,.96f,light)));g.fillPath(wedge);
+void ConsoleLook::drawRotarySlider(juce::Graphics& g,int x,int y,int width,int height,
+                                   float position,float start,float end,juce::Slider& slider) {
+    const bool master=slider.getName()=="Master volume";
+    const float inset=master?.055f:.13f;
+    auto bounds=juce::Rectangle<float>(float(x),float(y),float(width),float(height))
+                    .reduced(float(std::min(width,height))*inset);
+    const float radius=std::min(bounds.getWidth(),bounds.getHeight())*.5f;
+    const float cx=bounds.getCentreX(),cy=bounds.getCentreY();
+    bounds={cx-radius,cy-radius,2*radius,2*radius};
+    g.setColour(juce::Colours::black.withAlpha(.7f));
+    g.fillEllipse(bounds.translated(1,5).expanded(3));
+    g.setGradientFill(juce::ColourGradient(juce::Colour(0xfffaf9f7),cx-radius,cy-radius,
+                                          juce::Colour(0xff686b75),cx+radius,cy+radius,false));
+    g.fillEllipse(bounds);
+    g.setColour(ink);
+    g.drawEllipse(bounds.reduced(radius*.11f),std::max(2.0f,radius*.045f));
+    auto face=bounds.reduced(radius*.16f);
+    g.setGradientFill(juce::ColourGradient(silver,cx,cy-radius,juce::Colour(0xff9a9ca2),cx,cy+radius,false));
+    g.fillEllipse(face);
+    for(int segment=0;segment<160;++segment) {
+        const float angle=float(segment)*juce::MathConstants<float>::twoPi/160;
+        juce::Path wedge;
+        wedge.addPieSegment(face,angle,angle+.04f,0);
+        const float light=.75f+.17f*std::cos(angle*2+.4f)+.06f*std::cos(angle*4+.8f)
+                         +.009f*std::cos(angle*53);
+        g.setColour(juce::Colour::greyLevel(juce::jlimit(.48f,.98f,light)).withAlpha(.85f));
+        g.fillPath(wedge);
     }
-    g.setColour(juce::Colours::white.withAlpha(.5f));g.drawEllipse(face,1);
+    g.setColour(juce::Colours::white.withAlpha(.65f));
+    g.drawEllipse(face,1);
     const float angle=start+position*(end-start);
-    for(int i=0;i<29;++i) {
-        float a=start+(end-start)*float(i)/28,r=radius*1.09f;
-        g.setColour(i<=int(position*28)?juce::Colour(0xffb886ff):purple.withAlpha(.32f));g.fillEllipse(cx+std::sin(a)*r-1.5f,cy-std::cos(a)*r-1.5f,3,3);
+    if(master) {
+        g.setColour(purple.withAlpha(.65f));
+        g.drawEllipse(bounds.reduced(radius*.08f),std::max(2.0f,radius*.025f));
+    } else {
+        for(int i=0;i<29;++i) {
+            const float ledAngle=start+(end-start)*float(i)/28,ledRadius=radius*1.09f;
+            g.setColour(i<=int(position*28)?juce::Colour(0xffc09aff):purple.withAlpha(.32f));
+            g.fillEllipse(cx+std::sin(ledAngle)*ledRadius-1.5f,
+                          cy-std::cos(ledAngle)*ledRadius-1.5f,3,3);
+        }
     }
-    juce::Path arc;arc.addCentredArc(cx,cy,radius*.88f,radius*.88f,0,start,angle,true);g.setColour(purple.brighter(.4f));g.strokePath(arc,juce::PathStrokeType(std::max(1.5f,radius*.025f)));
-    g.setColour(ink);g.drawLine(cx+std::sin(angle)*radius*.53f,cy-std::cos(angle)*radius*.53f,cx+std::sin(angle)*radius*.71f,cy-std::cos(angle)*radius*.71f,std::max(2.5f,radius*.05f));
+    juce::Path arc;
+    const float ring=master?.92f:.89f;
+    arc.addCentredArc(cx,cy,radius*ring,radius*ring,0,start,angle,true);
+    g.setColour(purple.brighter(.55f));
+    g.strokePath(arc,juce::PathStrokeType(std::max(1.5f,radius*.025f)));
+    g.setColour(ink);
+    g.drawLine(cx+std::sin(angle)*radius*.57f,cy-std::cos(angle)*radius*.57f,
+               cx+std::sin(angle)*radius*.75f,cy-std::cos(angle)*radius*.75f,
+               std::max(2.5f,radius*.045f));
 }
-void ConsoleLook::drawButtonBackground(juce::Graphics& g,juce::Button& button,const juce::Colour&,bool over,bool down) {
-    auto b=button.getLocalBounds().toFloat().reduced(3);bool round=button.getProperties()["round"];
-    g.setColour(juce::Colours::black.withAlpha(.8f));if(round)g.fillEllipse(b.translated(0,3));else g.fillRoundedRectangle(b.translated(0,2),7);
-    auto light=round?silver:juce::Colour(0xff29364d);auto dark=round?juce::Colour(0xff8b8e91):ink;
-    if(down)std::swap(light,dark);if(over)light=light.brighter(.1f);
-    g.setGradientFill(juce::ColourGradient(light,b.getX(),b.getY(),dark,b.getRight(),b.getBottom(),false));
-    if(round){g.fillEllipse(b);g.setColour(juce::Colours::white.withAlpha(.45f));g.drawEllipse(b.reduced(3),2);}
-    else {g.fillRoundedRectangle(b,7);g.setColour(purple.withAlpha(.65f));g.drawRoundedRectangle(b,7,1);}
+void ConsoleLook::drawButtonBackground(juce::Graphics& g,juce::Button& button,
+                                       const juce::Colour&,bool over,bool down) {
+    auto bounds=button.getLocalBounds().toFloat().reduced(3);
+    const bool round=button.getProperties()["round"];
+    if(button.getButtonText()=="START"||button.getButtonText()=="SELECT") {
+        g.setColour(ink);g.fillRoundedRectangle(bounds,bounds.getHeight()*.5f);
+        g.setColour(purple.withAlpha(.35f));g.drawRoundedRectangle(bounds,bounds.getHeight()*.5f,1);
+        auto cap=juce::Rectangle<float>(bounds.getX()+3,bounds.getY()+bounds.getHeight()*.18f,
+                                         bounds.getWidth()*.38f,bounds.getHeight()*.64f);
+        g.setColour(juce::Colours::black);g.fillRoundedRectangle(cap.expanded(2),cap.getHeight()*.5f);
+        g.setGradientFill(juce::ColourGradient(down?silver:juce::Colours::white,cap.getX(),cap.getY(),
+                                              juce::Colour(0xff8c9098),cap.getX(),cap.getBottom(),false));
+        g.fillRoundedRectangle(cap,cap.getHeight()*.5f);
+        return;
+    }
+    g.setColour(juce::Colours::black.withAlpha(.8f));
+    if(round) {
+        g.fillEllipse(bounds.translated(0,4).expanded(2));
+        g.setGradientFill(juce::ColourGradient(silver,bounds.getX(),bounds.getY(),
+                                              juce::Colour(0xff5d6169),bounds.getRight(),bounds.getBottom(),false));
+        g.fillEllipse(bounds);
+        auto face=bounds.reduced(bounds.getWidth()*.055f);
+        auto light=down?juce::Colour(0xffa6a8ac):juce::Colour(0xfff0efeb);
+        auto dark=down?silver:juce::Colour(0xffaaaeb4);
+        if(over)light=light.brighter(.08f);
+        g.setGradientFill(juce::ColourGradient(light,face.getCentreX(),face.getY(),dark,
+                                              face.getCentreX(),face.getBottom(),false));
+        g.fillEllipse(face);
+        g.setColour(juce::Colours::white.withAlpha(.65f));
+        g.drawEllipse(face,1.5f);
+        return;
+    }
+    g.fillRoundedRectangle(bounds.translated(0,2),7);
+    auto light=juce::Colour(0xff29364d),dark=ink;
+    if(down)std::swap(light,dark);
+    if(over)light=light.brighter(.1f);
+    g.setGradientFill(juce::ColourGradient(light,bounds.getX(),bounds.getY(),dark,
+                                          bounds.getRight(),bounds.getBottom(),false));
+    g.fillRoundedRectangle(bounds,7);
+    g.setColour(purple.withAlpha(.65f));
+    g.drawRoundedRectangle(bounds,7,1);
 }
 void ConsoleLook::drawButtonText(juce::Graphics& g,juce::TextButton& button,bool,bool) {
     bool round=button.getProperties()["round"];g.setColour((round?ink:text).withAlpha(button.isEnabled()?1.0f:.35f));
     if(button.getName()=="Preset display") {gba_ui::pixelText(g,button.getButtonText(),button.getLocalBounds().toFloat().reduced(12,10));return;}
+    if(button.getButtonText()=="START"||button.getButtonText()=="SELECT") {
+        g.setFont(font(float(button.getHeight())*.42f,true));
+        auto label=button.getLocalBounds().toFloat();label.removeFromLeft(label.getWidth()*.45f);
+        g.drawText(button.getButtonText(),label,juce::Justification::centred,true);return;
+    }
+    if(button.getButtonText()=="<"||button.getButtonText()==">") {
+        const auto centre=button.getLocalBounds().toFloat().getCentre();
+        const float radius=float(button.getHeight())*.23f;
+        const float direction=button.getButtonText()==">"?1.0f:-1.0f;
+        juce::Path arrow;arrow.addTriangle(centre.x+radius*direction,centre.y,
+            centre.x-radius*direction,centre.y-radius,centre.x-radius*direction,centre.y+radius);
+        g.setGradientFill(juce::ColourGradient(juce::Colours::white,centre.x,centre.y-radius,
+                                              silver.darker(.25f),centre.x,centre.y+radius,false));
+        g.fillPath(arrow);return;
+    }
     g.setFont(font(round?float(button.getHeight())*.43f:std::min(18.0f,float(button.getHeight())*.43f),true));
     g.drawText(button.getButtonText(),button.getLocalBounds().reduced(8),juce::Justification::centred,true);
 }
@@ -196,11 +275,21 @@ DirectionPad::DirectionPad() {setWantsKeyboardFocus(true);setTitle("Preset direc
 void DirectionPad::paint(juce::Graphics& g) {
     auto b=getLocalBounds().toFloat().reduced(7);float w=b.getWidth(),h=b.getHeight();
     juce::Path path;path.startNewSubPath(b.getX()+w*.34f,b.getY());path.lineTo(b.getX()+w*.66f,b.getY());path.lineTo(b.getX()+w*.66f,b.getY()+h*.34f);path.lineTo(b.getRight(),b.getY()+h*.34f);path.lineTo(b.getRight(),b.getY()+h*.66f);path.lineTo(b.getX()+w*.66f,b.getY()+h*.66f);path.lineTo(b.getX()+w*.66f,b.getBottom());path.lineTo(b.getX()+w*.34f,b.getBottom());path.lineTo(b.getX()+w*.34f,b.getY()+h*.66f);path.lineTo(b.getX(),b.getY()+h*.66f);path.lineTo(b.getX(),b.getY()+h*.34f);path.lineTo(b.getX()+w*.34f,b.getY()+h*.34f);path.closeSubPath();
+    path=path.createPathWithRoundedCorners(w*.045f);
     g.setColour(ink);g.strokePath(path,juce::PathStrokeType(14,juce::PathStrokeType::curved));
     g.setGradientFill(juce::ColourGradient(silver,b.getX(),b.getY(),juce::Colour(0xff92969c),b.getRight(),b.getBottom(),false));g.fillPath(path);g.setColour(juce::Colours::white.withAlpha(.65f));g.strokePath(path,juce::PathStrokeType(3,juce::PathStrokeType::curved));
-    const char* arrows[]{"<",">","^","v"};
     juce::Rectangle<float> areas[]{ {b.getX(),b.getY()+h*.34f,w*.34f,h*.32f},{b.getX()+w*.66f,b.getY()+h*.34f,w*.34f,h*.32f},{b.getX()+w*.34f,b.getY(),w*.32f,h*.34f},{b.getX()+w*.34f,b.getY()+h*.66f,w*.32f,h*.34f}};
-    for(int i=0;i<4;++i){g.setColour(i==pressed?purple:juce::Colour(0xff54575c));g.setFont(font(w*.16f,true));g.drawText(arrows[i],areas[i],juce::Justification::centred);}
+    for(int i=0;i<4;++i) {
+        const auto centre=areas[i].getCentre();
+        const float size=w*.06f;
+        juce::Path arrow;
+        if(i==0)arrow.addTriangle(centre.x-size,centre.y,centre.x+size,centre.y-size,centre.x+size,centre.y+size);
+        if(i==1)arrow.addTriangle(centre.x+size,centre.y,centre.x-size,centre.y-size,centre.x-size,centre.y+size);
+        if(i==2)arrow.addTriangle(centre.x,centre.y-size,centre.x-size,centre.y+size,centre.x+size,centre.y+size);
+        if(i==3)arrow.addTriangle(centre.x,centre.y+size,centre.x-size,centre.y-size,centre.x+size,centre.y-size);
+        g.setColour(i==pressed?purple:juce::Colour(0xff62656b));
+        g.fillPath(arrow);
+    }
 }
 void DirectionPad::mouseDown(const juce::MouseEvent& e) {float x=e.position.x/float(getWidth())-.5f,y=e.position.y/float(getHeight())-.5f;if(std::abs(x)<.1f&&std::abs(y)<.1f)return;pressed=std::abs(x)>std::abs(y)?(x<0?0:1):(y<0?2:3);if(onDirection)onDirection(pressed);repaint();}
 void DirectionPad::mouseUp(const juce::MouseEvent&) {pressed=-1;repaint();}
@@ -222,11 +311,11 @@ GbaEditor::GbaEditor(GbaProcessor& p):AudioProcessorEditor(p),processor(p),keybo
     aButton.getProperties().set("round",true);bButton.getProperties().set("round",true);
     aButton.setTooltip("Preview current patch with a short synthesized C4");bButton.setTooltip("Stop preview; DAW MIDI notes continue");aButton.onClick=[this]{processor.preview();};bButton.onClick=[this]{processor.stopPreview();};
     dpad.onDirection=[this](int direction){if(direction<2)processor.presets.step(direction==0?-1:1);else processor.presets.stepCategory(direction==2?-1:1);};
-    keyboard.setAvailableRange(24,108);keyboard.setLowestVisibleKey(48);keyboard.setKeyPressBaseOctave(4);keyboard.setScrollButtonsVisible(true);
+    keyboard.setName("Piano keyboard");keyboard.setOctaveForMiddleC(4);keyboard.setAvailableRange(24,108);keyboard.setLowestVisibleKey(48);keyboard.setKeyPressBaseOctave(4);keyboard.setScrollButtonsVisible(true);
     keyboard.setColour(juce::MidiKeyboardComponent::whiteNoteColourId,juce::Colour(0xffeeeef0));keyboard.setColour(juce::MidiKeyboardComponent::blackNoteColourId,ink);
     keyboard.setColour(juce::MidiKeyboardComponent::keyDownOverlayColourId,purple.withAlpha(.7f));keyboard.setColour(juce::MidiKeyboardComponent::mouseOverKeyOverlayColourId,purple.withAlpha(.3f));keyboard.setColour(juce::MidiKeyboardComponent::textLabelColourId,juce::Colour(0xff4b4b63));
     setResizable(true,true);setResizeLimits(960,485,1920,970);getConstrainer()->setFixedAspectRatio(1280.0/646.0);
-    int w=processor.editorWidth.load();setSize(w,int(std::round(double(w)*646/1280)));updateMacros();timerCallback();startTimerHz(25);
+    int w=processor.editorWidth.load();setSize(w,int(std::round(double(w)*646/1280)));keyboard.setLowestVisibleKey(48);updateMacros();timerCallback();startTimerHz(25);
 }
 GbaEditor::~GbaEditor() {stopTimer();processor.uiPitch(8192);processor.keyboard.allNotesOff(0);overlay.reset();setLookAndFeel(nullptr);}
 void GbaEditor::paint(juce::Graphics& g) {
@@ -236,12 +325,30 @@ void GbaEditor::paint(juce::Graphics& g) {
     g.setGradientFill(juce::ColourGradient(juce::Colour(0xff3832a0),0,150,juce::Colour(0xff11175c),1000,600,false));g.fillRoundedRectangle(body,22);
     // Glossy, angular upper housing follows the approved wide rectangular reference.
     juce::Path shell;shell.startNewSubPath(0,0);shell.lineTo(270,0);shell.lineTo(285,25);shell.lineTo(995,25);shell.lineTo(1010,0);shell.lineTo(1280,0);shell.lineTo(1280,95);shell.lineTo(1165,95);shell.lineTo(1116,148);shell.lineTo(1089,161);shell.lineTo(1084,191);shell.lineTo(194,191);shell.lineTo(187,163);shell.lineTo(157,151);shell.lineTo(112,95);shell.lineTo(0,95);shell.closeSubPath();
-    g.setGradientFill(juce::ColourGradient(juce::Colour(0xffb18aff),0,0,purple.darker(.2f),0,200,false));g.fillPath(shell);g.setColour(juce::Colour(0xffd0b1ff).withAlpha(.65f));g.strokePath(shell,juce::PathStrokeType(4));
+    g.setColour(juce::Colours::black.withAlpha(.5f));
+    g.strokePath(shell,juce::PathStrokeType(12),juce::AffineTransform::translation(0,5));
+    juce::ColourGradient plastic(juce::Colour(0xffbb96ff),0,0,juce::Colour(0xff6534db),0,195,false);
+    plastic.addColour(.08,juce::Colour(0xffa477ff));plastic.addColour(.14,juce::Colour(0xff8450ec));
+    plastic.addColour(.76,juce::Colour(0xff7d3df1));plastic.addColour(.92,juce::Colour(0xff9861ff));
+    g.setGradientFill(plastic);g.fillPath(shell);
+    g.setColour(juce::Colour(0xffd0b1ff).withAlpha(.65f));g.strokePath(shell,juce::PathStrokeType(4));
     g.setColour(juce::Colours::white.withAlpha(.25f));g.drawLine(12,12,251,12,4);g.drawLine(1028,12,1268,12,4);
     panel(g,{255,-12,770,117},26);panel(g,{342,17,596,77},16);
     // Original typography and branding, without manufacturer marks from real consoles.
-    g.setFont(font(49,true));g.setColour(juce::Colours::black);g.drawText("G BOY ADVANCE",393,116,444,62,juce::Justification::centred);g.setColour(juce::Colours::white);g.drawText("G BOY ADVANCE",390,112,444,62,juce::Justification::centred);
-    g.setFont(font(77,true));g.setColour(juce::Colours::black);g.drawText("2",824,98,73,90,juce::Justification::centred);g.setColour(juce::Colour(0xffb187ff));g.drawText("2",821,95,73,90,juce::Justification::centred);
+    juce::GlyphArrangement lettering;
+    const auto logoFont=juce::Font(juce::FontOptions(juce::Font::getDefaultSansSerifFontName(),
+                                                   58,juce::Font::bold|juce::Font::italic));
+    lettering.addFittedText(logoFont,"G BOY ADVANCE",390,114,440,59,juce::Justification::centred,1);
+    juce::Path logo;lettering.createPath(logo);
+    g.setColour(juce::Colours::black);g.strokePath(logo,juce::PathStrokeType(7));
+    g.setGradientFill(juce::ColourGradient(juce::Colours::white,0,118,silver,0,165,false));g.fillPath(logo);
+    juce::GlyphArrangement number;
+    number.addFittedText(juce::Font(juce::FontOptions(juce::Font::getDefaultSansSerifFontName(),
+                                                    86,juce::Font::bold|juce::Font::italic)),
+                         "2",827,101,70,80,juce::Justification::centred,1);
+    juce::Path numberPath;number.createPath(numberPath);
+    g.setColour(ink);g.strokePath(numberPath,juce::PathStrokeType(8));
+    g.setGradientFill(juce::ColourGradient(juce::Colour(0xffd2b7ff),0,104,purple,0,181,false));g.fillPath(numberPath);
     panel(g,{607,174,66,22},8);caption(g,"VST",{609,175,62,20},14);
     const auto led=[&](float x,juce::Colour colour,bool active) {
         g.setColour(ink);g.fillEllipse(x-14,43,28,28);g.setColour(colour.withAlpha(active?.35f:.08f));g.fillEllipse(x-12,45,24,24);
@@ -267,13 +374,14 @@ void GbaEditor::paint(juce::Graphics& g) {
     g.setColour(juce::Colour(0xffb789ff).withAlpha(.6f));g.drawRoundedRectangle(body,20,3);
 }
 void GbaEditor::resized() {
+    const auto firstKey=keyboard.getLowestVisibleKey();
     float sx=float(getWidth())/1280,sy=float(getHeight())/646;
     auto bounds=[sx,sy](juce::Component& component,float x,float y,float w,float h){component.setBounds(int(std::round(x*sx)),int(std::round(y*sy)),int(std::round(w*sx)),int(std::round(h*sy)));};
     bounds(previous,350,28,68,56);bounds(presetDisplay,418,28,444,56);bounds(next,862,28,68,56);
     bounds(dpad,55,183,160,160);bounds(start,76,375,130,30);bounds(select,76,412,130,30);
     bounds(volume,538,258,204,198);bounds(macros[0],325,320,85,85);bounds(macros[1],432,320,85,85);bounds(macros[2],762,320,85,85);bounds(macros[3],869,320,85,85);
     bounds(aButton,1162,198,96,96);bounds(bButton,1059,242,96,96);
-    bounds(keyboard,203,497,870,128);keyboard.setKeyWidth(28*sx);bounds(pitch,73,522,77,89);bounds(glide,1122,516,90,90);
+    bounds(keyboard,203,497,870,128);keyboard.setKeyWidth(28*sx);keyboard.setLowestVisibleKey(firstKey);bounds(pitch,73,522,77,89);bounds(glide,1122,516,90,90);
     if(overlay)bounds(*overlay,35,12,1210,455);
     processor.editorWidth.store(getWidth());
 }

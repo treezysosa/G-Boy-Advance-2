@@ -2,7 +2,11 @@
 
 A C++20 / JUCE 8 hybrid synthesis instrument targeting Windows x64 VST3 and standalone. The purple, wide console interface uses native scalable controls. All sound is generated mathematically: there is no sampler, sample import, commercial game audio, or network dependency at runtime.
 
-**Development build 0.1.0 — not yet a validated commercial release.** The standalone DSP core has compiled and passed 1,384 checks on Linux. The JUCE plugin, Windows targets, host loading, and visual fidelity still require the Windows CI and manual acceptance checks. See [validation status](docs/VALIDATION.md) and [exact next steps](docs/NEXT_STEPS.md).
+**Development build 0.1.1 — Windows release validation is pending.** The native DSP passes 1,387 checks; the compiled and linked JUCE test executable passes 112 integration checks on Linux. Project state, user presets, the on-screen keyboard connection, preview buttons, D-pad navigation, macro reassignment, and editor resizing have been exercised. Windows VST3/standalone compilation and DAW loading still need verification. See [validation status](docs/VALIDATION.md) and [exact next steps](docs/NEXT_STEPS.md).
+
+![G Boy Advance 2 native JUCE editor](docs/images/GBA2-editor.png)
+
+Actual native JUCE component rendering on Linux at 1920×969. Windows font rendering and high-DPI behavior remain to be checked.
 
 ## Build on Windows
 
@@ -14,7 +18,9 @@ cd G-Boy-Advance-2
 powershell -ExecutionPolicy Bypass -File scripts/build-windows.ps1
 ```
 
-The first build downloads the pinned JUCE 8.0.6 source. For an offline build, supply an existing checkout:
+You can also open [Build and validate in GitHub Actions](https://github.com/treezysosa/G-Boy-Advance-2/actions/workflows/build.yml), choose **Run workflow**, and download the Windows artifact after the job succeeds. The workflow and Windows script are included in the corrected source upload; Windows build results still need verification.
+
+The first local build downloads the pinned JUCE 8.0.6 source. For an offline build, supply an existing checkout:
 
 ```powershell
 cmake -S . -B build -G "Visual Studio 17 2022" -A x64 -DGBA_JUCE_PATH=C:/SDKs/JUCE-8.0.6
@@ -65,7 +71,11 @@ cd build-core
 
 `--render` optionally creates six synthesized demonstration WAVs as test output. These are never used by the instrument. Every test run writes `preset-validation.csv` with factory patch RMS / peak levels.
 
+See [performance measurements](docs/PERFORMANCE.md) for the additive-engine optimization and the optional benchmark target.
+
 ## Packaging and licensing
+
+`python scripts/package-source.py` creates a complete source ZIP and checks that the Windows build script and GitHub workflow are included.
 
 With Inno Setup 6 installed, run `scripts/package-windows.ps1` after a successful release build. This creates an unsigned Windows archive and installer under `dist/`. Release signing, listening review, pluginval / VST3 validation, and DAW testing remain release gates.
 

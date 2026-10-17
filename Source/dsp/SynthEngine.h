@@ -66,6 +66,7 @@ private:
     std::array<bool,16> sustain{};
     std::array<std::array<Key,128>,16> keys{};
     Effects effects;
+    std::array<float,24> harmonicInverseRoot{},harmonicWeight{},harmonicScale{};
     // Eight mip levels, generated once; no samples or external assets.
     std::array<std::array<std::array<float,1024>,8>,4> tables{};
     void buildTables() noexcept;

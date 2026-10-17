@@ -1,0 +1,58 @@
+name: Build and validate
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  core:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check complete source packaging
+        run: python3 scripts/package-source.py
+      - name: Validate generated factory library
+        run: |
+          python3 scripts/generate_presets.py
+          git diff --exit-code -- Presets/factory.json Source/FactoryData.h
+      - name: Build independent DSP tests
+        run: |
+          cmake -S . -B build -DGBA_BUILD_PLUGIN=OFF -DCMAKE_BUILD_TYPE=Release
+          cmake --build build --parallel 2
+          ctest --test-dir build --output-on-failure
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: DSP-validation
+          path: build/preset-validation.csv
+  windows:
+    runs-on: windows-2022
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: juce-framework/JUCE
+          ref: 8.0.6
+          path: Dependencies/JUCE
+      - name: Configure Visual Studio 2022 x64
+        run: cmake -S . -B build -G "Visual Studio 17 2022" -A x64 -DGBA_JUCE_PATH="${{ github.workspace }}/Dependencies/JUCE" -DBUILD_TESTING=ON
+      - name: Build VST3, standalone and tests
+        run: cmake --build build --config Release --parallel 2
+      - name: Run engine and integration tests
+        run: ctest --test-dir build -C Release --output-on-failure
+      - name: Package portable archive and installer
+        shell: pwsh
+        run: ./scripts/package-windows.ps1 -Iscc 'C:\Program Files (x86)\Inno Setup 6\ISCC.exe'
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: G-Boy-Advance-2-Windows-x64
+          path: |
+            dist/*.zip
+            dist/*.exe
+            build/GBoyAdvance2_artefacts/Release/VST3/**
+            build/GBoyAdvance2_artefacts/Release/Standalone/**
+            build/GBA2-editor.png
+            build/preset-validation.csv
+            build/Testing/Temporary/LastTest.log

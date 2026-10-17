@@ -8,7 +8,7 @@ Load the instrument on a MIDI/instrument track with stereo output. Play a MIDI c
 - D-pad left/right: adjacent patch. Up/down: previous/next category.
 - START / F1: preset browser. SELECT / F2: advanced synthesis. Escape or BACK returns to the main panel.
 - A: audition C4 for about 650 ms, then release through the patch envelope.
-- B: release preview voices. External MIDI notes continue. Long effect / release tails can remain audible.
+- B: release preview voices. Long effect / release tails can remain audible. Preview uses the current voice budget, so it can steal an older note if all voices are occupied.
 - VOLUME: master output gain. GLIDE: note-to-note portamento time.
 - A–D knobs: cutoff, resonance, attack, and reverb by default. Their names are shown in tooltips; SELECT → Effects & Macros reassigns each knob.
 - PITCH: MIDI channel 1 pitch bend. Releasing the wheel returns it to center. External MIDI bend works separately on each channel.

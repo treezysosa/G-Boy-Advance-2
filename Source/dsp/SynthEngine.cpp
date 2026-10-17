@@ -67,6 +67,7 @@ void Effects::process(float& l,float& r,const Settings& s) noexcept {
 void SynthEngine::prepare(double rate) {
     sampleRate=static_cast<float>(std::clamp(rate,8000.0,192000.0));
     smoothing=1-std::exp(-1/(0.015f*sampleRate));
+    for(std::size_t i=0;i<harmonicInverseRoot.size();++i)harmonicInverseRoot[i]=1/std::sqrt(float(i+1));
     effects.prepare(sampleRate);if(!tablesReady){buildTables();tablesReady=true;}reset();prepared=true;
 }
 void SynthEngine::reset() noexcept {
@@ -147,7 +148,15 @@ void SynthEngine::noteOn(int channel,int note,float velocity,bool preview) noexc
 }
 void SynthEngine::noteOff(int channel,int note) noexcept {
     if(channel<1||channel>16||note<0||note>127) return;
-    auto& key=keys[channel-1][note];if(key.presses>0)--key.presses;key.down=key.presses>0;
+    auto& key=keys[channel-1][note];
+    const auto outstanding=key.presses;
+    if(outstanding==0)return;
+    --key.presses;key.down=key.presses>0;
+    unsigned heldMatching=0;
+    for(const auto& v:voices)if(v.channel==channel&&v.note==note&&!v.preview&&v.held)++heldMatching;
+    // MIDI pairs repeated note-ons with note-offs in onset order. A stolen onset
+    // still needs its note-off, but that event must not release a newer voice.
+    if(outstanding>heldMatching)return;
     if(int(target[Param::Mode])!=0 && voices[0].note==note && voices[0].channel==channel) {
         std::uint64_t newest=0;int next=-1,nextChannel=channel;
         for(int c=0;c<16;++c) for(int n=0;n<128;++n) if(keys[c][n].down&&keys[c][n].order>newest) {newest=keys[c][n].order;next=n;nextChannel=c+1;}
@@ -220,7 +229,22 @@ float SynthEngine::voiceSample(Voice& v) noexcept {
     switch(engine) {
         case 0:x=std::lerp(oscillator(int(s[Param::Wave1]),v.p1,dt,s[Param::PulseWidth],v.noise),oscillator(int(s[Param::Wave2]),v.p2,dt2,s[Param::PulseWidth],v.noise),s[Param::OscMix]);break;
         case 1:{float ratio=s[Param::FmRatio],index=s[Param::FmIndex]*(0.15f+0.85f*fenv);float limit=std::max(0.0f,(sampleRate*0.45f/frequency-1)/std::max(1.0f,ratio));index=std::min(index,limit);x=std::sin(tau*v.p1+sine(v.fmPhase)*index);x=std::lerp(x,sine(v.subPhase),s[Param::OscMix]*0.4f);break;}
-        case 2:{int count=int(s[Param::Harmonics]);float energy=0;for(int h=1;h<=count;++h) {if(float(h)*dt>=0.45f) break;float a=std::exp(-float(h-1)*(0.08f+(1-s[Param::Brightness])*0.7f))/std::sqrt(float(h));x+=sine(v.p1*float(h))*a;energy+=a*a;}x/=std::sqrt(std::max(1.0f,energy));break;}
+        case 2:{
+            // sin((n+1)t) = 2 cos(t) sin(nt) - sin((n-1)t).
+            // Double precision keeps the recurrence stable near the phase boundaries.
+            const double phase=double(v.p1)*2*std::numbers::pi_v<double>;
+            const double factor=2*std::cos(phase);
+            double previous=0,partial=std::sin(phase),sum=0;
+            int used=0;
+            for(int h=1;h<=int(s[Param::Harmonics]);++h) {
+                if(float(h)*dt>=0.45f)break;
+                sum+=partial*harmonicWeight[std::size_t(h-1)];
+                const double next=factor*partial-previous;
+                previous=partial;partial=next;++used;
+            }
+            x=used>0?float(sum)*harmonicScale[std::size_t(used-1)]:0;
+            break;
+        }
         case 3:x=std::lerp(wavetable(v.p1,frequency,s[Param::Wavetable]),wavetable(v.p2,dt2*sampleRate,s[Param::Wavetable]),s[Param::OscMix]);break;
         case 4:{float period=std::clamp(sampleRate/frequency,2.0f,float(stringSize-2));float read=float(v.stringPos)-period;if(read<0)read+=stringSize;int a=int(read),b=(a+1)%stringSize;float delayed=std::lerp(v.string[a],v.string[b],read-float(a));v.stringLow+=(0.15f+0.8f*s[Param::Brightness])*(delayed-v.stringLow);float value=0.5f*(delayed+v.stringLow)*s[Param::StringDamping];v.string[v.stringPos]=value;v.stringPos=(v.stringPos+1)%stringSize;x=delayed*2.2f;break;}
         case 5:{float saw=oscillator(2,v.p1,dt,0.5f,v.noise);float choir=oscillator(2,v.p2,dt2,0.5f,v.noise);float excitation=(saw+choir*s[Param::Choir])*0.5f;excitation=std::lerp(excitation,v.noise.next()*0.35f,s[Param::Breath]);for(int i=0;i<3;++i)x+=v.formants[i].next(excitation,2)*(i==0?1.0f:0.65f);x*=0.6f;break;}
@@ -249,6 +273,18 @@ void SynthEngine::render(float* left,float* right,int samples) noexcept {
         for(std::size_t p=0;p<parameterCount;++p) {
             if(specs[p].step>0 || p>=index(Param::MacroA)) current.values[p]=target.values[p];
             else current.values[p]+=(target.values[p]-current.values[p])*smoothing;
+        }
+        if(int(current[Param::Engine])==2) {
+            // Brightness is shared by all voices. Compute harmonic weights and their
+            // prefix normalization once per sample, preserving continuous smoothing.
+            const float falloff=std::exp(-(0.08f+(1-current[Param::Brightness])*0.7f));
+            float amplitude=1,energy=0;
+            for(std::size_t h=0;h<harmonicWeight.size();++h) {
+                harmonicWeight[h]=amplitude*harmonicInverseRoot[h];
+                energy+=harmonicWeight[h]*harmonicWeight[h];
+                harmonicScale[h]=1/std::sqrt(std::max(1.0f,energy));
+                amplitude*=falloff;
+            }
         }
         if(previewSamples>0 && --previewSamples==0) stopPreview();
         float l=0,r=0;

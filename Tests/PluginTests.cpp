@@ -4,7 +4,8 @@
 #include <stdexcept>
 
 namespace {
-void check(bool ok,const char* message) {if(!ok)throw std::runtime_error(message);}
+int checks=0;
+void check(bool ok,const char* message) {++checks;if(!ok)throw std::runtime_error(message);}
 void set(GbaProcessor& p,const char* id,float value) {auto* v=p.state.getParameter(id);v->setValueNotifyingHost(v->convertTo0to1(value));}
 juce::Component* named(juce::Component& root,const juce::String& name) {if(root.getName()==name)return &root;for(auto* c:root.getChildren())if(auto* match=named(*c,name))return match;return nullptr;}
 juce::TextButton* button(juce::Component& root,const juce::String& label) {if(auto* b=dynamic_cast<juce::TextButton*>(&root);b&&b->getButtonText()==label)return b;for(auto* c:root.getChildren())if(auto* match=button(*c,label))return match;return nullptr;}
@@ -21,6 +22,10 @@ int main() {
         set(p,"amp.attack",.001f);midi.addEvent(juce::MidiMessage::noteOn(1,60,.8f),128);p.processBlock(audio,midi);
         check(audio.getMagnitude(0,0,128)==0,"MIDI sample offset was ignored");
         render(p,audio,8);check(audio.getMagnitude(0,256)>0.0001f,"Plugin wrapper produced no audio");
+        p.reset();p.keyboard.noteOn(1,72,.8f);render(p,audio,32);
+        check(p.voiceCount()>0&&audio.getMagnitude(0,256)>0.0001f,"On-screen keyboard state did not reach the audio engine");
+        p.keyboard.noteOff(1,72,0);p.panic();render(p,audio,1);
+        check(p.voiceCount()==0,"Keyboard panic did not clear voices");
         set(p,"filter.cutoff",1234);set(p,"macro.a.target",4);set(p,"voice.glide",.21f);set(p,"engine",5);set(p,"formant.vowel",2.4f);set(p,"voice.count",24);
         p.editorWidth=1440;
         auto saved=p.presets.saveAs("Integration Custom Vowels");check(saved.wasOk(),"Save As failed");auto id=p.presetId();
@@ -39,16 +44,27 @@ int main() {
         restored->setCurrentProgram(0);restored->servicePendingProgram();check(restored->presetName()==restored->getProgramName(0),"Host program selection failed");
         auto prior=restored->presetId();restored->presets.step(1);check(restored->presetId()!=prior,"Next preset failed");restored->presets.step(-1);check(restored->presetId()==prior,"Previous preset failed");
         auto category=restored->presetCategory();restored->presets.stepCategory(1);check(restored->presetCategory()!=category,"Next category failed");
-        {std::unique_ptr<juce::AudioProcessorEditor> editor(p.createEditor());check(editor!=nullptr,"Editor creation failed");editor->setSize(960,485);editor->setSize(1920,969);auto* master=dynamic_cast<juce::Slider*>(named(*editor,"Master volume"));check(master!=nullptr,"Volume component missing");master->setValue(.37,juce::sendNotificationSync);check(std::abs(p.snapshot()[gba::Param::Volume]-.37f)<.001f,"Volume UI is not attached");
+        {std::unique_ptr<juce::AudioProcessorEditor> editor(p.createEditor());check(editor!=nullptr,"Editor creation failed");
+            auto* piano=dynamic_cast<juce::MidiKeyboardComponent*>(named(*editor,"Piano keyboard"));check(piano!=nullptr,"Piano keyboard component missing");
+            const auto firstKey=piano->getLowestVisibleKey();editor->setSize(960,485);editor->setSize(1920,969);
+            check(piano->getLowestVisibleKey()==firstKey,"Editor resizing reset the piano octave");auto* master=dynamic_cast<juce::Slider*>(named(*editor,"Master volume"));check(master!=nullptr,"Volume component missing");master->setValue(.37,juce::sendNotificationSync);check(std::abs(p.snapshot()[gba::Param::Volume]-.37f)<.001f,"Volume UI is not attached");
             auto* pitch=dynamic_cast<juce::Slider*>(named(*editor,"Pitch wheel"));check(pitch!=nullptr,"Pitch wheel missing");pitch->setValue(12000,juce::sendNotificationSync);pitch->onDragEnd();check(pitch->getValue()==8192,"Pitch wheel did not center");
             auto current=p.presetId();auto* next=button(*editor,">");check(next!=nullptr,"Next button missing");next->onClick();check(p.presetId()!=current,"Next UI button is inert");
-            auto* a=button(*editor,"A");auto* b=button(*editor,"B");check(a&&b,"Preview buttons missing");a->onClick();render(p,audio,4);check(p.voiceCount()>0,"A preview UI is inert");b->onClick();render(p,audio,256);
+            p.panic();render(p,audio,1);
+            auto* a=button(*editor,"A");auto* b=button(*editor,"B");check(a&&b,"Preview buttons missing");a->onClick();render(p,audio,4);check(p.voiceCount()>0,"A preview UI is inert");b->onClick();render(p,audio,256);check(p.voiceCount()==0,"B preview stop UI is inert");
+            DirectionPad* pad=nullptr;for(auto* child:editor->getChildren())if(auto* candidate=dynamic_cast<DirectionPad*>(child))pad=candidate;
+            check(pad!=nullptr,"D-pad missing");auto oldCategory=p.presetCategory();pad->keyPressed(juce::KeyPress(juce::KeyPress::downKey));check(p.presetCategory()!=oldCategory,"D-pad category navigation is inert");
+            juce::MessageManager::getInstance()->runDispatchLoopUntil(80);
+            auto* macro=dynamic_cast<juce::Slider*>(named(*editor,"Macro"));check(macro!=nullptr,"Macro A missing");macro->setValue(1730,juce::sendNotificationSync);check(std::abs(p.snapshot()[gba::Param::Cutoff]-1730)<.1f,"Macro A does not control filter cutoff");
+            set(p,"macro.a.target",4);juce::MessageManager::getInstance()->runDispatchLoopUntil(80);macro->setValue(3.75,juce::sendNotificationSync);check(std::abs(p.snapshot()[gba::Param::FmIndex]-3.75f)<.001f,"Macro reassignment is inert");
             auto* start=button(*editor,"START");start->onClick();check(button(*editor,"SAVE AS")!=nullptr,"START did not open browser");
             auto* select=button(*editor,"SELECT");select->onClick();check(button(*editor,"BACK / SELECT")!=nullptr,"SELECT did not open advanced editor");
             editor->keyPressed(juce::KeyPress(juce::KeyPress::escapeKey));
+            p.presets.restoreDefault();juce::MessageManager::getInstance()->runDispatchLoopUntil(80);
+            auto* display=dynamic_cast<juce::TextButton*>(named(*editor,"Preset display"));check(display&&display->getButtonText()=="DREAM PAD","Preset display failed to refresh");
             auto image=editor->createComponentSnapshot(editor->getLocalBounds());check(image.isValid(),"Scalable editor snapshot failed");
-            auto screenshot=juce::File::getCurrentWorkingDirectory().getChildFile("GBA2-editor.png");juce::FileOutputStream output(screenshot);juce::PNGImageFormat png;png.writeImageToStream(image,output);}
+            auto screenshot=juce::File::getCurrentWorkingDirectory().getChildFile("GBA2-editor.png");juce::FileOutputStream output(screenshot);check(output.openedOk(),"Could not create editor snapshot");check(output.setPosition(0)&&output.truncate().wasOk(),"Could not replace editor snapshot");juce::PNGImageFormat png;check(png.writeImageToStream(image,output),"Could not encode editor snapshot");}
         p.releaseResources();restored->releaseResources();restored.reset();processor.reset();root.deleteRecursively();
-        std::cout<<"PASS plugin audio/MIDI timing, complete state, user CRUD, favorites, programs, categories, editor creation and sizes.\n";return 0;
+        std::cout<<"PASS "<<checks<<" JUCE integration checks: MIDI timing, state, user presets, keyboard, preview, D-pad, macros, browser and scalable editor.\n";return 0;
     } catch(const std::exception& ex) {std::cerr<<"FAIL: "<<ex.what()<<"\n";root.deleteRecursively();return 1;}
 }

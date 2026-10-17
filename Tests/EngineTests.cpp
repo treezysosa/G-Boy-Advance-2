@@ -59,6 +59,14 @@ int main(int argc,char** argv) {
         std::cout<<"PASS sustain, channel isolation, velocity-zero, preview lifecycle, panic\n";
         s.set(gba::Param::Voices,4);init(e,s);for(int n=30;n<90;++n)e.noteOn(1,n,.8f);require(e.activeVoices()==4,"Voice stealing did not respect voice count");finite(a);
         s.set(gba::Param::Mode,2);s.set(gba::Param::Glide,.1f);init(e,s);e.noteOn(1,60,.7f);e.noteOn(1,64,.8f);e.noteOff(1,64);e.render(a.l.data(),a.r.data(),24000);require(e.activeVoices()==1,"Legato last-note priority failed");e.noteOff(1,60);e.render(a.l.data(),a.r.data(),24000);require(e.activeVoices()==0,"Legato note stack stuck");
+        auto stolen=clean();stolen.set(gba::Param::Voices,1);init(e,stolen);
+        e.noteOn(1,60,.8f);e.noteOn(1,64,.8f);e.noteOn(1,60,.9f);
+        e.noteOff(1,60);e.render(a.l.data(),a.r.data(),24000);
+        require(e.activeVoices()==1,"Stolen old note-off killed a newer identical pitch");
+        e.noteOff(1,64);e.render(a.l.data(),a.r.data(),24000);
+        require(e.activeVoices()==1,"Stolen different-pitch note-off killed the current voice");
+        e.noteOff(1,60);e.render(a.l.data(),a.r.data(),24000);
+        require(e.activeVoices()==0,"Repeated-note stealing left a stuck voice");
         std::cout<<"PASS polyphony, stealing, legato, glide, held-note return\n";
         for(double sr:{44100.,48000.,96000.}) for(int mode=0;mode<8;++mode) {
             s=clean();s.set(gba::Param::Engine,float(mode));s.set(gba::Param::Wave1,2);s.set(gba::Param::Sustain,.7f);init(e,s,sr);
