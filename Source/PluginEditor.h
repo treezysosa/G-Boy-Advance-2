@@ -14,11 +14,27 @@ public:
     std::function<void(int)> onDirection;
     DirectionPad();
     void paint(juce::Graphics&) override;
-    void mouseDown(const juce::MouseEvent&) override;
-    void mouseUp(const juce::MouseEvent&) override;
+    void resized() override;
     bool keyPressed(const juce::KeyPress&) override;
 private:
-    int pressed=-1;
+    std::array<std::unique_ptr<juce::Button>,4> directions;
+};
+class ConsoleKeyboard final : public juce::MidiKeyboardComponent {
+public:
+    explicit ConsoleKeyboard(juce::MidiKeyboardState& state):MidiKeyboardComponent(state,horizontalKeyboard) {}
+private:
+    void drawWhiteNote(int,juce::Graphics&,juce::Rectangle<float>,bool,bool,juce::Colour,juce::Colour) override;
+    void drawBlackNote(int,juce::Graphics&,juce::Rectangle<float>,bool,bool,juce::Colour) override;
+};
+class ConsoleRoundButton final : public juce::TextButton {
+public:
+    explicit ConsoleRoundButton(const juce::String& label):TextButton(label) {getProperties().set("round",true);}
+    bool hitTest(int x,int y) override {
+        const auto b=getLocalBounds().toFloat().reduced(3);
+        if(b.isEmpty())return false;
+        const float dx=(float(x)-b.getCentreX())/(b.getWidth()*.5f),dy=(float(y)-b.getCentreY())/(b.getHeight()*.5f);
+        return dx*dx+dy*dy<=1;
+    }
 };
 class GbaEditor final : public juce::AudioProcessorEditor,private juce::Timer {
 public:
@@ -31,8 +47,9 @@ private:
     GbaProcessor& processor;
     ConsoleLook look;
     juce::TooltipWindow tooltip {this,650};
-    juce::MidiKeyboardComponent keyboard;
-    juce::TextButton previous {"<"},next {">"},presetDisplay,start {"START"},select {"SELECT"},aButton {"A"},bButton {"B"};
+    ConsoleKeyboard keyboard;
+    juce::TextButton previous {"<"},next {">"},presetDisplay,start {"START"},select {"SELECT"};
+    ConsoleRoundButton aButton {"A"},bButton {"B"};
     DirectionPad dpad;
     juce::Slider volume,glide,pitch;
     std::array<juce::Slider,4> macros;
@@ -40,10 +57,12 @@ private:
     std::array<std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment>,4> macroAttachments;
     std::array<int,4> mapping {{-1,-1,-1,-1}};
     std::unique_ptr<juce::Component> overlay;
+    bool signalLed=false;
     void timerCallback() override;
     void updateMacros();
     void showBrowser();
     void showAdvanced();
     void closeOverlay();
+    void setMainControlsEnabled(bool);
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(GbaEditor)
 };

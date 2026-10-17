@@ -10,6 +10,18 @@ void set(GbaProcessor& p,const char* id,float value) {auto* v=p.state.getParamet
 juce::Component* named(juce::Component& root,const juce::String& name) {if(root.getName()==name)return &root;for(auto* c:root.getChildren())if(auto* match=named(*c,name))return match;return nullptr;}
 juce::TextButton* button(juce::Component& root,const juce::String& label) {if(auto* b=dynamic_cast<juce::TextButton*>(&root);b&&b->getButtonText()==label)return b;for(auto* c:root.getChildren())if(auto* match=button(*c,label))return match;return nullptr;}
 void render(GbaProcessor& p,juce::AudioBuffer<float>& audio,int blocks) {for(int i=0;i<blocks;++i){juce::MidiBuffer midi;p.processBlock(audio,midi);}}
+void snapshot(juce::Component& component,const juce::String& name,float scale=1) {
+    auto image=component.createComponentSnapshot(component.getLocalBounds(),true,scale);check(image.isValid(),"Scalable editor snapshot failed");
+    auto file=juce::File::getCurrentWorkingDirectory().getChildFile(name);check(file.getParentDirectory().createDirectory().wasOk(),"Could not create snapshot folder");
+    juce::FileOutputStream output(file);check(output.openedOk(),"Could not create editor snapshot");
+    check(output.setPosition(0)&&output.truncate().wasOk(),"Could not replace editor snapshot");juce::PNGImageFormat png;check(png.writeImageToStream(image,output),"Could not encode editor snapshot");
+}
+#if JUCE_WINDOWS
+juce::MouseEvent mouse(juce::Component& component,juce::Point<float> point) {
+    auto now=juce::Time::getCurrentTime();
+    return {juce::Desktop::getInstance().getMainMouseSource(),point,juce::ModifierKeys::leftButtonModifier,1,0,0,0,0,&component,&component,now,point,now,1,false};
+}
+#endif
 }
 int main() {
     juce::ScopedJuceInitialiser_GUI gui;
@@ -44,26 +56,52 @@ int main() {
         restored->setCurrentProgram(0);restored->servicePendingProgram();check(restored->presetName()==restored->getProgramName(0),"Host program selection failed");
         auto prior=restored->presetId();restored->presets.step(1);check(restored->presetId()!=prior,"Next preset failed");restored->presets.step(-1);check(restored->presetId()==prior,"Previous preset failed");
         auto category=restored->presetCategory();restored->presets.stepCategory(1);check(restored->presetCategory()!=category,"Next category failed");
-        {std::unique_ptr<juce::AudioProcessorEditor> editor(p.createEditor());check(editor!=nullptr,"Editor creation failed");
+        {std::unique_ptr<juce::AudioProcessorEditor> editor(p.createEditor());check(editor!=nullptr,"Editor creation failed");editor->setVisible(true);
             auto* piano=dynamic_cast<juce::MidiKeyboardComponent*>(named(*editor,"Piano keyboard"));check(piano!=nullptr,"Piano keyboard component missing");
             const auto firstKey=piano->getLowestVisibleKey();editor->setSize(960,485);editor->setSize(1920,969);
             check(piano->getLowestVisibleKey()==firstKey,"Editor resizing reset the piano octave");auto* master=dynamic_cast<juce::Slider*>(named(*editor,"Master volume"));check(master!=nullptr,"Volume component missing");master->setValue(.37,juce::sendNotificationSync);check(std::abs(p.snapshot()[gba::Param::Volume]-.37f)<.001f,"Volume UI is not attached");
             auto* pitch=dynamic_cast<juce::Slider*>(named(*editor,"Pitch wheel"));check(pitch!=nullptr,"Pitch wheel missing");pitch->setValue(12000,juce::sendNotificationSync);pitch->onDragEnd();check(pitch->getValue()==8192,"Pitch wheel did not center");
+            auto* glide=dynamic_cast<juce::Slider*>(named(*editor,"Glide"));check(glide!=nullptr,"Glide control missing");glide->setValue(.31,juce::sendNotificationSync);check(std::abs(p.snapshot()[gba::Param::Glide]-.31f)<.001f,"Glide UI is not attached");
             auto current=p.presetId();auto* next=button(*editor,">");check(next!=nullptr,"Next button missing");next->onClick();check(p.presetId()!=current,"Next UI button is inert");
             p.panic();render(p,audio,1);
-            auto* a=button(*editor,"A");auto* b=button(*editor,"B");check(a&&b,"Preview buttons missing");a->onClick();render(p,audio,4);check(p.voiceCount()>0,"A preview UI is inert");b->onClick();render(p,audio,256);check(p.voiceCount()==0,"B preview stop UI is inert");
+            auto* a=button(*editor,"A");auto* b=button(*editor,"B");check(a&&b,"Preview buttons missing");check(!a->hitTest(1,1)&&a->hitTest(a->getWidth()/2,a->getHeight()/2),"Preview button hit area does not match its circular face");a->onClick();render(p,audio,4);check(p.voiceCount()>0,"A preview UI is inert");b->onClick();render(p,audio,256);check(p.voiceCount()==0,"B preview stop UI is inert");
             DirectionPad* pad=nullptr;for(auto* child:editor->getChildren())if(auto* candidate=dynamic_cast<DirectionPad*>(child))pad=candidate;
             check(pad!=nullptr,"D-pad missing");auto oldCategory=p.presetCategory();pad->keyPressed(juce::KeyPress(juce::KeyPress::downKey));check(p.presetCategory()!=oldCategory,"D-pad category navigation is inert");
+            check(pad->getComponentAt(2,2)==nullptr,"D-pad blank corner consumes clicks");
+            check(pad->getComponentAt(pad->getLocalBounds().getCentre())==nullptr,"D-pad neutral center changes presets");
+            auto clickPad=[&](const char* name){auto* direction=dynamic_cast<juce::Button*>(named(*pad,name));check(direction&&direction->getWantsKeyboardFocus(),"D-pad direction is not a focusable button");direction->onClick();};
+            auto padId=p.presetId();clickPad("Next preset");check(p.presetId()!=padId,"D-pad right button is inert");clickPad("Previous preset");check(p.presetId()==padId,"D-pad left button is inert");
+            auto padCategory=p.presetCategory();clickPad("Next preset category");check(p.presetCategory()!=padCategory,"D-pad down button is inert");clickPad("Previous preset category");check(p.presetCategory()==padCategory,"D-pad up button is inert");
+            // JUCE mouse containment requires a real native peer. Linux's software-only
+            // runner has no display; the Windows CI runner exercises the actual mouse path.
+#if JUCE_WINDOWS
+            editor->setSize(960,485);editor->addToDesktop(0);editor->setTopLeftPosition(20,20);editor->toFront(false);
+            juce::MessageManager::getInstance()->runDispatchLoopUntil(50);
+            p.panic();render(p,audio,1);auto key=piano->getRectangleForKey(60);auto event=mouse(*piano,{key.getCentreX(),key.getBottom()-8});
+            piano->mouseDown(event);check(p.keyboard.isNoteOn(1,60),"Mouse click on piano did not start C4");render(p,audio,8);check(p.voiceCount()>0,"Mouse piano note did not reach audio engine");
+            piano->mouseUp(event);check(!p.keyboard.isNoteOn(1,60),"Mouse release left the piano note held");
+            editor->removeFromDesktop();
+#endif
+            p.presets.restoreDefault();
             juce::MessageManager::getInstance()->runDispatchLoopUntil(80);
-            auto* macro=dynamic_cast<juce::Slider*>(named(*editor,"Macro"));check(macro!=nullptr,"Macro A missing");macro->setValue(1730,juce::sendNotificationSync);check(std::abs(p.snapshot()[gba::Param::Cutoff]-1730)<.1f,"Macro A does not control filter cutoff");
+            auto* macro=dynamic_cast<juce::Slider*>(named(*editor,"Macro A"));check(macro!=nullptr,"Macro A missing");macro->setValue(1730,juce::sendNotificationSync);check(std::abs(p.snapshot()[gba::Param::Cutoff]-1730)<.1f,"Macro A does not control filter cutoff");
+            const char* macroNames[]{"Macro B","Macro C","Macro D"};const gba::Param macroTargets[]{gba::Param::Resonance,gba::Param::Attack,gba::Param::Reverb};const float macroValues[]{.42f,.21f,.36f};
+            for(int i=0;i<3;++i){auto* control=dynamic_cast<juce::Slider*>(named(*editor,macroNames[i]));check(control!=nullptr,"Macro component missing");control->setValue(macroValues[i],juce::sendNotificationSync);check(std::abs(p.snapshot()[macroTargets[i]]-macroValues[i])<.001f,"Default macro destination is not attached");}
             set(p,"macro.a.target",4);juce::MessageManager::getInstance()->runDispatchLoopUntil(80);macro->setValue(3.75,juce::sendNotificationSync);check(std::abs(p.snapshot()[gba::Param::FmIndex]-3.75f)<.001f,"Macro reassignment is inert");
             auto* start=button(*editor,"START");start->onClick();check(button(*editor,"SAVE AS")!=nullptr,"START did not open browser");
+            check(!master->isEnabled()&&!pad->isEnabled(),"Covered main controls remain keyboard-focusable in browser");
+            auto browserId=p.presetId();check(!editor->keyPressed(juce::KeyPress(juce::KeyPress::rightKey))&&p.presetId()==browserId,"Overlay arrow key leaked into D-pad navigation");
+            editor->setSize(960,485);snapshot(*editor,"ui-snapshots/Browser-960.png");
+            editor->keyPressed(juce::KeyPress(juce::KeyPress::F1Key));check(button(*editor,"SAVE AS")==nullptr&&master->isEnabled(),"F1 did not return from browser to main controls");
             auto* select=button(*editor,"SELECT");select->onClick();check(button(*editor,"BACK / SELECT")!=nullptr,"SELECT did not open advanced editor");
+            snapshot(*editor,"ui-snapshots/Advanced-960.png");
+            editor->keyPressed(juce::KeyPress(juce::KeyPress::F2Key));check(button(*editor,"BACK / SELECT")==nullptr&&master->isEnabled(),"F2 did not return from advanced editor");
+            select->onClick();
             editor->keyPressed(juce::KeyPress(juce::KeyPress::escapeKey));
             p.presets.restoreDefault();juce::MessageManager::getInstance()->runDispatchLoopUntil(80);
             auto* display=dynamic_cast<juce::TextButton*>(named(*editor,"Preset display"));check(display&&display->getButtonText()=="DREAM PAD","Preset display failed to refresh");
-            auto image=editor->createComponentSnapshot(editor->getLocalBounds());check(image.isValid(),"Scalable editor snapshot failed");
-            auto screenshot=juce::File::getCurrentWorkingDirectory().getChildFile("GBA2-editor.png");juce::FileOutputStream output(screenshot);check(output.openedOk(),"Could not create editor snapshot");check(output.setPosition(0)&&output.truncate().wasOk(),"Could not replace editor snapshot");juce::PNGImageFormat png;check(png.writeImageToStream(image,output),"Could not encode editor snapshot");}
+            editor->setSize(1280,646);snapshot(*editor,"ui-snapshots/Main-1280.png");snapshot(*editor,"ui-snapshots/Main-1280-at-125pct.png",1.25f);snapshot(*editor,"ui-snapshots/Main-1280-at-150pct.png",1.5f);snapshot(*editor,"ui-snapshots/Main-1280-at-200pct.png",2);
+            editor->setSize(960,485);snapshot(*editor,"ui-snapshots/Main-960.png");editor->setSize(1920,969);snapshot(*editor,"GBA2-editor.png");}
         p.releaseResources();restored->releaseResources();restored.reset();processor.reset();root.deleteRecursively();
         std::cout<<"PASS "<<checks<<" JUCE integration checks: MIDI timing, state, user presets, keyboard, preview, D-pad, macros, browser and scalable editor.\n";return 0;
     } catch(const std::exception& ex) {std::cerr<<"FAIL: "<<ex.what()<<"\n";root.deleteRecursively();return 1;}

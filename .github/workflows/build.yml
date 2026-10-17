@@ -57,6 +57,7 @@ jobs:
             build/GBoyAdvance2_artefacts/Release/VST3/**
             build/GBoyAdvance2_artefacts/Release/Standalone/**
             build/GBA2-editor.png
+            build/ui-snapshots/**
             build/preset-validation.csv
             build/Testing/Temporary/LastTest.log
             build/validation-logs/**

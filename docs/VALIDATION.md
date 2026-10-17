@@ -1,6 +1,6 @@
 # Validation record
 
-Development snapshot 0.1.1. A passing DSP test is not proof that a host can load the VST3.
+Development snapshot 0.2.0. The 0.1.1 Windows evidence below is retained as the previous baseline. A passing DSP test is not proof that a host can load the VST3.
 
 ## Executed locally
 
@@ -65,6 +65,14 @@ Pluginval found one instrument, scanned all 382 program names, opened the VST3 a
 The run packaged and uploaded Windows artifact `12090861809`, `G-Boy-Advance-2-Windows-x64`, archive SHA256 `1aa3b0ecb7edef835a499e57b9363ed697fd021c3b6c6fa61fafa5aeed28af0b`. Full pluginval output is included in the artifact at `build/validation-logs/pluginval.txt`. Installer compilation is verified; running installation/uninstallation on an end-user Windows machine remains pending.
 
 The original export helper incorrectly omitted files whose names began with `build`, including the workflow and Windows script. The corrected inventory explicitly checks these entry points and the validator script; all published file hashes match the local source.
+
+## Phase 2 UI revision 0.2.0
+
+The updated editor and tests compile with GCC C++20 and strict warnings. The Linux software-rendered suite passes **171 checks**. Added coverage includes all four default macros, glide attachment, the circular preview hit area, the four focusable D-pad directions and neutral areas, overlay keyboard isolation and F1/F2 return, minimum-size browser/advanced layouts, and main-editor snapshots at 960/1280/1920 widths plus 125%, 150% and 200% render scales.
+
+The mouse-event piano test requires a native window because JUCE's containment checks depend on a platform peer. It is compiled into Windows CI and intentionally excluded from the Linux runner, which has no display server. The pre-existing GUI MIDI-state/audio test still runs on Linux. Software snapshots do not establish behavior under Windows per-monitor DPI changes.
+
+Current screenshots in `docs/images/phase2-*.png` are actual Linux component renders and were visually inspected against the supplied reference. The current Windows build and pluginval validation are pending.
 
 ## Manual host acceptance matrix
 

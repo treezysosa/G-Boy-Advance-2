@@ -6,13 +6,13 @@ Load the instrument on a MIDI/instrument track with stereo output. Play a MIDI c
 
 - Preset display: click to open the browser. The arrow buttons select the adjacent patch.
 - D-pad left/right: adjacent patch. Up/down: previous/next category.
-- START / F1: preset browser. SELECT / F2: advanced synthesis. Escape or BACK returns to the main panel.
+- START / F1: preset browser. SELECT / F2: advanced synthesis. Press the same F1/F2 shortcut again, Escape, or BACK to return to the main panel. Hidden main controls are excluded from keyboard interaction while a panel is open; the piano and pitch/glide controls remain available.
 - A: audition C4 for about 650 ms, then release through the patch envelope.
 - B: release preview voices. Long effect / release tails can remain audible. Preview uses the current voice budget, so it can steal an older note if all voices are occupied.
 - VOLUME: master output gain. GLIDE: note-to-note portamento time.
 - A–D knobs: cutoff, resonance, attack, and reverb by default. Their names are shown in tooltips; SELECT → Effects & Macros reassigns each knob.
 - PITCH: MIDI channel 1 pitch bend. Releasing the wheel returns it to center. External MIDI bend works separately on each channel.
-- Piano keys: mouse/touch or the JUCE computer-keyboard layout when the keyboard has focus. The scroll controls expose other octaves.
+- Piano keys: mouse/touch or the JUCE computer-keyboard layout when the keyboard has focus. The scroll controls expose other octaves. Octave labels appear while the piano is hovered or focused.
 
 Drag a corner to resize. The wide proportions stay fixed between about 960 and 1920 pixels. Double-click a knob to return its target parameter to its default value.
 

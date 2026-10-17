@@ -31,11 +31,50 @@ inline std::array<unsigned,7> glyph(juce::juce_wchar c) {
         default:return {14,17,1,2,4,0,4};
     }
 }
-inline void pixelText(juce::Graphics& g,juce::String value,juce::Rectangle<float> bounds) {
+inline void pixelText(juce::Graphics& g,juce::String value,juce::Rectangle<float> bounds,float maximumCell=1000) {
     value=value.toUpperCase();
     int maximum=std::max(1,int(bounds.getWidth()/10.8f));if(value.length()>maximum)value=value.substring(0,std::max(1,maximum-3))+"...";
-    float cell=std::min(bounds.getHeight()/9,float(bounds.getWidth())/float(std::max(1,value.length()*6-1)));
+    float cell=std::min({bounds.getHeight()/9,float(bounds.getWidth())/float(std::max(1,value.length()*6-1)),maximumCell});
     auto origin=juce::Point<float>(bounds.getCentreX()-float(value.length()*6-1)*cell*.5f,bounds.getCentreY()-3.5f*cell);
     for(auto c:value) {auto rows=glyph(c);for(int y=0;y<7;++y)for(int x=0;x<5;++x)if(rows[std::size_t(y)]&(1u<<unsigned(4-x)))g.fillRect(origin.x+float(x)*cell,origin.y+float(y)*cell,cell*.9f,cell*.9f);origin.x+=6*cell;}
+}
+// Contiguous, slanted block lettering used only for the original product wordmark.
+inline juce::Path blockLettering(const juce::String& value,juce::Rectangle<float> bounds) {
+    juce::Path path;
+    float advance=0;
+    for(auto c:value) {
+        // Original heavy 7x7 capitals, with a two-cell stroke for the large title.
+        auto rows=glyph(c);int columns=5;
+        if(c=='G'){rows={62,127,96,111,99,127,62};columns=7;}
+        if(c=='B'){rows={126,127,99,126,99,127,126};columns=7;}
+        if(c=='O'){rows={62,127,99,99,99,127,62};columns=7;}
+        if(c=='Y'){rows={99,99,119,62,28,28,28};columns=7;}
+        if(c=='2'){rows={62,127,3,14,56,112,127};columns=7;}
+        using Point=juce::Point<int>;
+        std::vector<std::pair<Point,Point>> edges;
+        auto filled=[&](int x,int y){return x>=0&&x<columns&&y>=0&&y<7&&(rows[std::size_t(y)]&(1u<<unsigned(columns-1-x)))!=0;};
+        for(int y=0;y<7;++y)for(int x=0;x<columns;++x)if(filled(x,y)) {
+            if(!filled(x,y-1))edges.push_back({{x,y},{x+1,y}});
+            if(!filled(x+1,y))edges.push_back({{x+1,y},{x+1,y+1}});
+            if(!filled(x,y+1))edges.push_back({{x+1,y+1},{x,y+1}});
+            if(!filled(x-1,y))edges.push_back({{x,y+1},{x,y}});
+        }
+        // Trace only the outside edges; stroking separate pixel rectangles would
+        // leave black seams inside the connected letters at fractional DPI scales.
+        while(!edges.empty()) {
+            const auto start=edges.back().first;auto at=start;
+            path.startNewSubPath(advance+float(at.x),float(at.y));
+            do {
+                auto next=std::find_if(edges.begin(),edges.end(),[&](const auto& edge){return edge.first==at;});
+                if(next==edges.end())break;
+                at=next->second;edges.erase(next);path.lineTo(advance+float(at.x),float(at.y));
+            } while(at!=start);
+            path.closeSubPath();
+        }
+        advance+=c==' '?3.5f:float(columns+1);
+    }
+    path.applyTransform(juce::AffineTransform(1,-.18f,1.26f,0,1,0));
+    path.scaleToFit(bounds.getX(),bounds.getY(),bounds.getWidth(),bounds.getHeight(),false);
+    return path;
 }
 }

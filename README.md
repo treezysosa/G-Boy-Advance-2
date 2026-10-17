@@ -2,11 +2,11 @@
 
 A C++20 / JUCE 8 hybrid synthesis instrument targeting Windows x64 VST3 and standalone. The purple, wide console interface uses native scalable controls. All sound is generated mathematically: there is no sampler, sample import, commercial game audio, or network dependency at runtime.
 
-**Development build 0.1.1 — Windows x64 builds and automated tests pass; DAW acceptance is pending.** The native DSP passes 1,387 checks; the compiled and linked JUCE test executable passes 112 integration checks on Linux. Project state, user presets, the on-screen keyboard connection, preview buttons, D-pad navigation, macro reassignment, and editor resizing have been exercised. Visual Studio 2022 has built the Windows VST3, standalone, installer and portable archive, and both test suites pass on Windows. The actual Windows VST3 also passes pluginval 1.0.4 at strictness 10. Manual DAW loading remains to be checked. See [validation status](docs/VALIDATION.md) and [exact next steps](docs/NEXT_STEPS.md).
+**Development build 0.2.0 — Phase 2 UI refinement.** The synthesis foundation already passed Windows builds and pluginval strictness 10 in version 0.1.1. This revision adds closer reference typography, inset casing details, a dotted master LED ring, shaped control hit areas, shaded playable keys and keyboard-focus fixes. The updated local JUCE integration suite passes 171 checks. Windows compilation, the additional native-window piano mouse test and pluginval are being rerun for this revision; see [Phase 2 progress](docs/PHASE_2.md) and [validation](docs/VALIDATION.md).
 
-![G Boy Advance 2 native JUCE editor](docs/images/GBA2-editor-windows.png)
+![G Boy Advance 2 Phase 2 native JUCE editor](docs/images/phase2-main.png)
 
-Actual native JUCE component rendering from the passing Windows CI test at 1920×969. The screenshot was inspected; interactive DAW behavior and high-DPI scaling remain to be checked.
+Actual Phase 2 JUCE software render at 1280×646 from the Linux integration executable. All controls are native components with vector painting; no reference bitmap is used. Interactive Windows high-DPI and DAW testing remain pending.
 
 ## Build on Windows
 
