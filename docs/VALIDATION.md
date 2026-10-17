@@ -117,6 +117,10 @@ Compare the real editor against the approved purple reference at 100%, 125%, 150
 - Engine/factory/effects 1,387 checks, core synthesis 161 checks and advanced synthesis 150 checks PASS: 1,698 total DSP checks.
 - JUCE processor/state/preset/UI integration: 171 checks PASS on the Linux software runner.
 - New spectral/tuning/transition coverage and quantified before/after probes: [PHASE_4.md](PHASE_4.md).
-- Windows build, actual VST3 host validation and packaging for 0.4.0: pending this revision's CI run. Previous-version evidence above remains historical.
+- Windows [run 39010199255](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39010199255), source `96ec03421e9596811f2af94b7a9e40dd63e2ddfa`: Visual Studio 2022 x64 VST3/standalone build PASS; CTest **4/4 PASS** (1,387 engine, 161 core, 150 advanced and 174 integration checks).
+- Actual Windows VST3: pluginval 1.0.4 strictness 10 **SUCCESS**, seed `0x746a3a`, version 0.4.0. Separate Steinberg validator remains pending.
+- Portable archive and Inno Setup installer compilation PASS. Artifact `12092806969`, SHA256 `b12b8ab46a0873b3a608ea535e2bbc383f6e0a0e96927d71fad624e3c08556a2`: downloaded digest, ZIP integrity, AMD64 binaries and packaged logs verified.
+- Linux CI CMake build and all three DSP CTest suites PASS. Factory JSON and compiled data regenerate byte-for-byte.
+- Final documentation commit changes evidence only; application/build source matches the validated commit. Manual host/device, DPI, listening and installer acceptance remain pending.
 
 AddressSanitizer and UndefinedBehaviorSanitizer pass all three DSP suites with halt-on-error. Leak detection is disabled because LeakSanitizer is unsupported by this sandbox/ptrace environment; leak freedom is not claimed.

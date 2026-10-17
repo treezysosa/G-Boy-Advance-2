@@ -24,6 +24,8 @@ Development revision 0.4.0 builds on all eight working engines. FM, additive, wa
 
 All 1,387 existing engine/factory/effects checks and 161 Phase 3 checks also pass: **1,698 DSP checks**. The Linux JUCE integration suite passes **171 checks**. Local compilation uses GCC 14.2 directly because CMake is unavailable here.
 
+AddressSanitizer and UndefinedBehaviorSanitizer pass all three DSP suites with halt-on-error. Leak detection is disabled because LeakSanitizer is unsupported by this sandbox/ptrace environment; leak freedom is not claimed.
+
 ## Before/after measurements
 
 Identical probe sequences compiled against 0.3.0 and 0.4.0, 48 kHz:
@@ -38,10 +40,17 @@ These are specific numerical regressions. Table interpolation, FM sidebands and 
 
 ## Windows validation
 
-Pending this revision's Visual Studio 2022 build, four CTest suites, actual VST3 pluginval run and packaging. Results will be recorded before delivering the binaries.
+[Run 39010199255](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39010199255), application/build commit `96ec03421e9596811f2af94b7a9e40dd63e2ddfa`:
+
+- Visual Studio 2022 x64 VST3 and standalone compilation/linking: PASS.
+- CTest **4/4 PASS**: engine/factory/effects 1,387 checks (2.18 s), core synthesis 161 checks (0.76 s), advanced synthesis 150 checks (1.02 s), processor/state/presets/UI 174 checks (1.80 s).
+- Actual Windows VST3: pluginval 1.0.4 strictness 10 **SUCCESS**, seed `0x746a3a`, reporting version 0.4.0. The separate Steinberg validator remains unconfigured/pending.
+- Portable ZIP and Inno Setup installer compilation: PASS.
+- Downloaded artifact `12092806969`: SHA256 `b12b8ab46a0873b3a608ea535e2bbc383f6e0a0e96927d71fad624e3c08556a2`, matching GitHub's digest. ZIP integrity, AMD64 VST3/standalone binaries and packaged test logs: verified.
+- Linux CI CMake build and all three DSP CTest suites: PASS.
+
+The final documentation commit changes evidence only; application code and build settings match this validated commit. The 382 factory patches regenerate byte-for-byte. Steady-state smoke timings and their limits are recorded in [PERFORMANCE.md](PERFORMANCE.md).
 
 ## Next steps and boundaries
 
 Proceed to Phase 5 effects quality/performance refinement. Remaining release acceptance includes physical Windows UI/DPI testing, DAW/audio-device listening, full factory-patch audition/level matching, a separate Steinberg validator run, real host deadline/underrun measurements and installer/signing/licensing work. Phase 4 exposes the existing two LFO routes and dedicated controls, not an arbitrary modulation matrix. Interrupted engine fades may temporarily evaluate several engines; stress their worst-case CPU.
-
-AddressSanitizer and UndefinedBehaviorSanitizer pass all three DSP suites with halt-on-error. Leak detection is disabled because LeakSanitizer is unsupported by this sandbox/ptrace environment; leak freedom is not claimed.
