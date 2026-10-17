@@ -4,7 +4,7 @@ Development version 0.10.0. Automated evidence pending this phase's Windows run;
 
 ## New checks
 
-`Tests/HostTests.cpp` is a separate JUCE VST3 host, linked without application/DSP source. CTest loads the built bundle, queries prepared latency at 44.1/48/96 kHz and 64/257/1024 frames, checks MIDI sample offsets, audio, bypass/note-off/resume, parameter state across newly loaded instances, isolation, SysEx rejection, concurrent serialization, offline mode, release and tail reporting. This establishes behavior in that host; it does not certify any named DAW or compensated bounce.
+`Tests/HostTests.cpp` is a separate JUCE VST3 host, linked without application/DSP source. CTest loads the built bundle, queries prepared latency at 44.1/48/96 kHz and 64/257/1024 frames, checks MIDI sample offsets, audio, bypass/note-off/resume, parameter state across newly loaded instances, isolation, SysEx rejection, message-thread serialization concurrent with worker-thread audio, offline mode, release and tail reporting. This establishes behavior in that host; it does not certify any named DAW or compensated bounce.
 
 The processor overrides bypass to keep normal MIDI/envelope/effects processing and mute stereo output. Previously the inherited JUCE bypass discarded note-offs, freezing held notes. The bypass path retains normal CPU cost. A two-assertion in-process regression supplements actual-bundle acceptance.
 

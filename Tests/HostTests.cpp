@@ -98,11 +98,17 @@ int main(int argc,char** argv) {
         check(render(*p,audio,8)>.0001f,"First VST3 instance stopped unexpectedly");
         const unsigned char sysex[]{0x7d,1,2,3};midi.clear();midi.addEvent(juce::MidiMessage::createSysExMessage(sysex,4),0);
         process(*p,audio,midi);check(render(*p,audio,2)>.0001f,"SysEx damaged hosted synthesis");
-        // The audio callback and non-audio project serialization run concurrently.
-        std::atomic<bool> badState{false};
-        std::jthread serialize([&]{for(int i=0;i<40;++i){juce::MemoryBlock s;p->getStateInformation(s);if(s.getSize()==0)badState=true;}});
-        for(int i=0;i<80;++i){midi.clear();process(*p,audio,midi);}
-        serialize.join();check(!badState,"Concurrent VST3 serialization returned empty state");
+        // VST3 state calls belong on the message thread. Run actual processing
+        // on a worker while the message thread serializes the component/controller.
+        std::atomic<bool> done{false},badAudio{false};bool badState=false;
+        std::jthread audioThread([&]{
+            juce::AudioBuffer<float> concurrentAudio(2,256);int blocks=0;
+            try {while(!done.load()||blocks<80){juce::MidiBuffer events;process(*p,concurrentAudio,events);++blocks;}}
+            catch(const std::exception&){badAudio=true;}
+        });
+        for(int i=0;i<40;++i){juce::MemoryBlock s;p->getStateInformation(s);if(s.getSize()==0)badState=true;}
+        done=true;audioThread.join();
+        check(!badState&&!badAudio,"Concurrent VST3 processing/serialization failed");
         p->setNonRealtime(true);check(render(*p,audio,4)>.0001f,"Offline VST3 processing failed");p->setNonRealtime(false);
         // Recreate an instance from its project state, then verify release/tail bounds.
         p->releaseResources();p.reset();p=load();p->setStateInformation(state.getData(),int(state.getSize()));prepare(*p,48000,256);
