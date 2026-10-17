@@ -41,6 +41,9 @@ jobs:
         run: cmake --build build --config Release --parallel 2
       - name: Run engine and integration tests
         run: ctest --test-dir build -C Release --output-on-failure
+      - name: Validate the actual VST3 in pluginval
+        shell: pwsh
+        run: ./scripts/validate-windows.ps1 -Strictness 10
       - name: Package portable archive and installer
         shell: pwsh
         run: ./scripts/package-windows.ps1 -Iscc 'C:\Program Files (x86)\Inno Setup 6\ISCC.exe'
@@ -56,3 +59,4 @@ jobs:
             build/GBA2-editor.png
             build/preset-validation.csv
             build/Testing/Temporary/LastTest.log
+            build/validation-logs/**

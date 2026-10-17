@@ -44,11 +44,19 @@ The main Linux render was visually compared with the supplied reference. Master-
 
 Additive output equivalence and the 32-voice benchmark are documented in [PERFORMANCE.md](PERFORMANCE.md).
 
-## Windows and DAW validation pending
+## Windows build executed; host acceptance pending
 
-The provided machine has no Windows SDK, Visual Studio, DAW or CMake executable. Shell downloads could not reach the proxy; pinned public JUCE sources were retrieved through the connected GitHub tools for direct GCC compilation. No Windows binary, installer, VST3 host/validator result or DAW compatibility is claimed.
+The local machine has no Windows SDK or Visual Studio; the actual Windows build ran on GitHub's `windows-2022` runner using Visual Studio 2022 x64.
 
-The initial export helper incorrectly filtered every filename starting with `build`, which omitted both `.github/workflows/build.yml` and `scripts/build-windows.ps1` from the first source upload. The filter is corrected, both files are included, and source packaging now asserts their presence. No Windows build result has been observed yet. Open [Build and validate](https://github.com/treezysosa/G-Boy-Advance-2/actions/workflows/build.yml) → **Run workflow**. The connection available to this session can read workflow results but has no dispatch tool. After a Windows run starts, inspect its actual logs and artifacts before updating this record.
+[Run 39004268093](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39004268093), application source commit `ee0b681eeadbdc63e72d8376986205846a06c4ba`:
+
+- Visual Studio 2022 CMake configuration: PASS.
+- Windows x64 VST3 and standalone compilation/linking: PASS.
+- Windows CTest: 2/2 suites PASS (synthesis 2.13 s, plugin state/presets/UI 0.68 s).
+- Inno Setup 6.7.1 installer and portable archive packaging: PASS.
+- Downloaded artifact SHA256 matches GitHub's digest. The VST3 binary and standalone executable are AMD64 PE images.
+
+The original export helper incorrectly omitted files whose names began with `build`, including the workflow and Windows script. The corrected inventory explicitly checks both entry points, and the corrected workflow ran successfully. The workflow now adds pluginval 1.0.4 at strictness 10 to check the actual VST3 before packaging. That host validation has not completed yet; no DAW compatibility is claimed.
 
 ## Manual host acceptance matrix
 
