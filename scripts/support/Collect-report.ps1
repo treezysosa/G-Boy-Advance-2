@@ -44,7 +44,7 @@ try {
     $count=0
     foreach($event in $events) {
         [xml]$xml=$event.ToXml();$data=@{}
-        foreach($entry in $xml.Event.EventData.Data) {$data[[string]$entry.Name]=[string]$entry.'#text'}
+        foreach($entry in $xml.Event.EventData.Data) {$data[$entry.GetAttribute('Name')]=[string]$entry.InnerText}
         # Event 1000 uses named fault fields; Windows Error Reporting 1001 uses P1..P8.
         $app=$data['AppName'];$module=$data['ModuleName'];$code=$data['ExceptionCode'];$offset=$data['FaultingOffset']
         if (-not $app -and $data['P1']) {$app=$data['P1'];$module=$data['P4'];$code=$data['P7'];$offset=$data['P8']}
@@ -55,7 +55,7 @@ try {
         ++$count;if ($count -ge 10) {break}
     }
     if ($count -eq 0) {$lines.Add('No matching event was recorded. This does not rule out a plugin failure.')}
-} catch {$lines.Add('Matching Windows crash events were unavailable or none were recorded.')}
+} catch {$lines.Add('Matching Windows crash events were unavailable or none were recorded.');$lines.Add('Event query status: '+$_.Exception.Message)}
 $lines.Add('Recent FL Studio text crash logs from default Documents locations:')
 $files=@()
 foreach($relative in @('Image-Line/FL Studio/Support/Logs/Crash','Image-Line/Data/FL Studio/Support/Logs/Crash')) {
