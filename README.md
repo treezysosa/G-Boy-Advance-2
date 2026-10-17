@@ -2,7 +2,7 @@
 
 A C++20 / JUCE 8 hybrid synthesis instrument targeting Windows x64 VST3 and standalone. The purple, wide console interface uses native scalable controls. All sound is generated mathematically: there is no sampler, sample import, commercial game audio, or network dependency at runtime.
 
-**Development build 0.10.2 — FL Studio editor compatibility candidate.** The owner reports that 0.10.1 works standalone but loses the plugin connection while opening its editor in FL Studio 20. This branch uses Windows software rendering, guards transient zero-sized editor bounds, expands actual-VST3 native editor lifecycle testing and includes local crash-report collection. The failure is not yet reproduced or confirmed fixed in actual FL Studio. Synthesis, the 410-preset library, stable parameter/program IDs and state schema are unchanged. See [FL Studio investigation](docs/FL_STUDIO.md) and [release checklist](docs/RELEASE_CHECKLIST.md). Earlier 0.10.1 automated results are retained in [finalization](docs/PHASE_10_FINALIZATION.md).
+**Development build 0.10.2 — FL Studio editor compatibility candidate.** The owner reports that 0.10.1 works standalone but loses the plugin connection while opening its editor in FL Studio 20. This branch uses Windows software rendering, guards transient zero-sized editor bounds, expands actual-VST3 native editor lifecycle testing and includes local crash-report collection. The failure is not yet reproduced or confirmed fixed in actual FL Studio. Synthesis, the 410-preset library, stable parameter/program IDs and state schema are unchanged. See [FL Studio investigation](docs/FL_STUDIO.md) and [release checklist](docs/RELEASE_CHECKLIST.md). Earlier 0.10.1 automated results are retained in [finalization](docs/PHASE_10_FINALIZATION.md). The candidate passed all ten Windows CTest suites, both native VST3 editor-host runs, pluginval strictness 10, 47 Steinberg tests and five installer checks in [run 39071110725](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39071110725). These tests do not establish that the reported FL Studio 20 crash is fixed.
 
 ![G Boy Advance 2 Phase 2 native JUCE editor](docs/images/phase2-main.png)
 
@@ -13,7 +13,7 @@ Actual Phase 2 Windows JUCE component render at 1280×646 from [passing CI run 3
 Install Visual Studio 2022 with **Desktop development with C++**, a Windows SDK, CMake 3.24+, and Git. In PowerShell:
 
 ```powershell
-git clone https://github.com/treezysosa/G-Boy-Advance-2.git
+git clone --branch fix/fl-studio-20-editor-0102 https://github.com/treezysosa/G-Boy-Advance-2.git
 cd G-Boy-Advance-2
 powershell -ExecutionPolicy Bypass -File scripts/build-windows.ps1
 ```

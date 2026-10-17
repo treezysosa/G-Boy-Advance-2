@@ -1,3 +1,9 @@
+# 0.10.2 FL Studio editor compatibility candidate
+
+Windows/Ubuntu [run 39071110725](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39071110725), application/build `b9adc08fbdd05e21bc40198d6fba476bbec066b5`: ten Windows suites PASS (87.40 s), 8,007 DSP / 289 application / 265 normal-host / 266 FL-style-name host checks. Both actual-bundle native editor lifecycle runs pass with concurrent audio. pluginval 1.0.4 strictness 10 PASS, seed `0x7760ed3`; separate Steinberg validator 47 passed / 0 failed; five installer checks PASS. Installed binary version 0.10.2 and package digests/contents verified. Local changed application/DSP ASan/UBSan passes 282 checks (cached JUCE modules uninstrumented, leak detection disabled); eight software UI snapshots match the previous version.
+
+**Open user-reported failure:** 0.10.1 standalone works, but FL Studio 20 loses the connection while opening the VST3 editor. 0.10.2 selects the Windows software renderer after native peer attachment and guards temporary zero-size bounds. A synthetic host named FL64.exe is not FL Studio; no actual FL Studio test or confirmed fix is claimed. See [FL Studio investigation](FL_STUDIO.md). Historical results follow.
+
 # Validation record
 
 ## Latest — Phase 10 finalization, 0.10.1
