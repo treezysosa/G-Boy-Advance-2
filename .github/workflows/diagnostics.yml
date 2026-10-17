@@ -1,0 +1,37 @@
+name: Windows support report
+on:
+  push:
+    branches: ['support/**']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  support:
+    runs-on: windows-2022
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Keep the support branch separate from instrument changes
+        shell: pwsh
+        run: |
+          $changes=git diff --name-only be1cc302280cc8a5f68068f729598472418ce3db HEAD
+          foreach($path in $changes) {
+            if ($path -notmatch '^scripts/support/' -and $path -notin @('.github/workflows/build.yml','.github/workflows/diagnostics.yml','docs/FL_STUDIO.md')) {
+              throw "Unexpected instrument/source change on support-only branch: $path"
+            }
+          }
+      - name: Test diagnostic collector and Windows launcher
+        shell: pwsh
+        run: ./scripts/support/Test-report.ps1
+      - name: Stage the double-click tool
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force dist/support | Out-Null
+          Copy-Item scripts/support/Collect-report.ps1,scripts/support/Run-diagnostics.cmd,scripts/support/READ-ME.txt dist/support
+      - uses: actions/upload-artifact@v4
+        with:
+          name: G-Boy-Advance-2-Diagnostics
+          path: dist/support/*
+          if-no-files-found: error

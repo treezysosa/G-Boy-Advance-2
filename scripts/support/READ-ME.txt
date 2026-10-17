@@ -1,0 +1,20 @@
+G BOY ADVANCE 2 - FL STUDIO SUPPORT REPORT
+
+1. Extract this ZIP completely.
+2. Double-click Run-diagnostics.cmd.
+3. The report opens in Notepad. Review it, then attach the saved
+   G-Boy-Advance-2-diagnostics.txt from Documents to the Codex conversation.
+
+Run this after reproducing the FL Studio error. Leaving FL Studio open helps
+identify its executable and full version. The plugin does not need to be running.
+
+This tool reads the installed plugin version/hash, FL Studio executable versions,
+matching Windows crash events, and up to three recent FL Studio text crash logs
+from standard Documents folders. The report can include installation/project
+paths from those crash logs. Review the report before sharing it.
+
+It saves the report locally and opens Notepad. It sends nothing automatically
+and changes no plugin, project, Windows or FL Studio settings. No administrator
+rights are requested. It does not install a replacement plugin or claim a fix.
+
+If the launcher reports an error, send a screenshot of that window instead.

@@ -2,7 +2,7 @@
 
 ## Reported failure
 
-The owner reports that development build 0.10.1 works as a Windows standalone, but FL Studio 20 loses the connection when opening the VST3 editor. Initial download/install discovery problems were resolved before this report. The exact FL Studio 20 build, Windows version, host bitness and crash module/exception are not yet known. The error text alone does not identify the cause. This is an open compatibility failure, not a passed FL Studio acceptance test.
+The owner reports that the Windows standalone works, but FL Studio 20.8.3, 64-bit, loses the connection when opening the VST3 editor. The failure is reported as continuing after the 0.10.2 candidate was supplied; the installed binary version/hash has not yet been confirmed by a diagnostic report. Initial download/install discovery problems were resolved before this report. The Windows version, full FL build number and crash module/exception are not yet known. The error text alone does not identify the cause. This is an open compatibility failure, not a passed FL Studio acceptance test.
 
 ## 0.10.2 compatibility candidate
 
@@ -11,6 +11,12 @@ This branch selects JUCE's Software Renderer for the Windows editor whenever its
 JUCE remains pinned to 8.0.6. Its platform sources are unmodified. JUCE still creates its default peer before the editor can select the renderer: this change is not a guarantee that no graphics-device initialization occurs. Software rendering is a candidate workaround for the reported window failure; a graphics-driver fault has not been established. For developer A/B comparison, configure `-DGBA_WINDOWS_SOFTWARE_EDITOR=OFF` to retain JUCE's default rendering choice.
 
 Synthesis, the 410-preset bank, 64 parameter IDs, plugin class identity and state schema are unchanged. Version 0.10.2 distinguishes the replacement binary from 0.10.1. Test this in a blank project first.
+
+## Double-click support report
+
+A support-only Windows download contains `Run-diagnostics.cmd`, `Collect-report.ps1` and a short readme. Extract it and double-click the launcher after reproducing the failure. The report opens in Notepad and is saved as `G-Boy-Advance-2-diagnostics.txt` in Documents. It reads the standard installed x64 VST3 hash/version, running and installed FL executable versions, matching Windows Application Error/Windows Error Reporting records, and up to three recent text crash logs in the two standard FL Documents locations. The report can include installation/project paths from those logs; review it before sharing. The tool changes no installed plugin or FL setting and uploads nothing. It is a support tool, with no replacement instrument binary or claimed fix.
+
+The diagnostic workflow tests the Windows PowerShell launcher and fixture parsing of named crash fields, WER fields and scaled FL executable names, and excludes unrelated application records. Synthetic fixture exception codes are test data, not an observed cause of the owner's failure. A separate branch keeps the instrument code unchanged while packaging this tool. Actual Windows crash records may be absent when the host catches the exception; an empty event section does not establish that the plugin is healthy.
 
 ## Test and installation
 
