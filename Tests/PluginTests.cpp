@@ -3,6 +3,7 @@
 #include <iostream>
 #include <stdexcept>
 
+int runLibraryTests();
 namespace {
 int checks=0;
 void check(bool ok,const char* message) {++checks;if(!ok)throw std::runtime_error(message);}
@@ -27,6 +28,7 @@ int main() {
     juce::ScopedJuceInitialiser_GUI gui;
     auto root=juce::File::getSpecialLocation(juce::File::tempDirectory).getChildFile("gba2-tests-"+juce::Uuid().toString());
     try {
+        checks+=runLibraryTests();
         auto processor=std::make_unique<GbaProcessor>(root);auto& p=*processor;
         p.setRateAndBufferSizeDetails(48000,256);p.prepareToPlay(48000,256);
         check(p.getLatencySamples()==16,"Host latency does not match the oversampled effects path");
@@ -113,6 +115,17 @@ int main() {
             auto* start=button(*editor,"START");start->onClick();check(button(*editor,"SAVE AS")!=nullptr,"START did not open browser");
             check(!master->isEnabled()&&!pad->isEnabled(),"Covered main controls remain keyboard-focusable in browser");
             auto browserId=p.presetId();check(!editor->keyPressed(juce::KeyPress(juce::KeyPress::rightKey))&&p.presetId()==browserId,"Overlay arrow key leaked into D-pad navigation");
+            auto* search=dynamic_cast<juce::TextEditor*>(named(*editor,"Preset search"));auto* categoryFilter=dynamic_cast<juce::ComboBox*>(named(*editor,"Preset category"));auto* sourceFilter=dynamic_cast<juce::ComboBox*>(named(*editor,"Preset source"));auto* presetList=dynamic_cast<juce::ListBox*>(named(*editor,"Presets"));auto* presetName=dynamic_cast<juce::TextEditor*>(named(*editor,"Preset name"));auto* presetTags=dynamic_cast<juce::TextEditor*>(named(*editor,"Preset tags"));
+            check(search&&categoryFilter&&sourceFilter&&presetList&&presetName&&presetTags,"Browser controls are missing accessible names");
+            auto rows=[&]{return presetList->getListBoxModel()->getNumRows();};auto query=[&](const juce::String& value){search->setText(value);juce::MessageManager::getInstance()->runDispatchLoopUntil(30);};
+            sourceFilter->setSelectedId(2,juce::sendNotificationSync);categoryFilter->setText("Retro Games",juce::sendNotificationSync);check(rows()==56,"Factory/category browser intersection failed");
+            auto beforeBrowse=p.presetId();presetList->selectRow(0);check(p.presetId()==beforeBrowse,"Keyboard browsing changes the loaded sound");presetList->keyPressed(juce::KeyPress(juce::KeyPress::downKey));check(presetList->getSelectedRow()==1&&p.presetId()==beforeBrowse,"List arrow navigation loads a patch or fails to move");presetList->keyPressed(juce::KeyPress(juce::KeyPress::returnKey));check(p.presetCategory()=="Retro Games","Enter did not load the selected preset");render(p,audio,8);check(p.voiceCount()>0,"Browser Enter did not preview real audio");button(*editor,"B  STOP")->onClick();p.panic();render(p,audio,1);
+            presetName->setText("Browser User");presetTags->setText("custom azure keys");button(*editor,"SAVE AS")->onClick();auto browserUser=p.presetId();
+            check(p.presetCategory()=="User"&&p.presets.find(browserUser)->tags=="custom azure keys","Browser Save As lost custom tags");check(sourceFilter->getSelectedId()==2&&categoryFilter->getText()=="Retro Games","Save As reset browser filters");check(!button(*editor,"A  PREVIEW")->isEnabled()&&!button(*editor,"FAVORITE")->isEnabled(),"Hidden active patch leaves browser actions enabled");
+            sourceFilter->setSelectedId(3,juce::sendNotificationSync);categoryFilter->setText("User",juce::sendNotificationSync);query("azure custom");check(rows()==1,"Browser AND tag search failed");auto browseSettings=p.snapshot();query("no-such-patch");check(rows()==0&&!button(*editor,"DELETE")->isEnabled()&&!button(*editor,"A  PREVIEW")->isEnabled(),"Empty results target a hidden patch");check(p.snapshot().values==browseSettings.values,"Filtering changed the current sound");query("");
+            presetName->setText("Browser User Renamed");button(*editor,"RENAME")->onClick();check(p.presetName()=="Browser User Renamed"&&sourceFilter->getSelectedId()==3&&categoryFilter->getText()=="User","Rename failed or reset source/category filters");
+            auto* currentUser=p.presets.find(browserUser);auto external=juce::JSON::parse(currentUser->file);external.getDynamicObject()->setProperty("id","user."+juce::Uuid().toString());external.getDynamicObject()->setProperty("name","External Browser Patch");auto externalFile=p.presets.userFolder().getChildFile("external-browser.gba2preset");check(externalFile.replaceWithText(juce::JSON::toString(external)),"External browser fixture failed");button(*editor,"REFRESH")->onClick();check(rows()==2&&p.presetId()==browserUser,"Refresh did not add an external patch or changed active sound");
+            button(*editor,"FAVORITE")->onClick();auto* favorites=dynamic_cast<juce::ToggleButton*>(named(*editor,"Favorites only"));auto* recent=dynamic_cast<juce::ToggleButton*>(named(*editor,"Recently used"));check(favorites&&recent,"Browser metadata filters missing");favorites->setToggleState(true,juce::dontSendNotification);favorites->onClick();recent->setToggleState(true,juce::dontSendNotification);recent->onClick();check(rows()==1&&p.presets.isFavorite(browserUser),"Combined browser favorites/recent filters failed");
             editor->setSize(960,485);snapshot(*editor,"ui-snapshots/Browser-960.png");
             editor->keyPressed(juce::KeyPress(juce::KeyPress::F1Key));check(button(*editor,"SAVE AS")==nullptr&&master->isEnabled(),"F1 did not return from browser to main controls");
             auto* select=button(*editor,"SELECT");select->onClick();check(button(*editor,"BACK / SELECT")!=nullptr,"SELECT did not open advanced editor");

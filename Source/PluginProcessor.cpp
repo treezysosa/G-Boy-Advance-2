@@ -21,7 +21,7 @@ GbaProcessor::GbaProcessor(juce::File dataRoot)
       state(*this,nullptr,"GBA2_STATE",createLayout()),presets(*this,dataRoot),engine(std::make_unique<gba::SynthEngine>()) {
     for(std::size_t i=0;i<raw.size();++i) raw[i]=state.getRawParameterValue(juce::String(gba::specs[i].id.data()));
     setLatencySamples(gba::SynthEngine::latencySamples);
-    keyboard.addListener(this);presets.restoreDefault();startTimerHz(20);
+    keyboard.addListener(this);presets.restoreDefault(false);startTimerHz(20);
 }
 GbaProcessor::~GbaProcessor() {stopTimer();keyboard.removeListener(this);}
 double GbaProcessor::getTailLengthSeconds() const {

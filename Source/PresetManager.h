@@ -2,7 +2,6 @@
 #include <juce_audio_processors/juce_audio_processors.h>
 #include "dsp/Parameters.h"
 #include <set>
-
 class GbaProcessor;
 struct GbaPreset {
     juce::String id,name,category,tags;
@@ -10,22 +9,27 @@ struct GbaPreset {
     juce::File file;
     bool factory=true;
 };
-// File operations and the library model are used only by the message thread.
+// Model and file operations belong to non-audio threads (normally the message thread).
 class PresetManager {
 public:
+    enum class Source {all,factory,user};
+    struct Filter {juce::String query,category;Source source=Source::all;bool favorites=false,recent=false;};
     explicit PresetManager(GbaProcessor&,juce::File dataRoot={});
     const std::vector<GbaPreset>& all() const noexcept {return presets;}
     const GbaPreset* find(const juce::String& id) const;
     juce::StringArray categories() const;
-    bool load(const juce::String& id);
+    std::vector<juce::String> filtered(const Filter&) const;
+    juce::Result refresh();
+    std::uint64_t revision() const noexcept {return generation;}
+    bool load(juce::String id);
     void step(int direction);
     void stepCategory(int direction);
-    juce::Result saveAs(const juce::String& name);
-    juce::Result renameUser(const juce::String& id,const juce::String& name);
-    juce::Result deleteUser(const juce::String& id);
-    void restoreDefault();
+    juce::Result saveAs(juce::String name,juce::String tags={});
+    juce::Result renameUser(juce::String id,juce::String name);
+    juce::Result deleteUser(juce::String id);
+    void restoreDefault(bool remember=true);
     bool isFavorite(const juce::String& id) const;
-    void toggleFavorite(const juce::String& id);
+    juce::Result toggleFavorite(juce::String id);
     bool isRecent(const juce::String& id) const;
     const juce::StringArray& recentIds() const {return recent;}
     juce::File userFolder() const {return folder;}
@@ -37,8 +41,13 @@ private:
     juce::File folder,preferences;
     std::set<juce::String> favorites;
     juce::StringArray recent;
+    std::uint64_t generation=0;
     juce::Result write(const GbaPreset&);
-    void scanUsers();
-    void remember(const juce::String& id);
-    void savePreferences();
+    juce::Result read(const juce::File&,GbaPreset&) const;
+    juce::Result readPreferences(std::set<juce::String>&,juce::StringArray&,bool merging) const;
+    juce::Result writePreferences(const std::set<juce::String>&,const juce::StringArray&);
+    juce::Result remember(const juce::String& id);
+    juce::Result finish(juce::Result);
+    void sortUsers();
+    bool nameExists(const juce::String&,const juce::String& except={}) const;
 };

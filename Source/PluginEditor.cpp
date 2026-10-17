@@ -85,76 +85,73 @@ public:
     void resized() override {back.setBounds(getWidth()-165,12,145,30);tabs.setBounds(16,56,getWidth()-32,getHeight()-70);}
 private:juce::TabbedComponent tabs;juce::TextButton back {"BACK / SELECT"};
 };
-class BrowserPanel final : public juce::Component,private juce::ListBoxModel {
+class BrowserPanel final : public juce::Component,private juce::ListBoxModel,private juce::KeyListener,private juce::Timer {
 public:
-    BrowserPanel(GbaProcessor& p,std::function<void()> close):processor(p),list("Presets",this) {
-        for(auto* c:std::initializer_list<juce::Component*>{&search,&category,&favoritesOnly,&recentOnly,&list,&back,&preview,&stop,&favorite,&save,&rename,&remove,&restore,&name,&status})addAndMakeVisible(c);
-        search.setTextToShowWhenEmpty("Search names, categories, tags...",text.withAlpha(.55f));search.onTextChange=[this]{refresh();};
-        category.addItem("All categories",1);category.addItemList(processor.presets.categories(),2);category.setSelectedId(1,juce::dontSendNotification);category.onChange=[this]{refresh();};
-        favoritesOnly.onClick=[this]{refresh();};recentOnly.onClick=[this]{refresh();};
-        back.onClick=[this,close]{asyncClose(this,close);};preview.onClick=[this]{processor.preview();};stop.onClick=[this]{processor.stopPreview();};
-        favorite.onClick=[this]{processor.presets.toggleFavorite(processor.presetId());refresh();};
-        save.onClick=[this]{result(processor.presets.saveAs(name.getText()));};
-        rename.onClick=[this]{result(processor.presets.renameUser(processor.presetId(),name.getText()));};
-        remove.onClick=[this]{
-            auto id=processor.presetId();auto* selected=processor.presets.find(id);if(!selected||selected->factory)return;
-            juce::Component::SafePointer<BrowserPanel> safe(this);
-            (void)juce::AlertWindow::showOkCancelBox(juce::MessageBoxIconType::QuestionIcon,"Delete user preset?","Delete "+selected->name+" from disk?","Delete","Cancel",this,juce::ModalCallbackFunction::create([safe,id](int answer){if(safe!=nullptr&&answer==1)safe->result(safe->processor.presets.deleteUser(id));}));
-        };
-        restore.onClick=[this]{processor.presets.restoreDefault();refresh();};
-        name.setTextToShowWhenEmpty("Name for Save As / Rename",text.withAlpha(.55f));name.setInputRestrictions(100);
-        list.setRowHeight(38);list.setColour(juce::ListBox::backgroundColourId,ink);list.setMultipleSelectionEnabled(false);
-        status.setFont(font(12));status.setText(processor.presets.lastError,juce::dontSendNotification);refresh();
+    BrowserPanel(GbaProcessor& p,std::function<void()> close):processor(p),closePanel(std::move(close)),list("Presets",this){
+        for(auto* c:std::initializer_list<juce::Component*>{&search,&category,&source,&favoritesOnly,&recentOnly,&list,&back,&preview,&stop,&favorite,&save,&rename,&remove,&restore,&name,&tags,&rescan,&status}){addAndMakeVisible(c);c->addKeyListener(this);}
+        setName("Preset browser");setWantsKeyboardFocus(true);search.setName("Preset search");category.setName("Preset category");source.setName("Preset source");name.setName("Preset name");tags.setName("Preset tags");status.setName("Preset status");
+        search.setTextToShowWhenEmpty("Search words or \"quoted phrases\", names and tags...",text.withAlpha(.55f));search.onTextChange=[this]{message.clear();refresh();};
+        category.onChange=[this]{message.clear();refresh();};source.addItemList({"All sources","Factory","User"},1);source.setSelectedId(1,juce::dontSendNotification);source.onChange=[this]{message.clear();refresh();};
+        favoritesOnly.onClick=[this]{message.clear();refresh();};recentOnly.onClick=[this]{message.clear();refresh();};
+        back.onClick=[this]{asyncClose(this,closePanel);};preview.onClick=[this]{activate(true);};stop.onClick=[this]{processor.stopPreview();};
+        favorite.onClick=[this]{auto id=selectedId();if(id.isNotEmpty())result(processor.presets.toggleFavorite(id),"Favorite updated.");};
+        save.onClick=[this]{result(processor.presets.saveAs(name.getText(),tags.getText()),"User preset saved.",true);};
+        rename.onClick=[this]{auto id=selectedId();if(id.isNotEmpty())result(processor.presets.renameUser(id,name.getText()),"User preset renamed.");};
+        remove.onClick=[this]{auto id=selectedId();auto* selected=processor.presets.find(id);if(!selected||selected->factory)return;juce::Component::SafePointer<BrowserPanel> safe(this);
+            (void)juce::AlertWindow::showOkCancelBox(juce::MessageBoxIconType::QuestionIcon,"Delete user preset?","Delete "+selected->name+" from disk?","Delete","Cancel",this,juce::ModalCallbackFunction::create([safe,id](int answer){if(safe!=nullptr&&answer==1)safe->result(safe->processor.presets.deleteUser(id),"User preset deleted.",true);}));};
+        restore.onClick=[this]{processor.presets.restoreDefault();message="Dream Pad restored.";refresh(true);};
+        rescan.onClick=[this]{result(processor.presets.refresh(),"Library refreshed.");};
+        name.setTextToShowWhenEmpty("Name for Save As / Rename",text.withAlpha(.55f));name.setInputRestrictions(100);tags.setInputRestrictions(512);tags.setTextToShowWhenEmpty("Tags for Save As",text.withAlpha(.55f));
+        search.setTooltip("All words must match. Use quotes for a phrase. Ctrl+F focuses search; Down browses results.");tags.setTooltip("Space-separated tags saved with Save As.");list.setTooltip("Arrows browse; click loads; Enter or Space loads and previews; Delete asks before deleting a user preset.");rescan.setTooltip("Reload user files, favorites and recent history from disk. F5.");
+        list.setRowHeight(38);list.setColour(juce::ListBox::backgroundColourId,ink);list.setMultipleSelectionEnabled(false);status.setFont(font(12));refresh(true);startTimerHz(10);
     }
-    ~BrowserPanel() override {list.setModel(nullptr);}
-    void paint(juce::Graphics& g) override {panel(g,getLocalBounds().toFloat(),14);caption(g,"PRESET LIBRARY",{20,10,float(getWidth()-220),30},22);}
+    ~BrowserPanel() override {stopTimer();list.setModel(nullptr);}
+    void paint(juce::Graphics& g) override {panel(g,getLocalBounds().toFloat(),14);caption(g,"PRESET LIBRARY",{20,10,float(std::max(100,getWidth()-620)),30},22);}
     void resized() override {
-        int w=getWidth(),h=getHeight();back.setBounds(w-160,12,140,30);search.setBounds(20,56,w-660,30);category.setBounds(w-630,56,300,30);favoritesOnly.setBounds(w-320,56,145,30);recentOnly.setBounds(w-175,56,155,30);
-        list.setBounds(20,99,w-40,h-221);
+        int w=getWidth(),h=getHeight();back.setBounds(w-160,12,140,30);source.setBounds(w-300,12,130,30);category.setBounds(w-550,12,240,30);
+        search.setBounds(20,56,w-470,30);favoritesOnly.setBounds(w-440,56,135,30);recentOnly.setBounds(w-300,56,135,30);rescan.setBounds(w-155,56,135,30);list.setBounds(20,99,w-40,h-221);
         preview.setBounds(20,h-110,110,29);stop.setBounds(138,h-110,90,29);favorite.setBounds(236,h-110,145,29);restore.setBounds(w-215,h-110,195,29);
-        name.setBounds(20,h-69,w-480,30);save.setBounds(w-450,h-69,130,30);rename.setBounds(w-310,h-69,135,30);remove.setBounds(w-165,h-69,145,30);status.setBounds(20,h-35,w-40,25);
+        const int input=w-490,n=int(input*.55);name.setBounds(20,h-69,n,30);tags.setBounds(30+n,h-69,input-n,30);save.setBounds(w-450,h-69,130,30);rename.setBounds(w-310,h-69,135,30);remove.setBounds(w-165,h-69,145,30);status.setBounds(20,h-35,w-40,25);
     }
 private:
-    GbaProcessor& processor;
-    juce::TextEditor search,name;
-    juce::ComboBox category;
-    juce::ToggleButton favoritesOnly {"Favorites only"},recentOnly {"Recently used"};
-    juce::ListBox list;
-    juce::TextButton back {"BACK / START"},preview {"A  PREVIEW"},stop {"B  STOP"},favorite {"FAVORITE"},save {"SAVE AS"},rename {"RENAME"},remove {"DELETE"},restore {"RESTORE DREAM PAD"};
-    juce::Label status;
-    std::vector<juce::String> visible;
-    bool updating=false;
-    void result(juce::Result r) {status.setText(r.wasOk()?"Saved. User presets: "+processor.presets.userFolder().getFullPathName():r.getErrorMessage(),juce::dontSendNotification);category.clear(juce::dontSendNotification);category.addItem("All categories",1);category.addItemList(processor.presets.categories(),2);category.setSelectedId(1,juce::dontSendNotification);refresh();}
-    void refresh() {
-        updating=true;visible.clear();auto query=search.getText().trim();auto selectedCategory=category.getSelectedId()==1?juce::String():category.getText();
-        for(const auto& p:processor.presets.all()) {
-            if(selectedCategory.isNotEmpty()&&p.category!=selectedCategory)continue;
-            if(favoritesOnly.getToggleState()&&!processor.presets.isFavorite(p.id))continue;
-            if(recentOnly.getToggleState()&&!processor.presets.isRecent(p.id))continue;
-            if(query.isNotEmpty()&&!(p.name+" "+p.category+" "+p.tags).containsIgnoreCase(query))continue;
-            visible.push_back(p.id);
-        }
-        if(recentOnly.getToggleState())std::stable_sort(visible.begin(),visible.end(),[this](const auto& a,const auto& b){return processor.presets.recentIds().indexOf(a)<processor.presets.recentIds().indexOf(b);});
-        list.updateContent();list.deselectAllRows();
-        for(std::size_t i=0;i<visible.size();++i)if(visible[i]==processor.presetId())list.selectRow(int(i));
-        updateButtons();list.repaint();updating=false;
+    GbaProcessor& processor;std::function<void()> closePanel;
+    juce::TextEditor search,name,tags;juce::ComboBox category,source;
+    juce::ToggleButton favoritesOnly {"Favorites only"},recentOnly {"Recently used"};juce::ListBox list;
+    juce::TextButton back {"BACK / START"},preview {"A  PREVIEW"},stop {"B  STOP"},favorite {"FAVORITE"},save {"SAVE AS"},rename {"RENAME"},remove {"DELETE"},restore {"RESTORE DREAM PAD"},rescan {"REFRESH"};
+    juce::Label status;std::vector<juce::String> visible;juce::String activeSeen,shownId,message;std::uint64_t revisionSeen=0;bool updating=false;
+    juce::String selectedId() const {int row=list.getSelectedRow();return row>=0&&row<int(visible.size())?visible[std::size_t(row)]:juce::String();}
+    void result(juce::Result r,const juce::String& success,bool selectActive=false){message=r.failed()?r.getErrorMessage():(processor.presets.lastError.isEmpty()?success:processor.presets.lastError);refresh(selectActive);if(r.wasOk()&&(selectActive||success=="Library refreshed."))updateButtons(true);}
+    void refresh(bool selectActive=false){
+        updating=true;auto keep=selectActive?processor.presetId():selectedId();auto selectedCategory=category.getSelectedId()>1?category.getText():juce::String();category.clear(juce::dontSendNotification);category.addItem("All categories",1);category.addItemList(processor.presets.categories(),2);int index=processor.presets.categories().indexOf(selectedCategory);category.setSelectedId(index<0?1:index+2,juce::dontSendNotification);
+        PresetManager::Filter filter;filter.query=search.getText();filter.category=category.getSelectedId()>1?category.getText():juce::String();filter.source=source.getSelectedId()==2?PresetManager::Source::factory:source.getSelectedId()==3?PresetManager::Source::user:PresetManager::Source::all;filter.favorites=favoritesOnly.getToggleState();filter.recent=recentOnly.getToggleState();visible=processor.presets.filtered(filter);
+        list.updateContent();list.deselectAllRows();int row=-1;for(std::size_t i=0;i<visible.size();++i)if(visible[i]==keep)row=int(i);if(row<0)for(std::size_t i=0;i<visible.size();++i)if(visible[i]==processor.presetId())row=int(i);if(row>=0)list.selectRow(row);
+        activeSeen=processor.presetId();revisionSeen=processor.presets.revision();updating=false;updateButtons();list.repaint();
     }
-    void updateButtons() {
-        auto* p=processor.presets.find(processor.presetId());rename.setEnabled(p&&!p->factory);remove.setEnabled(p&&!p->factory);
-        favorite.setButtonText(processor.presets.isFavorite(processor.presetId())?"UNFAVORITE":"FAVORITE");
+    void updateButtons(bool forceFields=false){
+        auto id=selectedId();auto* p=processor.presets.find(id);const bool loaded=p&&id==processor.presetId();rename.setEnabled(p&&!p->factory);remove.setEnabled(p&&!p->factory);preview.setEnabled(p!=nullptr);favorite.setEnabled(p!=nullptr);save.setEnabled(!p||loaded);favorite.setButtonText(p&&processor.presets.isFavorite(id)?"UNFAVORITE":"FAVORITE");
+        auto fieldId=p?id:processor.presetId();if(forceFields||fieldId!=shownId){shownId=fieldId;if(forceFields||!name.hasKeyboardFocus(false))name.setText(p?p->name:processor.presetName(),false);if(forceFields||!tags.hasKeyboardFocus(false))tags.setText(p?p->tags:juce::String(),false);}
+        juce::String detail=message.isNotEmpty()?message:processor.presets.lastError;if(detail.isEmpty()&&p&&!loaded)detail="Click or Enter to load the selected preset.";if(detail.isEmpty()&&!p)detail="No selected result. Save As stores the currently loaded sound.";
+        auto value=juce::String(int(visible.size()))+(visible.size()==1?" result":" results")+(detail.isEmpty()?juce::String():" / "+detail);status.setText(value,juce::dontSendNotification);status.setTooltip(value);
+    }
+    void activate(bool audition){auto id=selectedId();if(id.isEmpty())return;if(id!=processor.presetId()&&!processor.presets.load(id)){message=processor.presets.lastError;updateButtons();return;}if(audition)processor.preview();message=processor.presets.lastError;refresh();}
+    void timerCallback() override {if(activeSeen!=processor.presetId())refresh(true);else if(revisionSeen!=processor.presets.revision())refresh();}
+    bool keyPressed(const juce::KeyPress& key,juce::Component* origin) override {
+        if(key==juce::KeyPress::escapeKey){asyncClose(this,closePanel);return true;}
+        if(key.getModifiers().isCtrlDown()&&(key.getKeyCode()=='F'||key.getKeyCode()=='f')){search.grabKeyboardFocus();search.selectAll();return true;}
+        if(key==juce::KeyPress::F5Key){rescan.triggerClick();return true;}
+        if(origin==&search&&(key==juce::KeyPress::downKey||key==juce::KeyPress::upKey)){if(!visible.empty()){list.selectRow(juce::jlimit(0,int(visible.size())-1,list.getSelectedRow()+(key==juce::KeyPress::downKey?1:-1)));list.grabKeyboardFocus();}return true;}
+        if(origin==&list&&key==juce::KeyPress::spaceKey){activate(true);return true;}return false;
     }
     int getNumRows() override {return int(visible.size());}
     void paintListBoxItem(int row,juce::Graphics& g,int width,int height,bool selected) override {
         if(row<0||row>=int(visible.size()))return;
-        auto* p=processor.presets.find(visible[std::size_t(row)]);
-        if(!p)return;
-        g.fillAll(selected?purple.darker(.4f):(row%2?deep.withAlpha(.4f):ink));
-        g.setColour(text);g.setFont(font(15,true));g.drawText((processor.presets.isFavorite(p->id)?"* ":"  ")+p->name,10,1,width-330,height-2,juce::Justification::centredLeft,true);
-        g.setColour(text.withAlpha(.6f));g.setFont(font(12));g.drawText(p->category+(p->factory?" / FACTORY":" / USER"),width-320,0,310,height,juce::Justification::centredRight,true);
+        auto* p=processor.presets.find(visible[std::size_t(row)]);if(!p)return;
+        g.fillAll(selected?purple.darker(.4f):(row%2?deep.withAlpha(.4f):ink));g.setColour(text);g.setFont(font(15,true));g.drawText((processor.presets.isFavorite(p->id)?"* ":"  ")+p->name,10,1,width-330,height-2,juce::Justification::centredLeft,true);g.setColour(text.withAlpha(.6f));g.setFont(font(12));g.drawText((p->factory?p->category+" / FACTORY":juce::String("USER"))+(p->id==processor.presetId()?" / LOADED":""),width-320,0,310,height,juce::Justification::centredRight,true);
     }
-    void selectedRowsChanged(int row) override {if(updating||row<0||row>=int(visible.size()))return;processor.presets.load(visible[std::size_t(row)]);updateButtons();}
-    void listBoxItemDoubleClicked(int,const juce::MouseEvent&) override {processor.preview();}
-    void returnKeyPressed(int) override {processor.preview();}
+    void selectedRowsChanged(int) override {if(!updating){message.clear();updateButtons();}}
+    void listBoxItemClicked(int,const juce::MouseEvent&) override {activate(false);}
+    void listBoxItemDoubleClicked(int,const juce::MouseEvent&) override {activate(true);}
+    void returnKeyPressed(int) override {activate(true);}
     void deleteKeyPressed(int) override {if(remove.isEnabled())remove.triggerClick();}
 };
 }

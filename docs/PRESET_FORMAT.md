@@ -50,3 +50,9 @@ python3 scripts/report_presets.py build-audit
 ```
 
 On Visual Studio builds, use `--config Release` and run `build-audit/Release/gba2-preset-tests.exe` from the audit directory. The ordinary test suite intentionally requires calibrated levels; `--measure-only` is the authoring pass. Calibration controls the existing master-volume parameter after the output limiter, so scaling is linear and does not require new parameters or DSP. Gains are bounded to 0.05–0.95, preserving headroom and quieter articulations that cannot reach the target. The metric is maximum rolling 100 ms stereo RMS, not LUFS or perceptual equal loudness. Recipe digests normalize CRLF to LF for platform portability.
+
+## Phase 9 library metadata and I/O
+
+User IDs support the compact 32-hex UUIDs written by earlier builds and dashed UUIDs. Tags accept a string or string array (maximum 512 characters). Names trim to 1–100 characters and cannot contain control characters. Existing imported duplicate display names remain readable; authoring new duplicates is rejected case-insensitively. Duplicate IDs are skipped in deterministic filename order. Linked files are skipped. Reads are bounded to 1 MiB even if a file grows during reading.
+
+`library.json` now writes `{ "format": "gba2.library", "schemaVersion": 1, "favorites": [...], "recent": [...] }`. Unversioned earlier metadata is accepted and migrates on the next successful mutation. Recents are deduplicated, most-recent-first and bounded to 32. Invalid/unsupported metadata is retained; construction/refresh do not overwrite it. Sequential instance updates merge under a process-wide non-audio lock. Separate processes can still race simultaneous edits. Atomic native replacement preserves prior content on failure, without claiming crash/power-loss durability. See PHASE_9.md for limits and tests.

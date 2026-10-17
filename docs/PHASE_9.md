@@ -1,0 +1,27 @@
+# Phase 9 — preset library and browser
+
+Development version 0.9.0 improves preset filtering, user-file handling and the browser. The main purple console interface, all 410 factory presets/program positions, all 64 parameter IDs, schema-1 project/user presets and DSP remain unchanged from 0.8.0.
+
+## Implemented
+
+- One library filter combines category, Factory/User source, favorites, recents and case-insensitive AND search across names/categories/tags. Quoted phrases stay together. Recent-only results use most-recent-first order, with at most 32 unique entries.
+- The browser keeps source/category/search/metadata filters after Save As, Rename, Delete and Refresh. It shows result counts and accepts custom Save As tags. Empty results disable selection-dependent preview/favorite/rename/delete actions. Save As still supports an orphaned or filtered-out loaded project sound.
+- Arrow/Home/End/Page keys browse using the native list. Clicking loads; Enter or Space loads and previews. Browsing a row leaves the sounding patch intact. Save As is enabled for the loaded selection, or when no row is selected; load a highlighted inactive patch before saving it. This keeps recent ordering predictable. B stops preview; Delete confirms a user-file deletion. Ctrl+F focuses search, Down/Up transfers search focus to results, F5 refreshes disk state, and Escape/START returns to the main panel.
+- Host program/state changes update an open browser. Refresh discovers externally added/edited/removed user files and reloads favorites/history without replacing the current project parameters. Factory program order stays fixed; users sort by display name after factory entries.
+- User-file validation is bounded to 1 MiB, requires UUID IDs (existing compact and dashed forms supported), numeric finite recognized parameters and names without control characters. Unknown parameters receive forward-compatible handling; omitted recognized parameters retain defaults and known domains clamp/round. Invalid/duplicate/unsupported/linked files are skipped with an error. Tags accept strings or string arrays, bounded to 512 characters.
+- Save As trims names, uses UUID filenames, prevents case-insensitive user-name collisions and saves all synthesis values plus tags. Factory patches remain read-only. Rename re-reads the disk payload so an external parameter edit is retained. Delete checks identity again before removing a user file; changed/missing identities cannot delete the wrong patch.
+- File replacement uses a same-directory temporary file, flushed output and one native replacement (Windows MoveFileExW or POSIX rename). Failed replacement retains the old destination. Directories and symbolic-link destinations are rejected. There is no copy/delete fallback or deliberate retry sleep. This is not a power-loss durability guarantee.
+- Preferences migrate unversioned 0.1–0.8 JSON to `gba2.library` / schema 1 on a successful update. Construction and Refresh do not write history. Updates read and merge the latest disk metadata under a process-wide non-audio lock, so sequential instances do not lose each other's favorites/history. Failed favorite writes keep prior in-memory state. Malformed/unsupported metadata is retained with an error, not silently reset. Patch loading/saving remains usable if history persistence fails, with a warning.
+- MIDI program requests stay atomic/queued in `processBlock`; file/model service remains outside the audio callback. A regression test confirms the callback does not apply/write the pending program before non-audio service.
+
+## Validation status
+
+The initial strict GCC C++20 run passes 81 focused library checks and 279 total JUCE integration checks. Application-source ASan/UBSan passes the same run with halt-on-error and leak detection disabled (sandbox limitation); cached JUCE/DSP module objects are not instrumented by this application run. Final sanitizer compilation, Windows build, pluginval and package verification are in progress. The unchanged Phase 8 DSP has 7,983 passing numerical checks; Windows/Ubuntu CI will repeat them.
+
+The 960-wide native Linux browser render was visually inspected: source/category controls, search and metadata filters, result list, name/tags inputs, actions and result/error status fit the minimum layout. This is software rendering, not physical Windows DPI/accessibility acceptance.
+
+## Limits and next steps
+
+The shared library lock serializes instances within one loaded process. Simultaneous separate DAW/standalone processes can still race metadata updates; native replacement protects file integrity but does not merge two simultaneous cross-process edits. Disk scans/writes are synchronous non-audio operations and can delay the message thread on slow storage. Refresh is explicit for external file edits. Existing projects retain their own parameters when backing user files change/disappear.
+
+Human listening, physical keyboard/mouse/screen-reader and per-monitor DPI acceptance, DAW/device lifecycle/state/bounce testing, prepared-host latency/compensation/bypass/export-tail behavior, separate Steinberg validation and installer/licensing/signing remain pending. Next phase: Phase 10 release validation, performance/stress checks and manual acceptance. Back up a malformed `library.json` before repairing/removing it to begin fresh metadata; user preset files and DAW project parameters remain independent.

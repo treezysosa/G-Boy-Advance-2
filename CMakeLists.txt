@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.24)
-project(GBoyAdvance2 VERSION 0.8.0 LANGUAGES C CXX)
+project(GBoyAdvance2 VERSION 0.9.0 LANGUAGES C CXX)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
@@ -96,7 +96,7 @@ target_link_libraries(GBoyAdvance2 PRIVATE gba_dsp juce::juce_audio_utils juce::
 if(BUILD_TESTING)
     juce_add_console_app(gba2-integration PRODUCT_NAME "GBA2 integration tests")
     juce_generate_juce_header(gba2-integration)
-    target_sources(gba2-integration PRIVATE Tests/PluginTests.cpp
+    target_sources(gba2-integration PRIVATE Tests/PluginTests.cpp Tests/LibraryTests.cpp
         Source/PluginProcessor.cpp Source/PluginEditor.cpp Source/PresetManager.cpp)
     target_compile_definitions(gba2-integration PRIVATE JucePlugin_Name="G Boy Advance 2"
         JucePlugin_IsSynth=1 JucePlugin_WantsMidiInput=1 JucePlugin_ProducesMidiOutput=0
