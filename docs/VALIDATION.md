@@ -1,6 +1,6 @@
 # Validation record
 
-Development snapshot 0.5.0. The earlier 0.1.1/0.2.0 Windows evidence below is retained as the previous baseline. A passing DSP test is not proof that a host can load the VST3.
+Development snapshot 0.6.0. The earlier 0.1.1/0.2.0 Windows evidence below is retained as the previous baseline. A passing DSP test is not proof that a host can load the VST3.
 
 ## Executed locally
 
@@ -134,3 +134,7 @@ Actual VST3 pluginval 1.0.4 strictness 10 **SUCCESS**, seed `0x796c4ad`. Portabl
 Processor latency is 16 samples in integration tests and matches the measured DSP impulse group delay. Pluginval's initial information line prints 0 from its host cache; the pinned JUCE host refreshes it during preparation. A separate prepared-host latency query and manual DAW compensation/bounce tests were not run. See PHASE_5.md for source references. The separate Steinberg validator, physical UI/DPI, real device/DAW, listening and installer acceptance remain pending.
 
 Host tail reporting derives from release time plus delay and room feedback decay to -100 dB relative to their initial level, with a small processing margin. It replaces the fixed 30-second estimate, which could truncate long echoes. Integration checks cover a short dry tail, one echo and the maximum high-feedback case (over two minutes). Actual DAW export-tail behavior still needs manual acceptance.
+
+## Phase 6 factory bank 0.6.0
+
+Explicit designs, engine-aware variants, measured levels, legacy identities/program order, multi-register/velocity/release tests and dry spectral/envelope analysis are documented in [PHASE_6.md](PHASE_6.md). Strict GCC C++20 builds pass 6,231 DSP checks (1,836 existing plus 4,395 factory-audit checks), and Linux integration passes 177. The original four DSP suites pass ASan/UBSan; the bank audit is still running under sanitizers. Windows validation and artifact provenance remain pending. Factory data regenerates byte-for-byte and all legacy identities/program indices match. Human listening remains required.

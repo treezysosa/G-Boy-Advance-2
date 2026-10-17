@@ -1,0 +1,2078 @@
+{
+  "format": "gba2.instrument-designs",
+  "schemaVersion": 1,
+  "description": "Explicit original synthesis voicings; these are parameter recipes, never audio. Afterglow variants are derived by engine-aware transformations.",
+  "designs": {
+    "70s Soul Guitar": {
+      "category": "Guitars",
+      "parameters": {
+        "Engine": 4,
+        "Attack": 0.002,
+        "Sustain": 0,
+        "Release": 0.25,
+        "FilterDecay": 0.15,
+        "FilterSustain": 0.1,
+        "Lfo1Depth": 0.025,
+        "Brightness": 0.35,
+        "StringDamping": 0.996,
+        "Cutoff": 3200,
+        "FilterEnv": 1,
+        "Decay": 1.3,
+        "Drive": 0.1,
+        "Chorus": 0.08
+      }
+    },
+    "Neo Soul Guitar": {
+      "category": "Guitars",
+      "parameters": {
+        "Engine": 4,
+        "Attack": 0.002,
+        "Sustain": 0,
+        "Release": 0.25,
+        "FilterDecay": 0.15,
+        "FilterSustain": 0.1,
+        "Lfo1Depth": 0.025,
+        "Brightness": 0.58,
+        "StringDamping": 0.9983,
+        "Cutoff": 5800,
+        "FilterEnv": 0.9,
+        "Decay": 1.8,
+        "Chorus": 0.24
+      }
+    },
+    "Jazz Guitar": {
+      "category": "Guitars",
+      "parameters": {
+        "Engine": 4,
+        "Attack": 0.002,
+        "Sustain": 0,
+        "Release": 0.25,
+        "FilterDecay": 0.15,
+        "FilterSustain": 0.1,
+        "Lfo1Depth": 0.025,
+        "Brightness": 0.14,
+        "StringDamping": 0.999,
+        "Cutoff": 2400,
+        "FilterEnv": 0.25,
+        "Decay": 2.3,
+        "Chorus": 0,
+        "Resonance": 0.08
+      }
+    },
+    "Funk Guitar": {
+      "category": "Guitars",
+      "parameters": {
+        "Engine": 4,
+        "Attack": 0.002,
+        "Sustain": 0,
+        "Release": 0.25,
+        "FilterDecay": 0.06,
+        "FilterSustain": 0.1,
+        "Lfo1Depth": 0.025,
+        "Brightness": 0.85,
+        "StringDamping": 0.989,
+        "Cutoff": 7000,
+        "FilterEnv": 2.5,
+        "Decay": 0.18,
+        "Reverb": 0.06,
+        "Phaser": 0.2,
+        "Chorus": 0
+      }
+    },
+    "City Pop Guitar": {
+      "category": "Guitars",
+      "parameters": {
+        "Engine": 4,
+        "Attack": 0.002,
+        "Sustain": 0,
+        "Release": 0.25,
+        "FilterDecay": 0.15,
+        "FilterSustain": 0.1,
+        "Lfo1Depth": 0.025,
+        "Brightness": 0.78,
+        "StringDamping": 0.998,
+        "Cutoff": 9000,
+        "Decay": 2.2,
+        "Chorus": 0.65
+      }
+    },
+    "Indie Guitar": {
+      "category": "Guitars",
+      "parameters": {
+        "Engine": 4,
+        "Attack": 0.002,
+        "Sustain": 0,
+        "Release": 0.25,
+        "FilterDecay": 0.15,
+        "FilterSustain": 0.1,
+        "Lfo1Depth": 0.025,
+        "Brightness": 0.66,
+        "StringDamping": 0.995,
+        "Cutoff": 5700,
+        "Decay": 1.4,
+        "Drive": 0.14,
+        "Distortion": 0.1
+      }
+    },
+    "Dream Pop Guitar": {
+      "category": "Guitars",
+      "parameters": {
+        "Engine": 4,
+        "Attack": 0.012,
+        "Sustain": 0,
+        "Release": 0.25,
+        "FilterDecay": 0.15,
+        "FilterSustain": 0.1,
+        "Lfo1Depth": 0.025,
+        "Brightness": 0.45,
+        "StringDamping": 0.9985,
+        "Cutoff": 5800,
+        "Decay": 2.8,
+        "Reverb": 0.38,
+        "Delay": 0.2,
+        "Chorus": 0.5
+      }
+    },
+    "Chorus Guitar": {
+      "category": "Guitars",
+      "parameters": {
+        "Engine": 4,
+        "Attack": 0.002,
+        "Sustain": 0,
+        "Release": 0.25,
+        "FilterDecay": 0.15,
+        "FilterSustain": 0.1,
+        "Lfo1Depth": 0.025,
+        "Brightness": 0.7,
+        "StringDamping": 0.9975,
+        "Cutoff": 8500,
+        "Decay": 2,
+        "Chorus": 0.8,
+        "Delay": 0.08
+      }
+    },
+    "Nylon-Style Guitar": {
+      "category": "Guitars",
+      "parameters": {
+        "Engine": 4,
+        "Attack": 0.002,
+        "Sustain": 0,
+        "Release": 0.35,
+        "FilterDecay": 0.15,
+        "FilterSustain": 0.1,
+        "Lfo1Depth": 0.025,
+        "Brightness": 0.2,
+        "StringDamping": 0.9987,
+        "Cutoff": 4200,
+        "Decay": 1.2,
+        "FilterEnv": 1,
+        "Chorus": 0,
+        "Drive": 0.02
+      }
+    },
+    "Acoustic-Style Guitar": {
+      "category": "Guitars",
+      "parameters": {
+        "Engine": 4,
+        "Attack": 0.002,
+        "Sustain": 0,
+        "Release": 0.25,
+        "FilterDecay": 0.15,
+        "FilterSustain": 0.1,
+        "Lfo1Depth": 0.025,
+        "Brightness": 0.9,
+        "StringDamping": 0.9987,
+        "Cutoff": 12500,
+        "Decay": 2.4,
+        "Reverb": 0.14,
+        "Chorus": 0.02
+      }
+    },
+    "Lo-Fi Guitar": {
+      "category": "Guitars",
+      "parameters": {
+        "Engine": 4,
+        "Attack": 0.002,
+        "Sustain": 0,
+        "Release": 0.25,
+        "FilterDecay": 0.15,
+        "FilterSustain": 0.1,
+        "Lfo1Depth": 0.025,
+        "Brightness": 0.38,
+        "StringDamping": 0.997,
+        "Cutoff": 3300,
+        "Decay": 1.6,
+        "Wow": 0.28,
+        "CrusherBits": 11,
+        "EqHigh": -5,
+        "Drive": 0.18
+      },
+      "afterglow": {
+        "Brightness": 0.25,
+        "StringDamping": 0.9967,
+        "Cutoff": 2400
+      }
+    },
+    "Dark Ambient Guitar": {
+      "category": "Guitars",
+      "parameters": {
+        "Engine": 4,
+        "Attack": 0.03,
+        "Sustain": 0,
+        "Release": 0.25,
+        "FilterDecay": 0.15,
+        "FilterSustain": 0.1,
+        "Lfo1Depth": 0.025,
+        "Brightness": 0.18,
+        "StringDamping": 0.9992,
+        "Cutoff": 1500,
+        "Decay": 3.5,
+        "Reverb": 0.5,
+        "Delay": 0.33
+      }
+    },
+    "Latin Guitar": {
+      "category": "Guitars",
+      "parameters": {
+        "Engine": 4,
+        "Attack": 0.002,
+        "Sustain": 0,
+        "Release": 0.25,
+        "FilterDecay": 0.15,
+        "FilterSustain": 0.1,
+        "Lfo1Depth": 0.025,
+        "Brightness": 0.6,
+        "StringDamping": 0.9978,
+        "Cutoff": 7500,
+        "FilterEnv": 0.7,
+        "Decay": 0.8,
+        "Reverb": 0.12,
+        "Chorus": 0.05
+      }
+    },
+    "Retro Game Guitar": {
+      "category": "Guitars",
+      "parameters": {
+        "Engine": 4,
+        "Attack": 0.002,
+        "Sustain": 0,
+        "Release": 0.25,
+        "FilterDecay": 0.15,
+        "FilterSustain": 0.1,
+        "Lfo1Depth": 0.025,
+        "Brightness": 0.92,
+        "StringDamping": 0.994,
+        "Cutoff": 7000,
+        "Decay": 0.6,
+        "CrusherBits": 7,
+        "CrusherRate": 3,
+        "Delay": 0.06,
+        "Chorus": 0
+      }
+    },
+    "Vintage Grand-Style Piano": {
+      "category": "Pianos and Keys",
+      "parameters": {
+        "Attack": 0.002,
+        "Sustain": 0.06,
+        "Release": 0.5,
+        "FilterAttack": 0.002,
+        "FilterSustain": 0.08,
+        "Lfo1Depth": 0.02,
+        "Engine": 7,
+        "Brightness": 0.08,
+        "Decay": 3.5,
+        "Cutoff": 11000,
+        "FilterEnv": 1.2
+      }
+    },
+    "70s Soul Piano": {
+      "category": "Pianos and Keys",
+      "parameters": {
+        "Attack": 0.002,
+        "Sustain": 0.06,
+        "Release": 0.5,
+        "FilterAttack": 0.002,
+        "FilterSustain": 0.08,
+        "Lfo1Depth": 0.02,
+        "Engine": 7,
+        "Brightness": 0.22,
+        "Decay": 2.6,
+        "Cutoff": 5500,
+        "Chorus": 0.12,
+        "Drive": 0.12
+      }
+    },
+    "Tine Electric Piano": {
+      "category": "Pianos and Keys",
+      "parameters": {
+        "Attack": 0.002,
+        "Sustain": 0.12,
+        "Release": 0.5,
+        "FilterAttack": 0.002,
+        "FilterSustain": 0.08,
+        "Lfo1Depth": 0.02,
+        "Engine": 1,
+        "FmRatio": 1,
+        "FmIndex": 2.4,
+        "FilterDecay": 0.8,
+        "Decay": 2.2,
+        "Cutoff": 12000,
+        "Chorus": 0.24
+      }
+    },
+    "Reed Electric Piano": {
+      "category": "Pianos and Keys",
+      "parameters": {
+        "Attack": 0.002,
+        "Sustain": 0.15,
+        "Release": 0.5,
+        "FilterAttack": 0.002,
+        "FilterSustain": 0.08,
+        "Lfo1Depth": 0.02,
+        "Engine": 7,
+        "Brightness": 0.65,
+        "Decay": 1.9,
+        "Cutoff": 6500,
+        "Drive": 0.3,
+        "Tremolo": 0.15
+      }
+    },
+    "80s Digital Piano": {
+      "category": "Pianos and Keys",
+      "parameters": {
+        "Attack": 0.002,
+        "Sustain": 0.06,
+        "Release": 0.5,
+        "FilterAttack": 0.002,
+        "FilterSustain": 0.08,
+        "Lfo1Depth": 0.02,
+        "Engine": 1,
+        "FmRatio": 2,
+        "FmIndex": 3.5,
+        "Decay": 2.2,
+        "FilterDecay": 1.1,
+        "Cutoff": 16000,
+        "Chorus": 0.38,
+        "FilterEnv": 0
+      }
+    },
+    "90s R&B Keys": {
+      "category": "Pianos and Keys",
+      "parameters": {
+        "Attack": 0.002,
+        "Sustain": 0.06,
+        "Release": 0.5,
+        "FilterAttack": 0.002,
+        "FilterSustain": 0.08,
+        "Lfo1Depth": 0.02,
+        "Engine": 1,
+        "FmRatio": 1,
+        "FmIndex": 1.8,
+        "OscMix": 0.15,
+        "Decay": 2.8,
+        "Cutoff": 7800,
+        "Chorus": 0.45,
+        "Wow": 0.04
+      }
+    },
+    "City Pop Keys": {
+      "category": "Pianos and Keys",
+      "parameters": {
+        "Attack": 0.002,
+        "Sustain": 0.25,
+        "Release": 0.5,
+        "FilterAttack": 0.002,
+        "FilterSustain": 0.08,
+        "Lfo1Depth": 0.02,
+        "Engine": 2,
+        "Harmonics": 12,
+        "Brightness": 0.7,
+        "Decay": 1.4,
+        "Cutoff": 9000,
+        "Chorus": 0.45,
+        "Tremolo": 0.1,
+        "FilterDecay": 0.45
+      }
+    },
+    "Jazz Keys": {
+      "category": "Pianos and Keys",
+      "parameters": {
+        "Attack": 0.002,
+        "Sustain": 0.06,
+        "Release": 0.5,
+        "FilterAttack": 0.002,
+        "FilterSustain": 0.08,
+        "Lfo1Depth": 0.02,
+        "Engine": 7,
+        "Brightness": 0.1,
+        "Decay": 2.9,
+        "Cutoff": 5000,
+        "Resonance": 0.06,
+        "Chorus": 0.05
+      }
+    },
+    "Lo-Fi Piano": {
+      "category": "Pianos and Keys",
+      "parameters": {
+        "Attack": 0.002,
+        "Sustain": 0.06,
+        "Release": 0.5,
+        "FilterAttack": 0.002,
+        "FilterSustain": 0.08,
+        "Lfo1Depth": 0.02,
+        "Engine": 7,
+        "Brightness": 0.32,
+        "Decay": 1.8,
+        "Cutoff": 3800,
+        "CrusherBits": 11,
+        "Wow": 0.28,
+        "Drive": 0.12
+      }
+    },
+    "Dream Piano": {
+      "category": "Pianos and Keys",
+      "parameters": {
+        "Attack": 0.002,
+        "Sustain": 0,
+        "Release": 1.5,
+        "FilterAttack": 0.002,
+        "FilterSustain": 0.08,
+        "Lfo1Depth": 0.02,
+        "Engine": 1,
+        "FmRatio": 1.5,
+        "FmIndex": 2.2,
+        "FilterDecay": 1.4,
+        "Decay": 3.8,
+        "Reverb": 0.48,
+        "Delay": 0.25
+      }
+    },
+    "Horror Piano": {
+      "category": "Pianos and Keys",
+      "parameters": {
+        "Attack": 0.002,
+        "Sustain": 0.06,
+        "Release": 2,
+        "FilterAttack": 0.002,
+        "FilterSustain": 0.08,
+        "Lfo1Depth": 0.02,
+        "Engine": 7,
+        "Brightness": 1,
+        "Decay": 4.5,
+        "Cutoff": 2600,
+        "Reverb": 0.4,
+        "Phaser": 0.25
+      }
+    },
+    "Toy Piano": {
+      "category": "Pianos and Keys",
+      "parameters": {
+        "Attack": 0.002,
+        "Sustain": 0.06,
+        "Release": 0.15,
+        "FilterAttack": 0.002,
+        "FilterSustain": 0.08,
+        "Lfo1Depth": 0.02,
+        "Engine": 7,
+        "Brightness": 0.88,
+        "Decay": 0.8,
+        "Cutoff": 13000,
+        "Chorus": 0
+      },
+      "afterglow": {
+        "Engine": 1,
+        "FmRatio": 4.01,
+        "FmIndex": 2.4,
+        "FilterDecay": 0.3,
+        "FilterSustain": 0.1,
+        "Cutoff": 9000,
+        "Decay": 0.9,
+        "Sustain": 0
+      }
+    },
+    "FM Piano": {
+      "category": "Pianos and Keys",
+      "parameters": {
+        "Attack": 0.002,
+        "Sustain": 0.08,
+        "Release": 0.5,
+        "FilterAttack": 0.002,
+        "FilterSustain": 0.04,
+        "Lfo1Depth": 0.02,
+        "Engine": 1,
+        "FmRatio": 3,
+        "FmIndex": 2.6,
+        "FilterDecay": 0.55,
+        "Cutoff": 13000,
+        "Decay": 2.5
+      }
+    },
+    "Retro Console Piano": {
+      "category": "Pianos and Keys",
+      "parameters": {
+        "Attack": 0.001,
+        "Sustain": 0.05,
+        "Release": 0.5,
+        "FilterAttack": 0.002,
+        "FilterSustain": 0.08,
+        "Lfo1Depth": 0.02,
+        "Engine": 3,
+        "Wavetable": 1.25,
+        "Decay": 1.2,
+        "CrusherBits": 8,
+        "CrusherRate": 2,
+        "Cutoff": 10000,
+        "Detune": 0,
+        "Chorus": 0
+      }
+    },
+    "Crystal Bells": {
+      "category": "Bells",
+      "parameters": {
+        "Engine": 1,
+        "Attack": 0.001,
+        "Sustain": 0,
+        "Release": 1.1,
+        "FilterEnv": 0,
+        "FilterSustain": 0.35,
+        "Chorus": 0.05,
+        "FmRatio": 2.71,
+        "FmIndex": 4.8,
+        "Decay": 3.2,
+        "FilterDecay": 2.5,
+        "Cutoff": 16000
+      }
+    },
+    "Dream Bells": {
+      "category": "Bells",
+      "parameters": {
+        "Engine": 1,
+        "Attack": 0.001,
+        "Sustain": 0,
+        "Release": 1.1,
+        "FilterEnv": 0,
+        "FilterSustain": 0.35,
+        "Chorus": 0.05,
+        "FmRatio": 1.414,
+        "FmIndex": 3.4,
+        "Decay": 4.5,
+        "Delay": 0.2,
+        "Reverb": 0.43,
+        "Cutoff": 14500
+      }
+    },
+    "Anime-Inspired Bells": {
+      "category": "Bells",
+      "parameters": {
+        "Engine": 1,
+        "Attack": 0.001,
+        "Sustain": 0,
+        "Release": 1.1,
+        "FilterEnv": 0,
+        "FilterSustain": 0.35,
+        "Chorus": 0.05,
+        "FmRatio": 3.5,
+        "FmIndex": 2.8,
+        "Decay": 2.3,
+        "Cutoff": 13500
+      }
+    },
+    "VHS Bells": {
+      "category": "Bells",
+      "parameters": {
+        "Engine": 1,
+        "Attack": 0.001,
+        "Sustain": 0,
+        "Release": 1.1,
+        "FilterEnv": 0,
+        "FilterSustain": 0.35,
+        "Chorus": 0.05,
+        "FmRatio": 1.5,
+        "FmIndex": 3,
+        "Decay": 2.8,
+        "CrusherBits": 11,
+        "Wow": 0.2,
+        "Cutoff": 4200
+      }
+    },
+    "Dark Bells": {
+      "category": "Bells",
+      "parameters": {
+        "Engine": 1,
+        "Attack": 0.001,
+        "Sustain": 0,
+        "Release": 1.1,
+        "FilterEnv": -1,
+        "FilterSustain": 0.35,
+        "Chorus": 0.05,
+        "FmRatio": 4.01,
+        "FmIndex": 6,
+        "Decay": 3.8,
+        "Cutoff": 2600
+      }
+    },
+    "FM Bells": {
+      "category": "Bells",
+      "parameters": {
+        "Engine": 1,
+        "Attack": 0.001,
+        "Sustain": 0,
+        "Release": 1.1,
+        "FilterEnv": 0,
+        "FilterSustain": 0.6,
+        "Chorus": 0.05,
+        "FmRatio": 7.01,
+        "FmIndex": 5,
+        "Decay": 3.1,
+        "Cutoff": 15000
+      }
+    },
+    "Music Box Bells": {
+      "category": "Bells",
+      "parameters": {
+        "Engine": 7,
+        "Attack": 0.001,
+        "Sustain": 0,
+        "Release": 1.1,
+        "FilterEnv": 0,
+        "FilterSustain": 0.35,
+        "Chorus": 0.05,
+        "Brightness": 0.75,
+        "Decay": 1.6,
+        "Cutoff": 13000
+      }
+    },
+    "Celesta-Style Bells": {
+      "category": "Bells",
+      "parameters": {
+        "Engine": 7,
+        "Attack": 0.001,
+        "Sustain": 0,
+        "Release": 1.1,
+        "FilterEnv": 0,
+        "FilterSustain": 0.35,
+        "Chorus": 0.05,
+        "Brightness": 0.58,
+        "Decay": 1.2,
+        "Cutoff": 15000
+      }
+    },
+    "Arcade Bells": {
+      "category": "Bells",
+      "parameters": {
+        "Engine": 1,
+        "Attack": 0.001,
+        "Sustain": 0,
+        "Release": 1.1,
+        "FilterEnv": 0,
+        "FilterSustain": 0.35,
+        "Chorus": 0.05,
+        "FmRatio": 5.19,
+        "FmIndex": 3.3,
+        "Decay": 0.45,
+        "CrusherBits": 8,
+        "CrusherRate": 3,
+        "Cutoff": 11000
+      }
+    },
+    "Glass Bells": {
+      "category": "Bells",
+      "parameters": {
+        "Engine": 1,
+        "Attack": 0.001,
+        "Sustain": 0,
+        "Release": 1.1,
+        "FilterEnv": 0,
+        "FilterSustain": 0.35,
+        "Chorus": 0.05,
+        "FmRatio": 5.19,
+        "FmIndex": 7.8,
+        "Decay": 3.6,
+        "Cutoff": 16000,
+        "Reverb": 0.35
+      }
+    },
+    "Analog Soul Pad": {
+      "category": "Pads",
+      "parameters": {
+        "Sustain": 0.76,
+        "Decay": 2.5,
+        "FilterAttack": 1.2,
+        "FilterDecay": 2.5,
+        "FilterSustain": 0.65,
+        "Lfo1Dest": 2,
+        "Lfo1Depth": 0.12,
+        "Reverb": 0.32,
+        "Chorus": 0.3,
+        "Engine": 0,
+        "Wave1": 2,
+        "Wave2": 1,
+        "Detune": 7,
+        "OscMix": 0.4,
+        "Cutoff": 2500,
+        "Resonance": 0.2,
+        "Attack": 0.5,
+        "Release": 2,
+        "FilterEnv": 2
+      }
+    },
+    "80s Pop Pad": {
+      "category": "Pads",
+      "parameters": {
+        "Sustain": 0.76,
+        "Decay": 2.5,
+        "FilterAttack": 1.2,
+        "FilterDecay": 2.5,
+        "FilterSustain": 0.65,
+        "Lfo1Dest": 2,
+        "Lfo1Depth": 0.12,
+        "Reverb": 0.32,
+        "Chorus": 0.3,
+        "Engine": 0,
+        "Wave1": 3,
+        "Wave2": 2,
+        "Coarse": 12,
+        "OscMix": 0.25,
+        "Detune": 11,
+        "Cutoff": 6200,
+        "Attack": 0.25,
+        "Release": 1.8
+      }
+    },
+    "City Pop Pad": {
+      "category": "Pads",
+      "parameters": {
+        "Sustain": 0.76,
+        "Decay": 2.5,
+        "FilterAttack": 1.2,
+        "FilterDecay": 2.5,
+        "FilterSustain": 0.65,
+        "Lfo1Dest": 2,
+        "Lfo1Depth": 0.12,
+        "Reverb": 0.32,
+        "Chorus": 0.55,
+        "Engine": 3,
+        "Wavetable": 0.7,
+        "Detune": 8,
+        "Cutoff": 5400,
+        "Attack": 0.35,
+        "Release": 2.2
+      }
+    },
+    "Dream Pad": {
+      "category": "Pads",
+      "parameters": {
+        "Sustain": 0.76,
+        "Decay": 2.5,
+        "FilterAttack": 1.2,
+        "FilterDecay": 2.5,
+        "FilterSustain": 0.65,
+        "Lfo1Dest": 2,
+        "Lfo1Depth": 0.2,
+        "Reverb": 0.32,
+        "Chorus": 0.3,
+        "Engine": 3,
+        "Wavetable": 2.3,
+        "Cutoff": 4300,
+        "Attack": 0.8,
+        "Release": 3.2
+      }
+    },
+    "Dark Horror Pad": {
+      "category": "Pads",
+      "parameters": {
+        "Sustain": 0.76,
+        "Decay": 2.5,
+        "FilterAttack": 1.2,
+        "FilterDecay": 2.5,
+        "FilterSustain": 0.65,
+        "Lfo1Dest": 2,
+        "Lfo1Depth": 0.25,
+        "Reverb": 0.32,
+        "Chorus": 0.3,
+        "Engine": 2,
+        "Harmonics": 24,
+        "Brightness": 0.78,
+        "Cutoff": 1250,
+        "Resonance": 0.45,
+        "Attack": 1.2,
+        "Release": 4.5,
+        "Lfo1Rate": 0.13,
+        "Phaser": 0.4
+      }
+    },
+    "Retro Console Pad": {
+      "category": "Pads",
+      "parameters": {
+        "Sustain": 0.76,
+        "Decay": 2.5,
+        "FilterAttack": 1.2,
+        "FilterDecay": 2.5,
+        "FilterSustain": 0.65,
+        "Lfo1Dest": 2,
+        "Lfo1Depth": 0.12,
+        "Reverb": 0.32,
+        "Chorus": 0.35,
+        "Engine": 3,
+        "Wavetable": 1.1,
+        "CrusherBits": 8,
+        "CrusherRate": 2,
+        "Attack": 0.35,
+        "Release": 1.8,
+        "Cutoff": 8000
+      }
+    },
+    "VHS Pad": {
+      "category": "Pads",
+      "parameters": {
+        "Sustain": 0.76,
+        "Decay": 2.5,
+        "FilterAttack": 1.2,
+        "FilterDecay": 2.5,
+        "FilterSustain": 0.65,
+        "Lfo1Dest": 2,
+        "Lfo1Depth": 0.12,
+        "Reverb": 0.32,
+        "Chorus": 0.3,
+        "Engine": 0,
+        "Wave1": 2,
+        "Wave2": 1,
+        "Cutoff": 3000,
+        "Wow": 0.4,
+        "CrusherBits": 12,
+        "Attack": 0.7,
+        "Release": 2.5
+      }
+    },
+    "Ambient Pad": {
+      "category": "Pads",
+      "parameters": {
+        "Sustain": 0.76,
+        "Decay": 2.5,
+        "FilterAttack": 1.2,
+        "FilterDecay": 2.5,
+        "FilterSustain": 0.65,
+        "Lfo1Dest": 3,
+        "Lfo1Depth": 0.1,
+        "Reverb": 0.32,
+        "Chorus": 0.3,
+        "Engine": 2,
+        "Harmonics": 16,
+        "Brightness": 0.35,
+        "Cutoff": 9000,
+        "Attack": 1.7,
+        "Release": 4,
+        "Lfo1Rate": 0.12
+      }
+    },
+    "Angelic Pad": {
+      "category": "Pads",
+      "parameters": {
+        "Sustain": 0.76,
+        "Decay": 2.5,
+        "FilterAttack": 1.2,
+        "FilterDecay": 2.5,
+        "FilterSustain": 0.65,
+        "Lfo1Dest": 2,
+        "Lfo1Depth": 0.12,
+        "Reverb": 0.45,
+        "Chorus": 0.4,
+        "Engine": 2,
+        "Harmonics": 24,
+        "Brightness": 0.75,
+        "Cutoff": 14000,
+        "Attack": 0.75,
+        "Release": 3.4
+      }
+    },
+    "Nostalgia Pad": {
+      "category": "Pads",
+      "parameters": {
+        "Sustain": 0.76,
+        "Decay": 2.5,
+        "FilterAttack": 1.2,
+        "FilterDecay": 2.5,
+        "FilterSustain": 0.65,
+        "Lfo1Dest": 2,
+        "Lfo1Depth": 0.12,
+        "Reverb": 0.32,
+        "Chorus": 0.3,
+        "Engine": 3,
+        "Wavetable": 0.9,
+        "Cutoff": 3800,
+        "Attack": 0.6,
+        "Release": 2.8,
+        "Wow": 0.12
+      }
+    },
+    "Space Pad": {
+      "category": "Pads",
+      "parameters": {
+        "Sustain": 0.76,
+        "Decay": 2.5,
+        "FilterAttack": 1.2,
+        "FilterDecay": 2.5,
+        "FilterSustain": 0.65,
+        "Lfo1Dest": 2,
+        "Lfo1Depth": 0.12,
+        "Reverb": 0.32,
+        "Chorus": 0.3,
+        "Engine": 3,
+        "Wavetable": 2.8,
+        "Coarse": 7,
+        "OscMix": 0.35,
+        "Detune": 18,
+        "Attack": 1.2,
+        "Release": 4.2,
+        "Lfo2Dest": 1,
+        "Lfo2Depth": 0.03,
+        "Lfo2Rate": 3.8,
+        "Delay": 0.3,
+        "Phaser": 0.3
+      }
+    },
+    "Warm Tape Pad": {
+      "category": "Pads",
+      "parameters": {
+        "Sustain": 0.76,
+        "Decay": 2.5,
+        "FilterAttack": 1.2,
+        "FilterDecay": 2.5,
+        "FilterSustain": 0.65,
+        "Lfo1Dest": 2,
+        "Lfo1Depth": 0.12,
+        "Reverb": 0.32,
+        "Chorus": 0.3,
+        "Engine": 0,
+        "Wave1": 1,
+        "Wave2": 2,
+        "Cutoff": 1800,
+        "Resonance": 0.12,
+        "Drive": 0.12,
+        "Wow": 0.25,
+        "Attack": 0.9,
+        "Release": 2.6
+      }
+    },
+    "Vintage Analog Bass": {
+      "category": "Bass",
+      "parameters": {
+        "Mode": 1,
+        "Voices": 1,
+        "Attack": 0.002,
+        "Release": 0.12,
+        "Reverb": 0,
+        "Chorus": 0,
+        "Glide": 0.025,
+        "Width": 0.35,
+        "FilterAttack": 0.001,
+        "FilterDecay": 0.15,
+        "FilterSustain": 0.1,
+        "Lfo1Depth": 0.01,
+        "Engine": 0,
+        "Wave1": 2,
+        "Wave2": 1,
+        "OscMix": 0.3,
+        "Cutoff": 650,
+        "FilterEnv": 3.5,
+        "Decay": 0.35,
+        "Sustain": 0.5
+      }
+    },
+    "Funk Bass": {
+      "category": "Bass",
+      "parameters": {
+        "Mode": 1,
+        "Voices": 1,
+        "Attack": 0.002,
+        "Release": 0.12,
+        "Reverb": 0,
+        "Chorus": 0,
+        "Glide": 0.025,
+        "Width": 0.35,
+        "FilterAttack": 0.001,
+        "FilterDecay": 0.15,
+        "FilterSustain": 0.1,
+        "Lfo1Depth": 0.01,
+        "Engine": 0,
+        "Wave1": 4,
+        "PulseWidth": 0.24,
+        "Wave2": 0,
+        "OscMix": 0.15,
+        "Cutoff": 1100,
+        "FilterEnv": 3.2,
+        "Decay": 0.2,
+        "Sustain": 0.2
+      }
+    },
+    "Soul Bass": {
+      "category": "Bass",
+      "parameters": {
+        "Mode": 1,
+        "Voices": 1,
+        "Attack": 0.002,
+        "Release": 0.12,
+        "Reverb": 0,
+        "Chorus": 0,
+        "Glide": 0.025,
+        "Width": 0.35,
+        "FilterAttack": 0.001,
+        "FilterDecay": 0.15,
+        "FilterSustain": 0.1,
+        "Lfo1Depth": 0.01,
+        "Engine": 0,
+        "Wave1": 1,
+        "Wave2": 0,
+        "OscMix": 0.3,
+        "Cutoff": 750,
+        "FilterEnv": 1.6,
+        "Decay": 0.35,
+        "Sustain": 0.5
+      }
+    },
+    "Synth Bass": {
+      "category": "Bass",
+      "parameters": {
+        "Mode": 1,
+        "Voices": 1,
+        "Attack": 0.002,
+        "Release": 0.12,
+        "Reverb": 0,
+        "Chorus": 0,
+        "Glide": 0.025,
+        "Width": 0.35,
+        "FilterAttack": 0.001,
+        "FilterDecay": 0.15,
+        "FilterSustain": 0.1,
+        "Lfo1Depth": 0.01,
+        "Engine": 0,
+        "Wave1": 3,
+        "Wave2": 2,
+        "Coarse": 12,
+        "OscMix": 0.2,
+        "Cutoff": 1800,
+        "FilterEnv": 2,
+        "Decay": 0.28,
+        "Sustain": 0.4
+      }
+    },
+    "Sub Bass": {
+      "category": "Bass",
+      "parameters": {
+        "Mode": 1,
+        "Voices": 1,
+        "Attack": 0.002,
+        "Release": 0.12,
+        "Reverb": 0,
+        "Chorus": 0,
+        "Glide": 0.025,
+        "Width": 0.35,
+        "FilterAttack": 0.001,
+        "FilterDecay": 0.15,
+        "FilterSustain": 0.1,
+        "Lfo1Depth": 0.01,
+        "Engine": 0,
+        "Wave1": 0,
+        "Wave2": 0,
+        "Coarse": -12,
+        "OscMix": 0.18,
+        "Cutoff": 400,
+        "FilterEnv": 0,
+        "Sustain": 0.8,
+        "Decay": 0.4,
+        "Drive": 0.1
+      }
+    },
+    "Memphis Bass": {
+      "category": "Bass",
+      "parameters": {
+        "Mode": 1,
+        "Voices": 1,
+        "Attack": 0.002,
+        "Release": 0.12,
+        "Reverb": 0,
+        "Chorus": 0,
+        "Glide": 0.11,
+        "Width": 0.35,
+        "FilterAttack": 0.001,
+        "FilterDecay": 0.15,
+        "FilterSustain": 0.1,
+        "Lfo1Depth": 0.01,
+        "Engine": 1,
+        "FmRatio": 1,
+        "FmIndex": 1.3,
+        "Cutoff": 1000,
+        "Drive": 0.35,
+        "CrusherBits": 9,
+        "CrusherRate": 2,
+        "Decay": 0.6,
+        "Sustain": 0.05
+      }
+    },
+    "808-Style Synth Bass": {
+      "category": "Bass",
+      "parameters": {
+        "Mode": 1,
+        "Voices": 1,
+        "Attack": 0.002,
+        "Release": 0.12,
+        "Reverb": 0,
+        "Chorus": 0,
+        "Glide": 0.09,
+        "Width": 0.35,
+        "FilterAttack": 0.001,
+        "FilterDecay": 0.15,
+        "FilterSustain": 0.1,
+        "Lfo1Depth": 0.01,
+        "Engine": 0,
+        "Wave1": 0,
+        "Wave2": 1,
+        "OscMix": 0.08,
+        "Cutoff": 750,
+        "FilterEnv": 0,
+        "Decay": 2.2,
+        "Sustain": 0,
+        "Drive": 0.16
+      }
+    },
+    "City Pop Bass": {
+      "category": "Bass",
+      "parameters": {
+        "Mode": 1,
+        "Voices": 1,
+        "Attack": 0.002,
+        "Release": 0.12,
+        "Reverb": 0,
+        "Chorus": 0,
+        "Glide": 0.025,
+        "Width": 0.35,
+        "FilterAttack": 0.001,
+        "FilterDecay": 0.12,
+        "FilterSustain": 0.1,
+        "Lfo1Depth": 0.01,
+        "Engine": 1,
+        "FmRatio": 1,
+        "FmIndex": 2.8,
+        "Cutoff": 3000,
+        "Decay": 0.4,
+        "Sustain": 0.4
+      }
+    },
+    "Slap-Style Bass": {
+      "category": "Bass",
+      "parameters": {
+        "Mode": 1,
+        "Voices": 1,
+        "Attack": 0.002,
+        "Release": 0.12,
+        "Reverb": 0,
+        "Chorus": 0,
+        "Glide": 0.025,
+        "Width": 0.35,
+        "FilterAttack": 0.001,
+        "FilterDecay": 0.15,
+        "FilterSustain": 0.1,
+        "Lfo1Depth": 0.01,
+        "Engine": 4,
+        "Brightness": 0.95,
+        "StringDamping": 0.995,
+        "Decay": 0.6,
+        "Sustain": 0,
+        "Cutoff": 8000,
+        "Drive": 0.1
+      }
+    },
+    "FM Bass": {
+      "category": "Bass",
+      "parameters": {
+        "Mode": 1,
+        "Voices": 1,
+        "Attack": 0.002,
+        "Release": 0.12,
+        "Reverb": 0,
+        "Chorus": 0,
+        "Glide": 0.025,
+        "Width": 0.35,
+        "FilterAttack": 0.001,
+        "FilterDecay": 0.12,
+        "FilterSustain": 0.25,
+        "Lfo1Depth": 0.01,
+        "Engine": 1,
+        "FmRatio": 0.5,
+        "FmIndex": 4,
+        "Cutoff": 4200,
+        "Decay": 0.45,
+        "Sustain": 0.45
+      }
+    },
+    "Retro Game Bass": {
+      "category": "Bass",
+      "parameters": {
+        "Mode": 1,
+        "Voices": 1,
+        "Attack": 0.002,
+        "Release": 0.12,
+        "Reverb": 0,
+        "Chorus": 0,
+        "Glide": 0.025,
+        "Width": 0.35,
+        "FilterAttack": 0.001,
+        "FilterDecay": 0.15,
+        "FilterSustain": 0.1,
+        "Lfo1Depth": 0.01,
+        "Engine": 6,
+        "Wave1": 3,
+        "CrusherBits": 8,
+        "CrusherRate": 2,
+        "Cutoff": 5000,
+        "FilterEnv": 0,
+        "Decay": 0.25,
+        "Sustain": 0.6
+      }
+    },
+    "Dark Reese Bass": {
+      "category": "Bass",
+      "parameters": {
+        "Mode": 1,
+        "Voices": 1,
+        "Attack": 0.002,
+        "Release": 0.12,
+        "Reverb": 0,
+        "Chorus": 0,
+        "Glide": 0.025,
+        "Width": 0.35,
+        "FilterAttack": 0.001,
+        "FilterDecay": 0.15,
+        "FilterSustain": 0.1,
+        "Lfo1Depth": 0.01,
+        "Engine": 0,
+        "Wave1": 2,
+        "Wave2": 2,
+        "Detune": 31,
+        "OscMix": 0.5,
+        "Cutoff": 800,
+        "Resonance": 0.3,
+        "Drive": 0.18,
+        "Phaser": 0.15,
+        "Decay": 0.7,
+        "Sustain": 0.65
+      }
+    },
+    "Electric-Style Bass": {
+      "category": "Bass",
+      "parameters": {
+        "Mode": 1,
+        "Voices": 1,
+        "Attack": 0.002,
+        "Release": 0.12,
+        "Reverb": 0,
+        "Chorus": 0,
+        "Glide": 0.025,
+        "Width": 0.35,
+        "FilterAttack": 0.001,
+        "FilterDecay": 0.15,
+        "FilterSustain": 0.1,
+        "Lfo1Depth": 0.01,
+        "Engine": 4,
+        "Brightness": 0.45,
+        "StringDamping": 0.9993,
+        "Decay": 2,
+        "Sustain": 0,
+        "Cutoff": 2400,
+        "Drive": 0.12
+      }
+    },
+    "Lo-Fi Bass": {
+      "category": "Bass",
+      "parameters": {
+        "Mode": 1,
+        "Voices": 1,
+        "Attack": 0.002,
+        "Release": 0.12,
+        "Reverb": 0,
+        "Chorus": 0,
+        "Glide": 0.025,
+        "Width": 0.35,
+        "FilterAttack": 0.001,
+        "FilterDecay": 0.15,
+        "FilterSustain": 0.1,
+        "Lfo1Depth": 0.01,
+        "Engine": 3,
+        "Wavetable": 0.25,
+        "Cutoff": 1000,
+        "CrusherBits": 10,
+        "Wow": 0.18,
+        "EqLow": 2,
+        "Decay": 0.6,
+        "Sustain": 0.5
+      }
+    },
+    "Soul Flute": {
+      "category": "Flutes",
+      "parameters": {
+        "Sustain": 0.8,
+        "Release": 0.3,
+        "FilterEnv": 0.2,
+        "Vibrato": 0.16,
+        "Lfo1Depth": 0.02,
+        "Chorus": 0.05,
+        "Engine": 2,
+        "Harmonics": 5,
+        "Brightness": 0.13,
+        "Attack": 0.065,
+        "Cutoff": 3000
+      }
+    },
+    "Jazz Flute": {
+      "category": "Flutes",
+      "parameters": {
+        "Sustain": 0.8,
+        "Release": 0.3,
+        "FilterEnv": 0.4,
+        "Vibrato": 0.18,
+        "Lfo1Depth": 0.02,
+        "Chorus": 0.05,
+        "Engine": 0,
+        "Wave1": 0,
+        "Wave2": 5,
+        "OscMix": 0.035,
+        "Attack": 0.045,
+        "Cutoff": 2600
+      }
+    },
+    "Anime-Inspired Flute": {
+      "category": "Flutes",
+      "parameters": {
+        "Sustain": 0.7,
+        "Release": 0.3,
+        "FilterEnv": 0.2,
+        "Vibrato": 0.16,
+        "Lfo1Depth": 0.04,
+        "Chorus": 0.05,
+        "Engine": 2,
+        "Harmonics": 8,
+        "Brightness": 0.45,
+        "Attack": 0.025,
+        "Cutoff": 5600,
+        "Lfo1Dest": 1,
+        "Lfo1Rate": 5.5,
+        "Delay": 0.12
+      }
+    },
+    "Bamboo-Style Flute": {
+      "category": "Flutes",
+      "parameters": {
+        "Sustain": 0.85,
+        "Release": 0.3,
+        "FilterEnv": 0.6,
+        "Vibrato": 0.16,
+        "Lfo1Depth": 0.02,
+        "Chorus": 0.05,
+        "Engine": 2,
+        "Harmonics": 4,
+        "Brightness": 0.06,
+        "Attack": 0.045,
+        "Cutoff": 2100,
+        "FilterDecay": 0.08
+      }
+    },
+    "Dream Flute": {
+      "category": "Flutes",
+      "parameters": {
+        "Sustain": 0.8,
+        "Release": 0.8,
+        "FilterEnv": 0.2,
+        "Vibrato": 0.16,
+        "Lfo1Depth": 0.02,
+        "Chorus": 0.2,
+        "Engine": 3,
+        "Wavetable": 2.7,
+        "OscMix": 0.1,
+        "Coarse": 12,
+        "Detune": 5,
+        "Attack": 0.12,
+        "Cutoff": 5000,
+        "Reverb": 0.4
+      }
+    },
+    "Horror Flute": {
+      "category": "Flutes",
+      "parameters": {
+        "Sustain": 0.8,
+        "Release": 0.3,
+        "FilterEnv": 0.2,
+        "Vibrato": 0.16,
+        "Lfo1Depth": 0.02,
+        "Chorus": 0.05,
+        "Engine": 5,
+        "Vowel": 2.2,
+        "FormantShift": -6,
+        "Breath": 0.55,
+        "Choir": 0,
+        "Attack": 0.18,
+        "Cutoff": 3000,
+        "Phaser": 0.25
+      }
+    },
+    "Retro Console Flute": {
+      "category": "Flutes",
+      "parameters": {
+        "Sustain": 0.8,
+        "Release": 0.3,
+        "FilterEnv": 0.2,
+        "Vibrato": 0.08,
+        "Lfo1Depth": 0.02,
+        "Chorus": 0.05,
+        "Engine": 6,
+        "Wave1": 1,
+        "CrusherBits": 7,
+        "CrusherRate": 3,
+        "Attack": 0.01,
+        "Cutoff": 7000
+      }
+    },
+    "Pan Flute": {
+      "category": "Flutes",
+      "parameters": {
+        "Sustain": 0.65,
+        "Release": 0.3,
+        "FilterEnv": 1.5,
+        "Vibrato": 0.16,
+        "Lfo1Depth": 0.02,
+        "Chorus": 0.05,
+        "Engine": 0,
+        "Wave1": 0,
+        "Wave2": 5,
+        "OscMix": 0.11,
+        "Attack": 0.012,
+        "Cutoff": 3400,
+        "FilterAttack": 0.005,
+        "FilterDecay": 0.12,
+        "FilterSustain": 0.12,
+        "Decay": 0.3
+      }
+    },
+    "Breath Flute": {
+      "category": "Flutes",
+      "parameters": {
+        "Sustain": 0.8,
+        "Release": 0.3,
+        "FilterEnv": 0.2,
+        "Vibrato": 0.16,
+        "Lfo1Depth": 0.02,
+        "Chorus": 0.05,
+        "Engine": 0,
+        "Wave1": 1,
+        "Wave2": 5,
+        "OscMix": 0.2,
+        "Attack": 0.08,
+        "Cutoff": 3800
+      }
+    },
+    "Ethereal Flute": {
+      "category": "Flutes",
+      "parameters": {
+        "Sustain": 0.8,
+        "Release": 1.2,
+        "FilterEnv": 0.2,
+        "Vibrato": 0.16,
+        "Lfo1Depth": 0.02,
+        "Chorus": 0.3,
+        "Engine": 2,
+        "Harmonics": 12,
+        "Brightness": 0.2,
+        "Attack": 0.18,
+        "Cutoff": 8500,
+        "Reverb": 0.42
+      }
+    },
+    "Dream Pluck": {
+      "category": "Plucks",
+      "parameters": {
+        "Attack": 0.001,
+        "Sustain": 0,
+        "Release": 0.18,
+        "FilterAttack": 0.001,
+        "FilterSustain": 0.05,
+        "FilterDecay": 0.15,
+        "Lfo1Depth": 0.02,
+        "Engine": 3,
+        "Wavetable": 2.6,
+        "Decay": 0.5,
+        "Cutoff": 6600,
+        "FilterEnv": 1.8
+      }
+    },
+    "City Pop Pluck": {
+      "category": "Plucks",
+      "parameters": {
+        "Attack": 0.001,
+        "Sustain": 0,
+        "Release": 0.18,
+        "FilterAttack": 0.001,
+        "FilterSustain": 0.05,
+        "FilterDecay": 0.11,
+        "Lfo1Depth": 0.02,
+        "Engine": 1,
+        "FmRatio": 2,
+        "FmIndex": 2.8,
+        "Decay": 0.26,
+        "Cutoff": 7500,
+        "Chorus": 0.3
+      }
+    },
+    "Analog Pluck": {
+      "category": "Plucks",
+      "parameters": {
+        "Attack": 0.001,
+        "Sustain": 0,
+        "Release": 0.18,
+        "FilterAttack": 0.001,
+        "FilterSustain": 0.05,
+        "FilterDecay": 0.1,
+        "Lfo1Depth": 0.02,
+        "Engine": 0,
+        "Wave1": 2,
+        "Wave2": 4,
+        "PulseWidth": 0.3,
+        "OscMix": 0.25,
+        "Cutoff": 1000,
+        "FilterEnv": 4,
+        "Decay": 0.25
+      }
+    },
+    "Crystal Pluck": {
+      "category": "Plucks",
+      "parameters": {
+        "Attack": 0.001,
+        "Sustain": 0,
+        "Release": 0.18,
+        "FilterAttack": 0.001,
+        "FilterSustain": 0.05,
+        "FilterDecay": 0.15,
+        "Lfo1Depth": 0.02,
+        "Engine": 2,
+        "Harmonics": 16,
+        "Brightness": 0.95,
+        "Cutoff": 16000,
+        "Decay": 0.38,
+        "FilterEnv": 0,
+        "Reverb": 0.25
+      }
+    },
+    "Retro Game Pluck": {
+      "category": "Plucks",
+      "parameters": {
+        "Attack": 0.001,
+        "Sustain": 0,
+        "Release": 0.18,
+        "FilterAttack": 0.001,
+        "FilterSustain": 0.05,
+        "FilterDecay": 0.15,
+        "Lfo1Depth": 0.02,
+        "Engine": 6,
+        "Wave1": 3,
+        "CrusherBits": 6,
+        "CrusherRate": 2,
+        "Decay": 0.15,
+        "Cutoff": 9000
+      }
+    },
+    "Dark Pluck": {
+      "category": "Plucks",
+      "parameters": {
+        "Attack": 0.001,
+        "Sustain": 0,
+        "Release": 0.18,
+        "FilterAttack": 0.001,
+        "FilterSustain": 0.05,
+        "FilterDecay": 0.15,
+        "Lfo1Depth": 0.02,
+        "Engine": 0,
+        "Wave1": 4,
+        "Wave2": 1,
+        "PulseWidth": 0.12,
+        "OscMix": 0.15,
+        "Cutoff": 600,
+        "FilterEnv": 3.2,
+        "Decay": 0.4,
+        "Reverb": 0.3
+      }
+    },
+    "Lo-Fi Pluck": {
+      "category": "Plucks",
+      "parameters": {
+        "Attack": 0.001,
+        "Sustain": 0,
+        "Release": 0.18,
+        "FilterAttack": 0.001,
+        "FilterSustain": 0.05,
+        "FilterDecay": 0.15,
+        "Lfo1Depth": 0.02,
+        "Engine": 3,
+        "Wavetable": 0.35,
+        "Cutoff": 3200,
+        "Wow": 0.22,
+        "CrusherBits": 10,
+        "Decay": 0.3
+      }
+    },
+    "FM Pluck": {
+      "category": "Plucks",
+      "parameters": {
+        "Attack": 0.001,
+        "Sustain": 0,
+        "Release": 0.18,
+        "FilterAttack": 0.001,
+        "FilterSustain": 0.03,
+        "FilterDecay": 0.18,
+        "Lfo1Depth": 0.02,
+        "Engine": 1,
+        "FmRatio": 3.5,
+        "FmIndex": 5.5,
+        "Cutoff": 13000,
+        "Decay": 0.3
+      }
+    },
+    "Harp-Style Pluck": {
+      "category": "Plucks",
+      "parameters": {
+        "Attack": 0.001,
+        "Sustain": 0,
+        "Release": 0.18,
+        "FilterAttack": 0.001,
+        "FilterSustain": 0.05,
+        "FilterDecay": 0.15,
+        "Lfo1Depth": 0.02,
+        "Engine": 4,
+        "Brightness": 0.95,
+        "StringDamping": 0.9992,
+        "Decay": 1.1,
+        "Cutoff": 15000,
+        "Reverb": 0.32,
+        "FilterEnv": 0.6
+      }
+    },
+    "Soul Pluck": {
+      "category": "Plucks",
+      "parameters": {
+        "Attack": 0.001,
+        "Sustain": 0,
+        "Release": 0.18,
+        "FilterAttack": 0.001,
+        "FilterSustain": 0.05,
+        "FilterDecay": 0.18,
+        "Lfo1Depth": 0.02,
+        "Engine": 1,
+        "FmRatio": 1,
+        "FmIndex": 1.4,
+        "Cutoff": 3400,
+        "FilterEnv": 2,
+        "Decay": 0.6,
+        "Chorus": 0.18
+      }
+    },
+    "Smooth Jazz Sax-Style Lead": {
+      "category": "Sax-Style Leads",
+      "parameters": {
+        "Engine": 5,
+        "Mode": 2,
+        "Glide": 0.05,
+        "Sustain": 0.75,
+        "Decay": 0.4,
+        "Release": 0.25,
+        "Choir": 0,
+        "Cutoff": 7500,
+        "Vibrato": 0.2,
+        "Lfo1Depth": 0.03,
+        "FilterEnv": 0.25,
+        "Vowel": 0.55,
+        "FormantShift": -7,
+        "Breath": 0.12,
+        "Attack": 0.08
+      }
+    },
+    "Soul Sax-Style Lead": {
+      "category": "Sax-Style Leads",
+      "parameters": {
+        "Engine": 5,
+        "Mode": 2,
+        "Glide": 0.05,
+        "Sustain": 0.75,
+        "Decay": 0.4,
+        "Release": 0.25,
+        "Choir": 0,
+        "Cutoff": 7500,
+        "Vibrato": 0.2,
+        "Lfo1Depth": 0.03,
+        "FilterEnv": 0.25,
+        "Vowel": 0.25,
+        "FormantShift": -5,
+        "Breath": 0.19,
+        "Attack": 0.055,
+        "Drive": 0.2
+      }
+    },
+    "80s Pop Sax-Style Lead": {
+      "category": "Sax-Style Leads",
+      "parameters": {
+        "Engine": 5,
+        "Mode": 2,
+        "Glide": 0.05,
+        "Sustain": 0.75,
+        "Decay": 0.4,
+        "Release": 0.25,
+        "Choir": 0,
+        "Cutoff": 7500,
+        "Vibrato": 0.2,
+        "Lfo1Depth": 0.03,
+        "FilterEnv": 0.25,
+        "Vowel": 1.15,
+        "FormantShift": -2,
+        "Breath": 0.08,
+        "Attack": 0.03,
+        "Lfo2Dest": 4,
+        "Lfo2Rate": 0.6,
+        "Lfo2Depth": 0.1
+      }
+    },
+    "City Pop Sax-Style Lead": {
+      "category": "Sax-Style Leads",
+      "parameters": {
+        "Engine": 5,
+        "Mode": 2,
+        "Glide": 0.05,
+        "Sustain": 0.75,
+        "Decay": 0.4,
+        "Release": 0.25,
+        "Choir": 0.12,
+        "Cutoff": 7500,
+        "Vibrato": 0.2,
+        "Lfo1Depth": 0.03,
+        "FilterEnv": 0.25,
+        "Vowel": 0.85,
+        "FormantShift": -4,
+        "Breath": 0.14,
+        "Detune": 8,
+        "Attack": 0.045,
+        "Chorus": 0.28
+      }
+    },
+    "Alto Sax-Style Lead": {
+      "category": "Sax-Style Leads",
+      "parameters": {
+        "Engine": 5,
+        "Mode": 2,
+        "Glide": 0.05,
+        "Sustain": 0.75,
+        "Decay": 0.4,
+        "Release": 0.25,
+        "Choir": 0,
+        "Cutoff": 7500,
+        "Vibrato": 0.2,
+        "Lfo1Depth": 0.03,
+        "FilterEnv": 0.25,
+        "Vowel": 1.8,
+        "FormantShift": -1,
+        "Breath": 0.12,
+        "Attack": 0.04
+      }
+    },
+    "Tenor Sax-Style Lead": {
+      "category": "Sax-Style Leads",
+      "parameters": {
+        "Engine": 5,
+        "Mode": 2,
+        "Glide": 0.05,
+        "Sustain": 0.75,
+        "Decay": 0.4,
+        "Release": 0.25,
+        "Choir": 0,
+        "Cutoff": 7500,
+        "Vibrato": 0.2,
+        "Lfo1Depth": 0.03,
+        "FilterEnv": 0.25,
+        "Vowel": 0.35,
+        "FormantShift": -10,
+        "Breath": 0.16,
+        "Attack": 0.07
+      }
+    },
+    "Breath Sax-Style Lead": {
+      "category": "Sax-Style Leads",
+      "parameters": {
+        "Engine": 5,
+        "Mode": 2,
+        "Glide": 0.05,
+        "Sustain": 0.75,
+        "Decay": 0.4,
+        "Release": 0.25,
+        "Choir": 0,
+        "Cutoff": 7500,
+        "Vibrato": 0.2,
+        "Lfo1Depth": 0.03,
+        "FilterEnv": 0.25,
+        "Vowel": 0.8,
+        "FormantShift": -6,
+        "Breath": 0.6,
+        "Attack": 0.1
+      }
+    },
+    "Dream Sax-Style Lead": {
+      "category": "Sax-Style Leads",
+      "parameters": {
+        "Engine": 5,
+        "Mode": 2,
+        "Glide": 0.05,
+        "Sustain": 0.75,
+        "Decay": 0.4,
+        "Release": 1,
+        "Choir": 0.3,
+        "Cutoff": 7500,
+        "Vibrato": 0.2,
+        "Lfo1Depth": 0.03,
+        "FilterEnv": 0.25,
+        "Vowel": 2.5,
+        "FormantShift": 0,
+        "Breath": 0.25,
+        "Detune": 12,
+        "Attack": 0.15,
+        "Reverb": 0.4,
+        "Delay": 0.2
+      }
+    },
+    "Vintage Strings": {
+      "category": "Strings",
+      "parameters": {
+        "Sustain": 0.8,
+        "Release": 1.4,
+        "Decay": 1.5,
+        "FilterEnv": 0.6,
+        "Lfo1Depth": 0.07,
+        "FilterAttack": 0.3,
+        "FilterSustain": 0.6,
+        "Chorus": 0.4,
+        "Engine": 0,
+        "Wave1": 2,
+        "Wave2": 2,
+        "Detune": 9,
+        "OscMix": 0.45,
+        "Cutoff": 4800,
+        "Attack": 0.32
+      }
+    },
+    "Soul Strings": {
+      "category": "Strings",
+      "parameters": {
+        "Sustain": 0.8,
+        "Release": 1.4,
+        "Decay": 1.5,
+        "FilterEnv": 0.6,
+        "Lfo1Depth": 0.07,
+        "FilterAttack": 0.3,
+        "FilterSustain": 0.6,
+        "Chorus": 0.35,
+        "Engine": 3,
+        "Wavetable": 0.5,
+        "Cutoff": 3800,
+        "Attack": 0.18
+      }
+    },
+    "Cinematic Strings": {
+      "category": "Strings",
+      "parameters": {
+        "Sustain": 0.8,
+        "Release": 2.6,
+        "Decay": 1.5,
+        "FilterEnv": 0.6,
+        "Lfo1Depth": 0.07,
+        "FilterAttack": 0.3,
+        "FilterSustain": 0.6,
+        "Chorus": 0.55,
+        "Engine": 2,
+        "Harmonics": 24,
+        "Brightness": 0.88,
+        "Cutoff": 12000,
+        "Attack": 0.8
+      },
+      "afterglow": {
+        "Harmonics": 12,
+        "Brightness": 0.6,
+        "Attack": 0.5,
+        "Cutoff": 9000
+      }
+    },
+    "Horror Strings": {
+      "category": "Strings",
+      "parameters": {
+        "Sustain": 0.8,
+        "Release": 1.4,
+        "Decay": 1.5,
+        "FilterEnv": 0.6,
+        "Lfo1Depth": 0.12,
+        "FilterAttack": 0.3,
+        "FilterSustain": 0.6,
+        "Chorus": 0.4,
+        "Engine": 3,
+        "Wavetable": 2.9,
+        "Cutoff": 1700,
+        "Resonance": 0.4,
+        "Attack": 1.1,
+        "Lfo1Dest": 1,
+        "Lfo1Rate": 0.4,
+        "Phaser": 0.35
+      }
+    },
+    "Anime-Inspired Strings": {
+      "category": "Strings",
+      "parameters": {
+        "Sustain": 0.8,
+        "Release": 1.4,
+        "Decay": 1.5,
+        "FilterEnv": 0.6,
+        "Lfo1Depth": 0.07,
+        "FilterAttack": 0.3,
+        "FilterSustain": 0.6,
+        "Chorus": 0.4,
+        "Engine": 0,
+        "Wave1": 2,
+        "Wave2": 4,
+        "Coarse": 12,
+        "OscMix": 0.2,
+        "Detune": 11,
+        "Attack": 0.12,
+        "Cutoff": 8500
+      }
+    },
+    "Synth Strings": {
+      "category": "Strings",
+      "parameters": {
+        "Sustain": 0.8,
+        "Release": 1.4,
+        "Decay": 1.5,
+        "FilterEnv": 0.6,
+        "Lfo1Depth": 0.07,
+        "FilterAttack": 0.3,
+        "FilterSustain": 0.6,
+        "Chorus": 0.4,
+        "Engine": 0,
+        "Wave1": 4,
+        "PulseWidth": 0.38,
+        "Wave2": 2,
+        "OscMix": 0.5,
+        "Detune": 18,
+        "Cutoff": 6500,
+        "Attack": 0.1
+      }
+    },
+    "Orchestral-Style Strings": {
+      "category": "Strings",
+      "parameters": {
+        "Sustain": 0.8,
+        "Release": 1.4,
+        "Decay": 1.5,
+        "FilterEnv": 0.6,
+        "Lfo1Depth": 0.07,
+        "FilterAttack": 0.3,
+        "FilterSustain": 0.6,
+        "Chorus": 0.42,
+        "Engine": 2,
+        "Harmonics": 18,
+        "Brightness": 0.8,
+        "Attack": 0.28,
+        "Cutoff": 9000,
+        "Vibrato": 0.12
+      }
+    },
+    "Pizzicato Strings": {
+      "category": "Strings",
+      "parameters": {
+        "Sustain": 0,
+        "Release": 0.15,
+        "Decay": 0.3,
+        "FilterEnv": 0.6,
+        "Lfo1Depth": 0.07,
+        "FilterAttack": 0.3,
+        "FilterSustain": 0.6,
+        "Chorus": 0.1,
+        "Engine": 4,
+        "Brightness": 0.74,
+        "StringDamping": 0.991,
+        "Attack": 0.001,
+        "Cutoff": 6500
+      }
+    },
+    "Dream Strings": {
+      "category": "Strings",
+      "parameters": {
+        "Sustain": 0.8,
+        "Release": 2.8,
+        "Decay": 1.5,
+        "FilterEnv": 0.6,
+        "Lfo1Depth": 0.07,
+        "FilterAttack": 0.3,
+        "FilterSustain": 0.6,
+        "Chorus": 0.4,
+        "Engine": 3,
+        "Wavetable": 1.8,
+        "Attack": 0.55,
+        "Cutoff": 6000,
+        "Reverb": 0.43,
+        "Delay": 0.2
+      }
+    },
+    "Retro Game Strings": {
+      "category": "Strings",
+      "parameters": {
+        "Sustain": 0.8,
+        "Release": 1.4,
+        "Decay": 1.5,
+        "FilterEnv": 0.6,
+        "Lfo1Depth": 0.07,
+        "FilterAttack": 0.3,
+        "FilterSustain": 0.6,
+        "Chorus": 0.25,
+        "Engine": 3,
+        "Wavetable": 0.9,
+        "Attack": 0.15,
+        "Cutoff": 7500,
+        "CrusherBits": 9,
+        "CrusherRate": 2
+      }
+    }
+  },
+  "compatibilityRefinements": {
+    "Retro Crunk Vocal Synth": {
+      "Vowel": 1.8,
+      "FormantShift": -3,
+      "Syllable": 0.9,
+      "Attack": 0.004,
+      "Decay": 0.16,
+      "Sustain": 0.12,
+      "CrusherBits": 8,
+      "FilterEnv": 2
+    },
+    "Retro Racing Synth": {
+      "Engine": 6,
+      "Wave1": 4,
+      "PulseWidth": 0.18,
+      "Vibrato": 0.3,
+      "Mode": 2,
+      "Glide": 0.04,
+      "Decay": 0.3,
+      "Sustain": 0.65,
+      "FilterEnv": 1,
+      "Cutoff": 9000
+    },
+    "Vintage Sports Game Lead": {
+      "Engine": 3,
+      "Wavetable": 0.3,
+      "Coarse": 12,
+      "OscMix": 0.15,
+      "Detune": 0,
+      "Decay": 0.35,
+      "Sustain": 0.6
+    }
+  }
+}

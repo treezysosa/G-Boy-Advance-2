@@ -2,6 +2,7 @@
 """Build reproducible, original parameter-only factory patches. No audio assets.
 The committed JSON and C++ include must be regenerated together after edits.
 """
+import argparse
 import hashlib
 import json
 import pathlib
@@ -133,37 +134,102 @@ def make_patch(category, name, variation, specs):
     if 'tine' in low: setp(Engine=1, FmRatio=1, FmIndex=1.4, Decay=2.1)
     if 'reed' in low: setp(Engine=7, Brightness=.7, Drive=.24)
     if 'music box' in low or 'toy piano' in low: setp(Engine=7, Brightness=.9, Decay=1.1)
+    # Named acoustic/keyboard/ensemble profiles take precedence over broad style words.
+    profile = instrument_designs().get(name)
+    if profile:
+        assert profile['category'] == category
+        setp(**profile['parameters'])
+    refinement=compatibility_refinements().get(name)
+    if refinement:setp(**refinement)
+    setp(Volume=1)
     if variation:
-        # The second voicing changes excitation spectrum and envelope as well as space.
-        p['tone.brightness']=min(.98,p['tone.brightness']*.65+.22)
-        p['fm.ratio']=p['fm.ratio']*1.5
-        p['fm.index']=p['fm.index']*1.4
-        p['formant.vowel']=(p['formant.vowel']+1.35)%4
-        p['formant.shift']+=2.3
-        p['wavetable.position']=(p['wavetable.position']+1.4)%3
-        p['osc1.wave']=(p['osc1.wave']+1)%5
-        p['string.damping']-=.006
-        p['amp.decay']*=1.6
-        p['amp.attack']*=1.7
-        p['filter.cutoff']*=.65
-        p['filter.env']*=-.6
-        p['fx.delay']=.23
-        p['fx.phaser']=.2
+        engine=int(p['engine'])
+        if engine==0:
+            setp(Wave2=(int(p['osc2.wave'])+2)%5,OscMix=.42,Detune=min(32,p['osc.detune']+8),PulseWidth=.22 if p['osc.pulse']>.35 else .62)
+        elif engine==1:
+            setp(FmRatio=p['fm.ratio']*1.5 if p['fm.ratio']<6 else p['fm.ratio']/2,FmIndex=p['fm.index']*1.45,FilterSustain=min(.8,p['filter.sustain']+.15),FilterDecay=p['filter.decay']*1.4)
+        elif engine==2:
+            setp(Harmonics=min(24,p['additive.harmonics']+6),Brightness=min(.98,p['tone.brightness']+.24))
+        elif engine==3:
+            setp(Wavetable=(p['wavetable.position']+1.1)%3,Detune=min(32,p['osc.detune']+9),OscMix=.38)
+        elif engine==4:
+            setp(Brightness=.1+.8*(1-p['tone.brightness']),StringDamping=p['string.damping']-.0015)
+        elif engine==5:
+            setp(Vowel=(p['formant.vowel']+1.25)%4,FormantShift=p['formant.shift']+3,Breath=min(.65,p['formant.breath']+.12),Choir=min(.9,p['formant.choir']+.25),Detune=min(32,p['osc.detune']+8))
+        elif engine==6:
+            setp(Wave1={0:4,1:3,2:1,3:4,4:1,5:3}[int(p['osc1.wave'])],PulseWidth=.22,CrusherBits=max(6,p['fx.crusherBits']-2))
+        elif engine==7:
+            setp(Brightness=(p['tone.brightness']+.43)%1)
+        setp(Decay=p['amp.decay']*1.4,Attack=p['amp.attack']*1.25,Cutoff=p['filter.cutoff']*.72,
+             FilterEnv=p['filter.env']*-.45,Delay=.2,Phaser=.16)
+    if variation and profile:setp(**profile.get('afterglow',{}))
     for _,key,lo,hi,_,step in specs:
         v=max(lo,min(hi,p[key]))
         if step:v=lo+round((v-lo)/step)*step
         p[key]=round(v,6)
     full_name=name+(' - Afterglow' if variation else '')
     tags=[category.split(' - ')[-1].lower(),'synthesis', 'afterglow' if variation else 'original']
+    tags += [ENGINE_NAMES[int(p['engine'])]]
+    if profile: tags+=['designed instrument', 'percussive' if p['amp.sustain']<.15 else 'sustained']
     if category.startswith('Vocals'): tags+=['formant','synthetic vowels']
     return dict(id='factory.'+hashlib.sha256(full_name.encode()).hexdigest()[:16], name=full_name,
                 category=category,tags=tags,parameters=p)
 
 
-def generate():
+ENGINE_NAMES=['subtractive','fm','additive','wavetable','physical modeling','formant','chiptune','modal']
+_DESIGNS=None
+_REFINEMENTS={}
+def instrument_designs():
+    global _DESIGNS,_REFINEMENTS
+    if _DESIGNS is None:
+        data=json.loads((ROOT/'Presets/instrument-designs.json').read_text())
+        assert data['format']=='gba2.instrument-designs' and data['schemaVersion']==1
+        _DESIGNS=data['designs'];_REFINEMENTS=data.get('compatibilityRefinements',{})
+        specs={row[0]:row for row in schema()}
+        expected={name for cat,names in GROUPS.items() if not cat.startswith('Vocals') and cat!='Retro Games' for name in names.split('|')}
+        assert set(_DESIGNS)==expected
+        parameter_sets=[parameters for profile in _DESIGNS.values() for parameters in (profile['parameters'],profile.get('afterglow',{}))]
+        assert set(_REFINEMENTS)<={name for names in GROUPS.values() for name in names.split('|')}
+        parameter_sets+=list(_REFINEMENTS.values())
+        for parameters in parameter_sets:
+            for symbol,value in parameters.items():
+                assert symbol in specs
+                _,_,lo,hi,_,_=specs[symbol]
+                assert type(value) in (int,float) and lo<=value<=hi,(symbol,value)
+    return _DESIGNS
+
+def compatibility_refinements():
+    instrument_designs()
+    return _REFINEMENTS
+
+def recipe_digest():
+    digest=hashlib.sha256()
+    for name in ['scripts/generate_presets.py','Presets/instrument-designs.json','Source/dsp/ParameterList.inc']:
+        digest.update(name.encode()+b'\0'+(ROOT/name).read_bytes().replace(b'\r\n',b'\n'))
+    return digest.hexdigest()
+
+def generate(uncalibrated=False):
     specs=schema()
     patches=[make_patch(category,name,variation,specs) for category,names in GROUPS.items()
              for name in names.split('|') for variation in range(2)]
+    index=json.loads((ROOT/'Presets/factory-index.json').read_text())
+    assert index['format']=='gba2.factory-index' and index['schemaVersion']==1
+    by_id={p['id']:p for p in patches}
+    ordered=[]
+    for identity in index['presets']:
+        patch=by_id.pop(identity['id'])
+        assert all(patch[key]==identity[key] for key in ('id','name','category'))
+        ordered.append(patch)
+    patches=ordered+list(by_id.values())
+    if not uncalibrated:
+        levels=json.loads((ROOT/'Presets/factory-levels.json').read_text())
+        assert levels['format']=='gba2.factory-levels' and levels['schemaVersion']==1
+        assert levels['recipeSha256']==recipe_digest(),'Recipes changed: regenerate uncalibrated data, render measurements, then recalibrate.'
+        assert set(levels['volumes'])=={p['id'] for p in patches}
+        for patch in patches:
+            gain=levels['volumes'][patch['id']]
+            assert isinstance(gain,(int,float)) and .05<=gain<=.95
+            patch['parameters']['volume']=gain
     assert len(patches)>=300
     assert len({json.dumps(p['parameters'],sort_keys=True) for p in patches})==len(patches)
     payload=dict(format='gba2.factory',schemaVersion=1,description='Original synthesis parameters; no audio, voices, phrases, or game data.',presets=patches)
@@ -179,4 +245,5 @@ def generate():
     (ROOT/'Source/FactoryData.h').write_text('\n'.join(lines)+'\n')
     print(f'Generated {len(patches)} patches, {len(GROUPS)} categories, {len(specs)} stable parameters.')
 
-if __name__=='__main__': generate()
+if __name__=='__main__':
+    parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--uncalibrated',action='store_true');args=parser.parse_args();generate(args.uncalibrated)

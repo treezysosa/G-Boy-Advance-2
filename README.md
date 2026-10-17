@@ -2,7 +2,7 @@
 
 A C++20 / JUCE 8 hybrid synthesis instrument targeting Windows x64 VST3 and standalone. The purple, wide console interface uses native scalable controls. All sound is generated mathematically: there is no sampler, sample import, commercial game audio, or network dependency at runtime.
 
-**Development build 0.5.0 — Phase 5 effects.** Saturation/distortion use true 2× FIR oversampling with a fixed 16-sample processor latency. Delay times crossfade between stationary taps; wow/flutter and modulation use independent bounded clocks; EQ uses proper low/high shelving biquads. Precise fractional-delay indexing and parameter-derived tail reporting improve buffer safety and host integration. All 64 parameter IDs and project schema 1 stay stable. All 1,836 DSP checks and 175 Linux / 178 Windows integration checks pass. All four DSP suites pass ASan/UBSan with leak detection disabled. Windows VST3/standalone builds, five CTest suites, pluginval strictness 10 and packaging pass. See [Phase 5](docs/PHASE_5.md), [validation](docs/VALIDATION.md) and the [Phase 2 visual acceptance notes](docs/PHASE_2.md).
+**Development build 0.6.0 — Phase 6 factory presets.** The 382-preset, 17-category bank now includes explicit designs for 102 named instruments and engine-aware Afterglow variations, plus reproducible master-level calibration and a frozen factory identity/program registry. A new native audit checks three registers, two velocities, note release, headroom and dry spectral/envelope differences, and creates optional synthesized audition excerpts. The DSP, all 64 parameter IDs and project schema 1 remain unchanged. Local validation passes 6,231 DSP checks and 177 JUCE integration checks; Windows validation is pending. See [Phase 6](docs/PHASE_6.md), [preset authoring](docs/PRESET_FORMAT.md), [validation](docs/VALIDATION.md) and [Phase 2 visual acceptance](docs/PHASE_2.md).
 
 ![G Boy Advance 2 Phase 2 native JUCE editor](docs/images/phase2-main.png)
 
@@ -18,7 +18,7 @@ cd G-Boy-Advance-2
 powershell -ExecutionPolicy Bypass -File scripts/build-windows.ps1
 ```
 
-You can also open [Build and validate in GitHub Actions](https://github.com/treezysosa/G-Boy-Advance-2/actions/workflows/build.yml), choose **Run workflow**, and download the Windows artifact after the job succeeds. The workflow and Windows script are included in the corrected source upload. Version 0.5.0 builds and passes all five CTest suites, pluginval strictness 10 and packaging in [run 39011625622](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39011625622). Full results are recorded in VALIDATION.md.
+You can also open [Build and validate in GitHub Actions](https://github.com/treezysosa/G-Boy-Advance-2/actions/workflows/build.yml), choose **Run workflow**, and download the Windows artifact after the job succeeds. The workflow and Windows script are included in the corrected source upload. The previous 0.5.0 build passed all five CTest suites, pluginval strictness 10 and packaging in [run 39011625622](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39011625622). Version 0.6.0 adds the factory audit as a sixth suite; Windows validation is pending. Full results are recorded in VALIDATION.md.
 
 The first local build downloads the pinned JUCE 8.0.6 source. For an offline build, supply an existing checkout:
 
@@ -43,14 +43,14 @@ Close your DAW, copy the entire `.vst3` directory into `C:\Program Files\Common 
 - Sine, harmonic-limited triangle, PolyBLEP saw / square / pulse, and noise; resonant low-pass, high-pass, band-pass, notch, and formant filters.
 - Two ADSRs, two routable LFOs, vibrato, tremolo, velocity, 16-channel MIDI pitch bend / modulation / sustain, 1–32 voices, stealing, mono / legato, glide.
 - Reverb, delay, chorus, phaser, flanger, saturation, distortion, bitcrusher, tape wow / flutter, low / high shelves, and stereo width.
-- 382 original factory patches across 17 categories. Vocal patches are synthesized vowel-like timbres and contain no recorded voices or speech.
+- 382 original factory patches across 17 categories, explicit named-instrument profiles, calibrated levels and stable program identities. Vocal patches are synthesized vowel-like timbres and contain no recorded voices or speech.
 - Reference-based vector UI, playable keyboard, spring-return pitch wheel, functional D-pad, preview A / stop B, START browser, SELECT advanced editor, assignable A–D controls.
 - Host-visible parameters, project state, user preset Save As / rename / delete, favorites / recent patches, category search, tags, keyboard navigation.
 - Windows CI, portable packaging and Inno Setup installer script, DSP and JUCE integration tests.
 
 ## Factory and user presets
 
-Canonical library: [`Presets/factory.json`](Presets/factory.json). The compiled plugin embeds the same parameter values in `Source/FactoryData.h`; users do not need to install an external bank. Regenerate both with `python scripts/generate_presets.py`.
+Canonical library: [`Presets/factory.json`](Presets/factory.json). The compiled plugin embeds the same parameter values in `Source/FactoryData.h`; users do not need to install an external bank. Regenerate both with `python scripts/generate_presets.py`. Recipe changes require the offline calibration workflow in the preset-format document; no authoring files or audio renders are needed at runtime.
 
 User patches: `%APPDATA%\Treezy Audio\G Boy Advance 2\Presets\*.gba2preset`. Favorites and recents: `library.json` in the parent directory. Every patch contains parameters and metadata only. See [preset schema](docs/PRESET_FORMAT.md).
 
@@ -62,7 +62,7 @@ cmake --build build-core --parallel 2
 ctest --test-dir build-core --output-on-failure
 ```
 
-Or, run all four DSP suites with a C++20 compiler alone:
+Or, run all five DSP suites with a C++20 compiler alone:
 
 ```sh
 bash scripts/test-core.sh

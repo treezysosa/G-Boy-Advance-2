@@ -37,6 +37,12 @@ int main() {
         set(p,"fx.delayFeedback",.85f);set(p,"fx.reverb",.8f);set(p,"fx.reverbSize",1);set(p,"amp.release",12);
         check(p.getTailLengthSeconds()>120&&p.getTailLengthSeconds()<150,"Host tail estimate truncates long feedback delays");
         p.presets.restoreDefault();
+        const auto factoryId=p.presetId();set(p,"filter.cutoff",4321);set(p,"volume",.371f);
+        juce::MemoryBlock factoryState;p.getStateInformation(factoryState);
+        auto factoryReload=std::make_unique<GbaProcessor>(root);factoryReload->setStateInformation(factoryState.getData(),int(factoryState.getSize()));
+        check(factoryReload->presetId()==factoryId,"Factory project identity did not survive state reload");
+        check(std::abs(factoryReload->snapshot()[gba::Param::Cutoff]-4321)<.1f&&std::abs(factoryReload->snapshot()[gba::Param::Volume]-.371f)<.0001f,"Factory state was replaced by current library values on project reload");
+        p.presets.restoreDefault();
         juce::AudioBuffer<float> audio(2,256);juce::MidiBuffer midi;
         // Verify the host wrapper splits rendering at MIDI sample offsets.
         set(p,"amp.attack",.001f);midi.addEvent(juce::MidiMessage::noteOn(1,60,.8f),128);p.processBlock(audio,midi);

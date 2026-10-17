@@ -25,7 +25,10 @@ jobs:
         if: always()
         with:
           name: DSP-validation
-          path: build/preset-validation.csv
+          path: |
+            build/preset-validation.csv
+            build/factory-audit.csv
+            build/factory-similarity.csv
   windows:
     runs-on: windows-2022
     steps:
@@ -61,3 +64,11 @@ jobs:
             build/preset-validation.csv
             build/Testing/Temporary/LastTest.log
             build/validation-logs/**
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: Factory-preset-auditions-Windows
+          path: |
+            build/preset-auditions/**
+            build/factory-audit.csv
+            build/factory-similarity.csv

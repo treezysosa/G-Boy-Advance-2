@@ -49,3 +49,9 @@ DAW project state includes every stable parameter, macro assignment, patch metad
 If silent: confirm the track is an instrument track, MIDI routing is active, stereo output is routed, master volume is nonzero, and the audio device is running. Try A to audition. A long-attack patch can take time to become loud. Verify plugin scan paths and use the complete `.vst3` bundle, not just the binary inside it.
 
 This development version passes Windows compilation, automated tests and pluginval strictness 10. Interactive DAW/device acceptance, high-DPI checks and listening review remain pending. Consult VALIDATION.md before production use.
+
+## Factory bank revision 0.6
+
+The bank retains 382 patches, all factory names/IDs and program order. Named instruments have explicit synthesis profiles and Afterglow variants change active excitation/envelope controls. Factory levels are calibrated using a 100 ms stereo RMS metric; quieter articulations remain quieter when the master knob reaches its gain ceiling. This is not perceptual loudness normalization.
+
+Saved projects restore their actual parameter values, even when their factory ID also exists in the revised bank. Loading the factory preset again selects its new voicing. User presets remain independent. Optional category audition WAVs are original test renders for listening review; they are never loaded by the instrument.
