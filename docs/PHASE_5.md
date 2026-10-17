@@ -42,7 +42,7 @@ The alias comparison is one selected tone/level and does not establish full-chai
 
 - Strict GCC 14.2 C++20 compilation: PASS. All 1,836 DSP checks (1,387 engine/factory/effects + 161 core + 150 advanced + 138 effects) PASS.
 - AddressSanitizer and UndefinedBehaviorSanitizer: all four DSP suites PASS with halt-on-error. Leak detection is disabled because LeakSanitizer is unsupported in this sandbox/ptrace environment; leak freedom is not claimed.
-- Linux JUCE processor/state/preset/UI integration: 172 checks PASS, including host latency.
+- Linux JUCE processor/state/preset/UI integration: 175 checks PASS, including host latency.
 - Factory JSON and compiled parameter data regenerate byte-for-byte.
 - Windows Visual Studio 2022 build, five CTest suites, pluginval and packaging: pending this revision's CI run.
 
@@ -51,3 +51,5 @@ CMake is unavailable locally, so local compilation uses GCC directly; CI verifie
 ## Next work
 
 Proceed to Phase 6 factory-preset sound design and listening review. Complete physical Windows/DAW/DPI acceptance, real audio-device deadline/underrun and engine-blend stress, the separate Steinberg validator, interactive installer tests, release signing and licensing. Full modulation-matrix expansion remains a separate feature.
+
+Host tail reporting derives from release time plus delay and room feedback decay to -100 dB relative to their initial level, with a small processing margin. It replaces the fixed 30-second estimate, which could truncate long echoes. Integration checks cover a short dry tail, one echo and the maximum high-feedback case (over two minutes). Actual DAW export-tail behavior still needs manual acceptance.

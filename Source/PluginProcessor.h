@@ -18,7 +18,7 @@ public:
     bool acceptsMidi() const override {return true;}
     bool producesMidi() const override {return false;}
     bool isMidiEffect() const override {return false;}
-    double getTailLengthSeconds() const override {return 30;}
+    double getTailLengthSeconds() const override;
     int getNumPrograms() override;
     int getCurrentProgram() override {return currentProgram.load();}
     void setCurrentProgram(int) override;

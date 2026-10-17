@@ -30,6 +30,13 @@ int main() {
         auto processor=std::make_unique<GbaProcessor>(root);auto& p=*processor;
         p.setRateAndBufferSizeDetails(48000,256);p.prepareToPlay(48000,256);
         check(p.getLatencySamples()==16,"Host latency does not match the oversampled effects path");
+        set(p,"fx.reverb",0);set(p,"fx.delay",0);set(p,"amp.release",.2f);
+        check(p.getTailLengthSeconds()>=.2&&p.getTailLengthSeconds()<1,"Dry patch tail is not based on envelope release");
+        set(p,"fx.delay",.8f);set(p,"fx.delayTime",1.5f);set(p,"fx.delayFeedback",0);
+        check(p.getTailLengthSeconds()>=1.7&&p.getTailLengthSeconds()<2,"Single echo tail was omitted or overestimated");
+        set(p,"fx.delayFeedback",.85f);set(p,"fx.reverb",.8f);set(p,"fx.reverbSize",1);set(p,"amp.release",12);
+        check(p.getTailLengthSeconds()>120&&p.getTailLengthSeconds()<150,"Host tail estimate truncates long feedback delays");
+        p.presets.restoreDefault();
         juce::AudioBuffer<float> audio(2,256);juce::MidiBuffer midi;
         // Verify the host wrapper splits rendering at MIDI sample offsets.
         set(p,"amp.attack",.001f);midi.addEvent(juce::MidiMessage::noteOn(1,60,.8f),128);p.processBlock(audio,midi);

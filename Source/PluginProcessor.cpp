@@ -24,6 +24,16 @@ GbaProcessor::GbaProcessor(juce::File dataRoot)
     keyboard.addListener(this);presets.restoreDefault();startTimerHz(20);
 }
 GbaProcessor::~GbaProcessor() {stopTimer();keyboard.removeListener(this);}
+double GbaProcessor::getTailLengthSeconds() const {
+    const auto s=snapshot();
+    // Include the envelope and cascaded echo/room decay, down to -100 dB
+    // relative to their initial feedback level. This also avoids a 30-second
+    // truncation estimate for a 1.5-second delay with 85% feedback.
+    const auto repeats=[](double feedback) {return feedback>0?std::ceil(std::log(1e-5)/std::log(feedback)):0.0;};
+    const double echo=s[gba::Param::Delay]>0?s[gba::Param::DelayTime]*(1+repeats(s[gba::Param::DelayFeedback])):0;
+    const double room=s[gba::Param::Reverb]>0?.045*(1+repeats(.5+.46*s[gba::Param::ReverbSize])):0;
+    return s[gba::Param::Release]+echo+room+.1;
+}
 void GbaProcessor::prepareToPlay(double sr,int) {engine->setSettings(snapshot());engine->prepare(sr);}
 void GbaProcessor::releaseResources() {engine->reset();active=0;level=0;}
 void GbaProcessor::reset() {engine->reset();active=0;level=0;}
