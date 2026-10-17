@@ -2,7 +2,7 @@
 
 A C++20 / JUCE 8 hybrid synthesis instrument targeting Windows x64 VST3 and standalone. The purple, wide console interface uses native scalable controls. All sound is generated mathematically: there is no sampler, sample import, commercial game audio, or network dependency at runtime.
 
-**Development build 0.1.0 — not yet a validated commercial release.** The standalone DSP core has compiled and passed 1,381 checks on Linux. The JUCE plugin, Windows targets, host loading, and visual fidelity still require the Windows CI and manual acceptance checks. See [validation status](docs/VALIDATION.md) and [exact next steps](docs/NEXT_STEPS.md).
+**Development build 0.1.0 — not yet a validated commercial release.** The standalone DSP core has compiled and passed 1,384 checks on Linux. The JUCE plugin, Windows targets, host loading, and visual fidelity still require the Windows CI and manual acceptance checks. See [validation status](docs/VALIDATION.md) and [exact next steps](docs/NEXT_STEPS.md).
 
 ## Build on Windows
 

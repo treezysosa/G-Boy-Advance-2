@@ -22,6 +22,7 @@ UninstallDisplayName=G Boy Advance 2
 Source: "{#Artifacts}\VST3\G Boy Advance 2.vst3\*"; DestDir: "{commoncf64}\VST3\G Boy Advance 2.vst3"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "{#Artifacts}\Standalone\G Boy Advance 2.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\docs\USER_MANUAL.md"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\docs\LICENSING.md"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\Presets\factory.json"; DestDir: "{app}\Factory Presets"; Flags: ignoreversion
 [Icons]
 Name: "{autoprograms}\G Boy Advance 2"; Filename: "{app}\G Boy Advance 2.exe"

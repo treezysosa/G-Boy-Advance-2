@@ -25,6 +25,7 @@ GbaProcessor::GbaProcessor(juce::File dataRoot)
 GbaProcessor::~GbaProcessor() {stopTimer();keyboard.removeListener(this);}
 void GbaProcessor::prepareToPlay(double sr,int) {engine->setSettings(snapshot());engine->prepare(sr);}
 void GbaProcessor::releaseResources() {engine->reset();active=0;level=0;}
+void GbaProcessor::reset() {engine->reset();active=0;level=0;}
 bool GbaProcessor::isBusesLayoutSupported(const BusesLayout& layout) const {
     return layout.getMainInputChannelSet().isDisabled()&&layout.getMainOutputChannelSet()==juce::AudioChannelSet::stereo();
 }
@@ -39,7 +40,7 @@ void GbaProcessor::enqueue(Command c) noexcept {
 void GbaProcessor::handleNoteOn(juce::MidiKeyboardState*,int c,int n,float v) {enqueue({1,c,n,v});}
 void GbaProcessor::handleNoteOff(juce::MidiKeyboardState*,int c,int n,float) {enqueue({2,c,n,0});}
 void GbaProcessor::preview() {enqueue({3,1,60,.85f});}
-void GbaProcessor::stopPreview() {previewStopRequested.store(true);}
+void GbaProcessor::stopPreview() {enqueue({4,1,60,0});}
 void GbaProcessor::uiPitch(int value) {pitchRequested.store(juce::jlimit(0,16383,value));}
 void GbaProcessor::panic() {panicRequested.store(true);}
 void GbaProcessor::drainCommands() noexcept {
@@ -49,10 +50,10 @@ void GbaProcessor::drainCommands() noexcept {
             if(c.kind==1)engine->noteOn(c.channel,c.note,c.value);
             if(c.kind==2)engine->noteOff(c.channel,c.note);
             if(c.kind==3)engine->noteOn(c.channel,c.note,c.value,true);
+            if(c.kind==4)engine->stopPreview();
         }
     };
     process(first,count);process(second,count2);commandFifo.finishedRead(count+count2);
-    if(previewStopRequested.exchange(false))engine->stopPreview();
     if(panicRequested.exchange(false))engine->allNotesOff(true);
     int pitch=pitchRequested.exchange(-1);if(pitch>=0)engine->pitchWheel(1,pitch);
 }
@@ -84,21 +85,24 @@ void GbaProcessor::setCurrentProgram(int i) {if(i>=0&&i<getNumPrograms())pending
 const juce::String GbaProcessor::getProgramName(int i) {return i>=0&&i<getNumPrograms()?juce::String(gba::factoryPatches[std::size_t(i)].name):juce::String();}
 void GbaProcessor::servicePendingProgram() {int i=pendingProgram.exchange(-1);if(i>=0)presets.load(gba::factoryPatches[std::size_t(i)].id);}
 void GbaProcessor::applyPreset(const GbaPreset& p) {
+    const juce::ScopedLock lock(metadataLock);
     // All changes use host-visible parameter notifications; the audio thread reads atomics only.
     for(std::size_t i=0;i<gba::parameterCount;++i) {
         auto* parameter=state.getParameter(juce::String(gba::specs[i].id.data()));
         parameter->beginChangeGesture();parameter->setValueNotifyingHost(parameter->convertTo0to1(p.settings.values[i]));parameter->endChangeGesture();
     }
-    state.state.setProperty("presetId",p.id,nullptr);state.state.setProperty("presetName",p.name,nullptr);state.state.setProperty("presetCategory",p.category,nullptr);
+    activePresetId=p.id;activePresetName=p.name;activePresetCategory=p.category;
     currentProgram.store(0);
     for(std::size_t i=0;i<gba::factoryPatches.size();++i)if(p.id==gba::factoryPatches[i].id) {currentProgram.store(int(i));break;}
     stopPreview();
 }
-juce::String GbaProcessor::presetId() const {return state.state.getProperty("presetId").toString();}
-juce::String GbaProcessor::presetName() const {return state.state.getProperty("presetName","Custom patch").toString();}
-juce::String GbaProcessor::presetCategory() const {return state.state.getProperty("presetCategory","User").toString();}
+juce::String GbaProcessor::presetId() const {const juce::ScopedLock lock(metadataLock);return activePresetId;}
+juce::String GbaProcessor::presetName() const {const juce::ScopedLock lock(metadataLock);return activePresetName;}
+juce::String GbaProcessor::presetCategory() const {const juce::ScopedLock lock(metadataLock);return activePresetCategory;}
+void GbaProcessor::renameCurrentPreset(const juce::String& name) {const juce::ScopedLock lock(metadataLock);activePresetName=name;}
 void GbaProcessor::getStateInformation(juce::MemoryBlock& destination) {
-    auto copy=state.copyState();copy.setProperty("schemaVersion",1,nullptr);copy.setProperty("editorWidth",editorWidth.load(),nullptr);
+    const juce::ScopedLock lock(metadataLock);
+    auto copy=state.copyState();copy.setProperty("presetId",activePresetId,nullptr);copy.setProperty("presetName",activePresetName,nullptr);copy.setProperty("presetCategory",activePresetCategory,nullptr);copy.setProperty("schemaVersion",1,nullptr);copy.setProperty("editorWidth",editorWidth.load(),nullptr);
     if(auto xml=copy.createXml())copyXmlToBinary(*xml,destination);
 }
 void GbaProcessor::setStateInformation(const void* data,int bytes) {
@@ -114,8 +118,11 @@ void GbaProcessor::setStateInformation(const void* data,int bytes) {
             child.setProperty("value",juce::jlimit(spec.min,spec.max,value),nullptr);
         }
     }
+    const juce::ScopedLock lock(metadataLock);
     pendingProgram.store(-1);state.replaceState(restored);
+    activePresetId=restored.getProperty("presetId").toString();activePresetName=restored.getProperty("presetName","Custom patch").toString();activePresetCategory=restored.getProperty("presetCategory","User").toString();
     editorWidth.store(juce::jlimit(960,1920,int(restored.getProperty("editorWidth",1280))));
+    currentProgram.store(0);
     for(std::size_t i=0;i<gba::factoryPatches.size();++i)if(restored.getProperty("presetId").toString()==gba::factoryPatches[i].id){currentProgram.store(int(i));break;}
     panicRequested.store(true);
 }

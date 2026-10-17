@@ -12,6 +12,7 @@ New-Item -ItemType Directory -Force $stage | Out-Null
 Copy-Item -Recurse -Force $vst $stage
 Copy-Item -Force $standalone,$(Join-Path $root 'README.md'),$(Join-Path $root 'docs\USER_MANUAL.md') $stage
 Copy-Item -Recurse -Force (Join-Path $root 'Presets') $stage
+Copy-Item -Force (Join-Path $root 'docs\LICENSING.md') $stage
 Compress-Archive -Force -Path "$stage\*" -DestinationPath (Join-Path $dist 'G-Boy-Advance-2-Windows-x64.zip')
 & $Iscc "/DArtifacts=$artifacts" "/DOutput=$dist" (Join-Path $root 'packaging\installer.iss')
 if ($LASTEXITCODE -ne 0) { throw 'Inno Setup compilation failed.' }

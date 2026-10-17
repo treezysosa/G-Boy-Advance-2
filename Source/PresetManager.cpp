@@ -77,7 +77,7 @@ juce::Result PresetManager::renameUser(const juce::String& id,const juce::String
     for(auto& p:presets)if(p.id==id) {
         if(p.factory)return juce::Result::fail("Factory patches are read-only. Use Save As.");
         auto copy=p;copy.name=name.trim();auto result=write(copy);if(result.failed())return result;p=std::move(copy);
-        if(processor.presetId()==id)processor.state.state.setProperty("presetName",p.name,nullptr);
+        if(processor.presetId()==id)processor.renameCurrentPreset(p.name);
         return juce::Result::ok();
     }
     return juce::Result::fail("Preset not found.");

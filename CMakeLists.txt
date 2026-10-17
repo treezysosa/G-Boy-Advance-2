@@ -3,6 +3,7 @@ project(GBoyAdvance2 VERSION 0.1.0 LANGUAGES C CXX)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
+set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 option(GBA_BUILD_PLUGIN "Build JUCE VST3, standalone, and integration tests" ON)
 option(GBA_ENABLE_SANITIZERS "Address and undefined behaviour sanitizers (Clang/GCC)" OFF)
 include(CTest)
@@ -57,7 +58,7 @@ juce_add_plugin(GBoyAdvance2
 juce_generate_juce_header(GBoyAdvance2)
 target_sources(GBoyAdvance2 PRIVATE
     Source/PluginProcessor.cpp Source/PluginEditor.cpp Source/PresetManager.cpp
-    Source/PluginProcessor.h Source/PluginEditor.h Source/PresetManager.h)
+    Source/PluginProcessor.h Source/PluginEditor.h Source/PixelText.h Source/PresetManager.h)
 target_compile_definitions(GBoyAdvance2 PUBLIC
     JUCE_WEB_BROWSER=0 JUCE_USE_CURL=0 JUCE_VST3_CAN_REPLACE_VST2=0
     JUCE_DISPLAY_SPLASH_SCREEN=0 JUCE_REPORT_APP_USAGE=0)

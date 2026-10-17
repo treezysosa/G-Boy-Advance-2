@@ -67,7 +67,7 @@ void Effects::process(float& l,float& r,const Settings& s) noexcept {
 void SynthEngine::prepare(double rate) {
     sampleRate=static_cast<float>(std::clamp(rate,8000.0,192000.0));
     smoothing=1-std::exp(-1/(0.015f*sampleRate));
-    effects.prepare(sampleRate);if(!tablesReady){buildTables();tablesReady=true;}reset();
+    effects.prepare(sampleRate);if(!tablesReady){buildTables();tablesReady=true;}reset();prepared=true;
 }
 void SynthEngine::reset() noexcept {
     for(auto& v:voices) {v.note=-1;v.amp={};v.filterEnv={};v.filter.clear();v.tail=0;v.last=0;v.held=false;v.preview=false;}
@@ -129,7 +129,7 @@ void SynthEngine::noteOn(int channel,int note,float velocity,bool preview) noexc
     if(channel<1 || channel>16 || note<0 || note>127) return;
     if(velocity<=0) {noteOff(channel,note);return;}
     velocity=std::clamp(velocity,0.0f,1.0f);
-    if(!preview) keys[channel-1][note]={true,velocity,++clock};
+    if(!preview) {auto& key=keys[channel-1][note];key.down=true;key.velocity=velocity;key.order=++clock;key.presses=std::min(key.presses+1,128u);}
     int mode=int(target[Param::Mode]),count=int(target[Param::Voices]);
     if(mode!=0 && !preview) {bool legato=mode==2&&voices[0].held&&voices[0].amp.stage!=Envelope::Off;start(voices[0],channel,note,velocity,false,legato);return;}
     Voice* choice=nullptr;
@@ -147,13 +147,15 @@ void SynthEngine::noteOn(int channel,int note,float velocity,bool preview) noexc
 }
 void SynthEngine::noteOff(int channel,int note) noexcept {
     if(channel<1||channel>16||note<0||note>127) return;
-    keys[channel-1][note].down=false;
+    auto& key=keys[channel-1][note];if(key.presses>0)--key.presses;key.down=key.presses>0;
     if(int(target[Param::Mode])!=0 && voices[0].note==note && voices[0].channel==channel) {
         std::uint64_t newest=0;int next=-1,nextChannel=channel;
         for(int c=0;c<16;++c) for(int n=0;n<128;++n) if(keys[c][n].down&&keys[c][n].order>newest) {newest=keys[c][n].order;next=n;nextChannel=c+1;}
         if(next>=0) {start(voices[0],nextChannel,next,keys[nextChannel-1][next].velocity,false,int(target[Param::Mode])==2);return;}
     }
-    for(auto& v:voices) if(v.channel==channel&&v.note==note&&!v.preview) {v.held=false;if(!sustain[channel-1]) release(v);}
+    Voice* released=nullptr;
+    for(auto& v:voices) if(v.channel==channel&&v.note==note&&!v.preview&&v.held) {if(!released||v.age<released->age)released=&v;}
+    if(released) {released->held=false;if(!sustain[channel-1])release(*released);}
 }
 void SynthEngine::controller(int channel,int number,int value) noexcept {
     if(channel<1||channel>16) return;
@@ -242,6 +244,7 @@ float SynthEngine::voiceSample(Voice& v) noexcept {
     v.last=x;return x;
 }
 void SynthEngine::render(float* left,float* right,int samples) noexcept {
+    if(!prepared) {std::fill_n(left,samples,0.0f);std::fill_n(right,samples,0.0f);return;}
     for(int i=0;i<samples;++i) {
         for(std::size_t p=0;p<parameterCount;++p) {
             if(specs[p].step>0 || p>=index(Param::MacroA)) current.values[p]=target.values[p];

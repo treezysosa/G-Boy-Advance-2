@@ -39,7 +39,7 @@ public:
     int activeVoices() const noexcept;
     const Settings& settings() const noexcept {return target;}
 private:
-    static constexpr int maxVoices=32, stringSize=4096;
+    static constexpr int maxVoices=32, stringSize=32768;
     struct Voice {
         int note=-1,channel=1,controlCounter=0;
         bool held=false,preview=false;
@@ -54,8 +54,8 @@ private:
         std::array<float,stringSize> string{};
         int stringPos=0;
     };
-    struct Key {bool down=false;float velocity=0;std::uint64_t order=0;};
-    bool tablesReady=false;
+    struct Key {bool down=false;float velocity=0;std::uint64_t order=0;unsigned presses=0;};
+    bool tablesReady=false,prepared=false;
     float sampleRate=48000,lastFrequency=0;
     int previewSamples=0,lastMode=0,lastVoiceCount=16;
     std::uint64_t clock=0;

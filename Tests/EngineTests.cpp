@@ -40,6 +40,7 @@ void writeWav(const std::string& path,const Audio& a,int sr) {
 int main(int argc,char** argv) {
     try {
         auto engine=std::make_unique<gba::SynthEngine>();auto& e=*engine;
+        Audio early(128);e.render(early.l.data(),early.r.data(),128);require(rms(early.l)==0,"Unprepared engine must safely output silence");
         std::set<std::string_view> ids;
         for(const auto& s:gba::specs) {require(ids.insert(s.id).second,"Duplicate stable parameter ID");require(s.initial>=s.min&&s.initial<=s.max,"Invalid parameter default");}
         auto s=clean();init(e,s);Audio a(24000);e.noteOn(1,69,1);e.render(a.l.data(),a.r.data(),24000);finite(a);
@@ -54,6 +55,7 @@ int main(int argc,char** argv) {
         e.noteOn(1,60,1,true);e.render(a.l.data(),a.r.data(),24000);e.render(a.l.data(),a.r.data(),24000);require(e.activeVoices()==0,"Preview did not time out");
         e.noteOn(1,60,1);e.noteOn(1,64,1,true);e.stopPreview();e.render(a.l.data(),a.r.data(),24000);require(e.activeVoices()==1,"B button killed DAW notes or did not stop preview");
         e.controller(1,120,0);require(e.activeVoices()==0,"All sound off failed");
+        init(e,clean());e.noteOn(1,60,1);e.noteOn(1,60,.8f);e.noteOff(1,60);e.render(a.l.data(),a.r.data(),24000);require(e.activeVoices()==1,"Overlapping identical notes released together");e.noteOff(1,60);e.render(a.l.data(),a.r.data(),24000);require(e.activeVoices()==0,"Overlapping identical note got stuck");
         std::cout<<"PASS sustain, channel isolation, velocity-zero, preview lifecycle, panic\n";
         s.set(gba::Param::Voices,4);init(e,s);for(int n=30;n<90;++n)e.noteOn(1,n,.8f);require(e.activeVoices()==4,"Voice stealing did not respect voice count");finite(a);
         s.set(gba::Param::Mode,2);s.set(gba::Param::Glide,.1f);init(e,s);e.noteOn(1,60,.7f);e.noteOn(1,64,.8f);e.noteOff(1,64);e.render(a.l.data(),a.r.data(),24000);require(e.activeVoices()==1,"Legato last-note priority failed");e.noteOff(1,60);e.render(a.l.data(),a.r.data(),24000);require(e.activeVoices()==0,"Legato note stack stuck");

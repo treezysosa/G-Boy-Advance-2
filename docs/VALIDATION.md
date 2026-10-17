@@ -7,7 +7,10 @@ Development snapshot 0.1.0. A passing DSP test is not proof that a host can load
 Linux x86_64, GCC 14.2.0, C++20, `-O2 -Wall -Wextra -Wpedantic -Werror`.
 
 - Native DSP compilation: PASS.
-- DSP suite: **1,381 checks PASS**.
+- Rendering before preparation safely returns silence: PASS.
+- DSP suite: **1,384 checks PASS**.
+- AddressSanitizer + UndefinedBehaviorSanitizer: same suite PASS with `ASAN_OPTIONS=detect_leaks=0`. LeakSanitizer is unavailable in the sandbox/ptrace environment; leak freedom is not claimed.
+- Overlapping identical notes release one voice at a time: PASS.
 - 382 factory parameter sets: unique, audible at the category test note, finite and bounded.
 - Quietest onset RMS at 48 kHz over 8,192 samples: 0.000253984.
 - Eight synthesis engines at 44.1, 48, and 96 kHz: PASS.
@@ -24,7 +27,9 @@ These are automated numerical checks. They do not establish perceptual quality, 
 
 The provided machine has GCC but no CMake, JUCE checkout, Windows SDK, Visual Studio, or DAW. Shell dependency downloads could not reach the proxy. No successful JUCE compilation, Windows binary, GUI screenshot, installer, VST3 validator result, or DAW compatibility is claimed in this record.
 
-The GitHub Actions workflow builds Windows x64 VST3 / standalone and runs `Tests/PluginTests.cpp`. Its actual outcome must be recorded below after completion; source presence does not mean those tests passed.
+The committed GitHub Actions workflow is configured to build Windows x64 VST3 / standalone and run `Tests/PluginTests.cpp`. No workflow run appeared in the repository Actions API during this session, so there is no CI result to report. Open Actions → Build and validate → Run workflow, then record the result here. Source presence does not mean those tests passed.
+
+The unexecuted JUCE integration suite covers sample-offset MIDI, state roundtrips, user preset CRUD, favorites/history persistence, host programs, categories, volume attachment, pitch-wheel return, preview buttons, browser/advanced opening, and editor snapshots at multiple sizes.
 
 ## Manual host acceptance matrix
 

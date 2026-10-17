@@ -9,6 +9,7 @@ public:
     ~GbaProcessor() override;
     void prepareToPlay(double,int) override;
     void releaseResources() override;
+    void reset() override;
     bool isBusesLayoutSupported(const BusesLayout&) const override;
     void processBlock(juce::AudioBuffer<float>&,juce::MidiBuffer&) override;
     juce::AudioProcessorEditor* createEditor() override;
@@ -17,7 +18,7 @@ public:
     bool acceptsMidi() const override {return true;}
     bool producesMidi() const override {return false;}
     bool isMidiEffect() const override {return false;}
-    double getTailLengthSeconds() const override {return 15;}
+    double getTailLengthSeconds() const override {return 30;}
     int getNumPrograms() override;
     int getCurrentProgram() override {return currentProgram.load();}
     void setCurrentProgram(int) override;
@@ -27,6 +28,7 @@ public:
     void setStateInformation(const void*,int) override;
     gba::Settings snapshot() const noexcept;
     void applyPreset(const GbaPreset&);
+    void renameCurrentPreset(const juce::String&);
     juce::String presetId() const;
     juce::String presetName() const;
     juce::String presetCategory() const;
@@ -46,12 +48,15 @@ private:
     struct Command {int kind=0,channel=1,note=60;float value=0;};
     std::array<Command,256> commands{};
     juce::AbstractFifo commandFifo {256}; // Message thread produces; audio thread consumes.
-    std::atomic<bool> previewStopRequested {false},panicRequested {false};
+    std::atomic<bool> panicRequested {false};
     std::atomic<int> pitchRequested {-1};
     std::array<std::atomic<float>*,gba::parameterCount> raw{};
     std::unique_ptr<gba::SynthEngine> engine;
     std::atomic<int> pendingProgram {-1},currentProgram {0},active {0};
     std::atomic<float> level {0};
+    // State serialization and UI metadata may run on different non-audio threads.
+    mutable juce::CriticalSection metadataLock;
+    juce::String activePresetId,activePresetName {"Custom patch"},activePresetCategory {"User"};
     void enqueue(Command) noexcept;
     void drainCommands() noexcept;
     void midi(const juce::MidiMessage&) noexcept;

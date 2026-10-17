@@ -1,4 +1,5 @@
 #include "PluginEditor.h"
+#include "PixelText.h"
 
 namespace {
 const juce::Colour purple {0xff7943ff}, deep {0xff131c61}, ink {0xff080c25}, silver {0xffe6e5e5}, text {0xffeeeeff};
@@ -80,7 +81,7 @@ public:
         remove.onClick=[this]{
             auto id=processor.presetId();auto* selected=processor.presets.find(id);if(!selected||selected->factory)return;
             juce::Component::SafePointer<BrowserPanel> safe(this);
-            juce::AlertWindow::showAsync(juce::MessageBoxOptions().withIconType(juce::MessageBoxIconType::QuestionIcon).withTitle("Delete user preset?").withMessage("Delete "+selected->name+" from disk?").withButton("Delete").withButton("Cancel"),[safe,id](int answer){if(safe!=nullptr&&answer==1)safe->result(safe->processor.presets.deleteUser(id));});
+            (void)juce::AlertWindow::showOkCancelBox(juce::MessageBoxIconType::QuestionIcon,"Delete user preset?","Delete "+selected->name+" from disk?","Delete","Cancel",this,juce::ModalCallbackFunction::create([safe,id](int answer){if(safe!=nullptr&&answer==1)safe->result(safe->processor.presets.deleteUser(id));}));
         };
         restore.onClick=[this]{processor.presets.restoreDefault();refresh();};
         name.setTextToShowWhenEmpty("Name for Save As / Rename",text.withAlpha(.55f));name.setInputRestrictions(100);
@@ -180,6 +181,7 @@ void ConsoleLook::drawButtonBackground(juce::Graphics& g,juce::Button& button,co
 }
 void ConsoleLook::drawButtonText(juce::Graphics& g,juce::TextButton& button,bool,bool) {
     bool round=button.getProperties()["round"];g.setColour((round?ink:text).withAlpha(button.isEnabled()?1.0f:.35f));
+    if(button.getName()=="Preset display") {gba_ui::pixelText(g,button.getButtonText(),button.getLocalBounds().toFloat().reduced(12,10));return;}
     g.setFont(font(round?float(button.getHeight())*.43f:std::min(18.0f,float(button.getHeight())*.43f),true));
     g.drawText(button.getButtonText(),button.getLocalBounds().reduced(8),juce::Justification::centred,true);
 }
@@ -216,7 +218,7 @@ GbaEditor::GbaEditor(GbaProcessor& p):AudioProcessorEditor(p),processor(p),keybo
     pitch.setName("Pitch wheel");pitch.setSliderStyle(juce::Slider::LinearVertical);pitch.setTextBoxStyle(juce::Slider::NoTextBox,false,0,0);pitch.setRange(0,16383,1);pitch.setValue(8192,juce::dontSendNotification);pitch.setTooltip("Pitch bend. Release to return to center.");
     pitch.onValueChange=[this]{processor.uiPitch(int(pitch.getValue()));};pitch.onDragEnd=[this]{pitch.setValue(8192,juce::sendNotificationSync);};pitch.setDoubleClickReturnValue(true,8192);
     previous.setTooltip("Previous preset");next.setTooltip("Next preset");previous.onClick=[this]{processor.presets.step(-1);};next.onClick=[this]{processor.presets.step(1);};
-    presetDisplay.onClick=[this]{showBrowser();};start.setTooltip("Open preset browser (F1)");select.setTooltip("Open advanced synthesis (F2)");start.onClick=[this]{showBrowser();};select.onClick=[this]{showAdvanced();};
+    presetDisplay.setName("Preset display");presetDisplay.onClick=[this]{showBrowser();};start.setTooltip("Open preset browser (F1)");select.setTooltip("Open advanced synthesis (F2)");start.onClick=[this]{showBrowser();};select.onClick=[this]{showAdvanced();};
     aButton.getProperties().set("round",true);bButton.getProperties().set("round",true);
     aButton.setTooltip("Preview current patch with a short synthesized C4");bButton.setTooltip("Stop preview; DAW MIDI notes continue");aButton.onClick=[this]{processor.preview();};bButton.onClick=[this]{processor.stopPreview();};
     dpad.onDirection=[this](int direction){if(direction<2)processor.presets.step(direction==0?-1:1);else processor.presets.stepCategory(direction==2?-1:1);};
