@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.24)
-project(GBoyAdvance2 VERSION 0.10.1 LANGUAGES C CXX)
+project(GBoyAdvance2 VERSION 0.10.2 LANGUAGES C CXX)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
@@ -7,6 +7,7 @@ set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 option(GBA_BUILD_PLUGIN "Build JUCE VST3, standalone, and integration tests" ON)
 option(GBA_BUILD_BENCHMARKS "Build optional 32-voice DSP benchmark" OFF)
 option(GBA_ENABLE_SANITIZERS "Address and undefined behaviour sanitizers (Clang/GCC)" OFF)
+option(GBA_WINDOWS_SOFTWARE_EDITOR "Use the software renderer for Windows editor windows" ON)
 include(CTest)
 add_library(gba_dsp STATIC Source/dsp/SynthEngine.cpp Source/dsp/Effects.cpp)
 target_include_directories(gba_dsp PUBLIC Source)
@@ -91,6 +92,7 @@ target_sources(GBoyAdvance2 PRIVATE
     Source/PluginProcessor.cpp Source/PluginEditor.cpp Source/PresetManager.cpp
     Source/PluginProcessor.h Source/PluginEditor.h Source/PixelText.h Source/PresetManager.h)
 target_compile_definitions(GBoyAdvance2 PUBLIC
+    GBA_WINDOWS_SOFTWARE_EDITOR=$<BOOL:${GBA_WINDOWS_SOFTWARE_EDITOR}>
     JUCE_WEB_BROWSER=0 JUCE_USE_CURL=0 JUCE_VST3_CAN_REPLACE_VST2=0
     JUCE_DISPLAY_SPLASH_SCREEN=0 JUCE_REPORT_APP_USAGE=0)
 target_link_libraries(GBoyAdvance2 PRIVATE gba_dsp juce::juce_audio_utils juce::juce_audio_processors
@@ -101,6 +103,7 @@ if(BUILD_TESTING)
     target_sources(gba2-integration PRIVATE Tests/PluginTests.cpp Tests/LibraryTests.cpp
         Source/PluginProcessor.cpp Source/PluginEditor.cpp Source/PresetManager.cpp)
     target_compile_definitions(gba2-integration PRIVATE JucePlugin_Name="G Boy Advance 2"
+        GBA_WINDOWS_SOFTWARE_EDITOR=$<BOOL:${GBA_WINDOWS_SOFTWARE_EDITOR}>
         JucePlugin_IsSynth=1 JucePlugin_WantsMidiInput=1 JucePlugin_ProducesMidiOutput=0
         JUCE_WEB_BROWSER=0 JUCE_USE_CURL=0 JUCE_VST3_CAN_REPLACE_VST2=0
         JUCE_MODAL_LOOPS_PERMITTED=1)
@@ -117,8 +120,16 @@ if(BUILD_TESTING)
             JUCE_MODAL_LOOPS_PERMITTED=1)
         target_link_libraries(gba2-host-tests PRIVATE juce::juce_audio_utils)
         add_dependencies(gba2-host-tests GBoyAdvance2_VST3)
+        # Exercise JUCE's FL-specific wrapper paths in a test host. This is not FL Studio.
+        add_custom_command(TARGET gba2-host-tests POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different "$<TARGET_FILE:gba2-host-tests>"
+                "$<TARGET_FILE_DIR:gba2-host-tests>/FL64.exe")
         add_test(NAME vst3-host-acceptance COMMAND gba2-host-tests
             "$<TARGET_FILE_DIR:GBoyAdvance2_VST3>/../..")
         set_tests_properties(vst3-host-acceptance PROPERTIES TIMEOUT 180)
+        add_test(NAME vst3-fl-hostname-acceptance
+            COMMAND "$<TARGET_FILE_DIR:gba2-host-tests>/FL64.exe"
+                "$<TARGET_FILE_DIR:GBoyAdvance2_VST3>/../.." --fl-hostname)
+        set_tests_properties(vst3-fl-hostname-acceptance PROPERTIES TIMEOUT 180)
     endif()
 endif()

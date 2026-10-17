@@ -33,7 +33,7 @@ function Check-Installed {
         if (-not (Test-Path -LiteralPath $pair[1])) { throw "Installed binary missing: $($pair[1])" }
         if ((Get-FileHash -LiteralPath $pair[0]).Hash -ne (Get-FileHash -LiteralPath $pair[1]).Hash) { throw 'Installed binary hash mismatch.' }
     }
-    foreach($name in @('USER_MANUAL.md','LICENSING.md','Factory Presets/factory.json','Third-party notices/manifest.json','unins000.exe')) {
+    foreach($name in @('USER_MANUAL.md','FL_STUDIO.md','collect-windows-diagnostics.ps1','LICENSING.md','Factory Presets/factory.json','Third-party notices/manifest.json','unins000.exe')) {
         if (-not (Test-Path -LiteralPath (Join-Path $app $name))) { throw "Installed file missing: $name" }
     }
     if ((Get-FileHash -LiteralPath $sentinel).Hash -ne $sentinelHash) { throw 'Installer changed user preset data.' }
@@ -42,6 +42,12 @@ $installed=$false
 try {
     Run-Setup $Installer @('/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART','/SP-',"/DIR=`"$app`"","/LOG=`"$(Join-Path $logs 'install.txt')`"")
     $installed=$true;Check-Installed;$report.Add('PASS clean silent install: default common VST3 path, standalone, manual, factory bank, binary hashes')
+    $diagnostics=Join-Path $logs 'diagnostics-smoke.txt'
+    & (Join-Path $app 'collect-windows-diagnostics.ps1') -OutputPath $diagnostics
+    $diagnosticText=Get-Content -LiteralPath $diagnostics -Raw
+    $expectedHash=(Get-FileHash -LiteralPath (Join-Path $vst 'Contents/x86_64-win/G Boy Advance 2.vst3') -Algorithm SHA256).Hash
+    if ($diagnosticText -notmatch [regex]::Escape($expectedHash)) {throw 'Installed diagnostic script did not report the installed binary hash.'}
+    $report.Add('PASS installed read-only diagnostic script writes the actual VST3 hash to its local report')
     Run-Setup $Installer @('/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART','/SP-',"/DIR=`"$app`"","/LOG=`"$(Join-Path $logs 'reinstall.txt')`"")
     Check-Installed;$report.Add('PASS same-version reinstall and user-preset preservation')
     # No audio device or human interaction is claimed by this liveness check.

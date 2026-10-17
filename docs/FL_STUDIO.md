@@ -1,0 +1,33 @@
+# FL Studio editor compatibility investigation
+
+## Reported failure
+
+The owner reports that development build 0.10.1 works as a Windows standalone, but FL Studio 20 loses the connection when opening the VST3 editor. Initial download/install discovery problems were resolved before this report. The exact FL Studio 20 build, Windows version, host bitness and crash module/exception are not yet known. The error text alone does not identify the cause. This is an open compatibility failure, not a passed FL Studio acceptance test.
+
+## 0.10.2 compatibility candidate
+
+This branch selects JUCE's Software Renderer for the Windows editor whenever its native peer becomes available or changes, including VST3 attachment and reparenting. It also tolerates temporary zero-sized editor bounds without passing a zero key width to the piano or saving that size. The peer is looked up each time; no native window pointer is retained after detachment.
+
+JUCE remains pinned to 8.0.6. Its platform sources are unmodified. JUCE still creates its default peer before the editor can select the renderer: this change is not a guarantee that no graphics-device initialization occurs. Software rendering is a candidate workaround for the reported window failure; a graphics-driver fault has not been established. For developer A/B comparison, configure `-DGBA_WINDOWS_SOFTWARE_EDITOR=OFF` to retain JUCE's default rendering choice.
+
+Synthesis, the 410-preset bank, 64 parameter IDs, plugin class identity and state schema are unchanged. Version 0.10.2 distinguishes the replacement binary from 0.10.1. Test this in a blank project first.
+
+## Test and installation
+
+The installer artifact contains a single setup executable. Extract it, close FL Studio and run setup with its default paths. It replaces the common x64 VST3 bundle automatically. The portable artifact directly contains the complete `.vst3` folder and standalone executable; copy the entire folder into `C:\Program Files\Common Files\VST3\` for a manual install. Use only one installed copy of the plugin while diagnosing a version mismatch.
+
+In 64-bit FL Studio, rescan with verification and retry the editor, then test playing notes, closing/reopening the editor and saving/reopening a test project. Record the full FL Studio build, Windows version and whether the wrapper is bridged. A successful standalone launch alone does not validate the VST3.
+
+If the failure remains, run `collect-windows-diagnostics.ps1` from the extracted portable package in PowerShell:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\collect-windows-diagnostics.ps1
+```
+
+The script writes `G-Boy-Advance-2-diagnostics.txt` in Documents with the installed plugin hash/version, standard FL executable versions and up to ten matching recent Application Error event summaries. It does not change installations, wrapper settings or running processes, and sends no report automatically. Share the faulting module name and exception code, or review and attach the report. If Windows records no matching event, use Windows+R, `perfmon /rel`, and inspect the latest FL Studio/ILBridge failure's technical details. No recorded event does not prove a clean exit.
+
+## Automated coverage and limits
+
+The actual-bundle Windows host test now opens the VST3 editor under a native parent six times, resizes, hides/reshows, serializes state and destroys it while another thread processes audio. It checks visible child-window attachment and finite audible processing. A second copy of the test host named `FL64.exe` exercises JUCE's executable-name-based FL detection and wrapper workarounds. That executable is a synthetic JUCE test host, not Image-Line FL Studio; passing it is not FL Studio certification. No physical DPI, audio-device or actual FL Studio test is run by this environment.
+
+Validation results for this candidate will be recorded after the Windows build completes. The 0.10.1 automated results in PHASE_10_FINALIZATION.md remain historical evidence for that binary. Actual FL Studio acceptance stays open until the owner can load and use the replacement VST3.

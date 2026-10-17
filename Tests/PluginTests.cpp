@@ -89,6 +89,9 @@ int main() {
         {std::unique_ptr<juce::AudioProcessorEditor> editor(p.createEditor());check(editor!=nullptr,"Editor creation failed");editor->setVisible(true);
             auto* piano=dynamic_cast<juce::MidiKeyboardComponent*>(named(*editor,"Piano keyboard"));check(piano!=nullptr,"Piano keyboard component missing");
             const auto firstKey=piano->getLowestVisibleKey();editor->setSize(960,485);editor->setSize(1920,969);
+            const auto usableWidth=p.editorWidth.load();editor->setSize(0,0);
+            check(piano->getKeyWidth()>0&&p.editorWidth==usableWidth,"Transient zero-sized host window corrupted keyboard width or saved editor size");
+            editor->setSize(960,485);
             check(piano->getLowestVisibleKey()==firstKey,"Editor resizing reset the piano octave");auto* master=dynamic_cast<juce::Slider*>(named(*editor,"Master volume"));check(master!=nullptr,"Volume component missing");master->setValue(.37,juce::sendNotificationSync);check(std::abs(p.snapshot()[gba::Param::Volume]-.37f)<.001f,"Volume UI is not attached");
             auto* pitch=dynamic_cast<juce::Slider*>(named(*editor,"Pitch wheel"));check(pitch!=nullptr,"Pitch wheel missing");pitch->setValue(12000,juce::sendNotificationSync);pitch->onDragEnd();check(pitch->getValue()==8192,"Pitch wheel did not center");
             auto* glide=dynamic_cast<juce::Slider*>(named(*editor,"Glide"));check(glide!=nullptr,"Glide control missing");glide->setValue(.31,juce::sendNotificationSync);check(std::abs(p.snapshot()[gba::Param::Glide]-.31f)<.001f,"Glide UI is not attached");
@@ -106,6 +109,11 @@ int main() {
             // runner has no display; the Windows CI runner exercises the actual mouse path.
 #if JUCE_WINDOWS
             editor->setSize(960,485);editor->addToDesktop(0);editor->setTopLeftPosition(20,20);editor->toFront(false);
+#if GBA_WINDOWS_SOFTWARE_EDITOR
+            auto* peer=editor->getPeer();check(peer!=nullptr,"Editor native peer is missing");
+            const int software=peer->getAvailableRenderingEngines().indexOf("Software Renderer");
+            check(software>=0&&peer->getCurrentRenderingEngine()==software,"Windows editor did not select its software renderer after attachment");
+#endif
             juce::MessageManager::getInstance()->runDispatchLoopUntil(50);
             p.panic();render(p,audio,1);auto key=piano->getRectangleForKey(60);auto event=mouse(*piano,{key.getCentreX(),key.getBottom()-8});
             piano->mouseDown(event);check(p.keyboard.isNoteOn(1,60),"Mouse click on piano did not start C4");render(p,audio,8);check(p.voiceCount()>0,"Mouse piano note did not reach audio engine");

@@ -13,6 +13,7 @@ if (Test-Path -LiteralPath $stage) { Remove-Item -LiteralPath $stage -Recurse -F
 New-Item -ItemType Directory -Force $stage | Out-Null
 Copy-Item -Recurse -Force $vst $stage
 Copy-Item -Force $standalone,$(Join-Path $root 'README.md'),$(Join-Path $root 'docs\USER_MANUAL.md') $stage
+Copy-Item -Force (Join-Path $root 'docs\FL_STUDIO.md'),(Join-Path $root 'scripts\collect-windows-diagnostics.ps1') $stage
 $factory=Join-Path $stage 'Presets'
 New-Item -ItemType Directory -Force $factory | Out-Null
 Copy-Item -Force (Join-Path $root 'Presets\factory.json') $factory

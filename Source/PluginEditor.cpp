@@ -409,7 +409,27 @@ GbaEditor::GbaEditor(GbaProcessor& p):AudioProcessorEditor(p),processor(p),keybo
     int w=processor.editorWidth.load();setSize(w,int(std::round(double(w)*646/1280)));keyboard.setLowestVisibleKey(48);updateMacros();timerCallback();startTimerHz(25);
 }
 GbaEditor::~GbaEditor() {stopTimer();processor.uiPitch(8192);processor.keyboard.allNotesOff(0);overlay.reset();setLookAndFeel(nullptr);}
+void GbaEditor::configureRenderer() {
+#if JUCE_WINDOWS && GBA_WINDOWS_SOFTWARE_EDITOR
+    // The VST3 wrapper owns the native peer; it does not exist in our constructor.
+    // Reapply after attachment/reparenting rather than retaining a stale peer pointer.
+    if(auto* peer=getPeer()) {
+        const int software=peer->getAvailableRenderingEngines().indexOf("Software Renderer");
+        if(software>=0&&peer->getCurrentRenderingEngine()!=software)
+            peer->setCurrentRenderingEngine(software);
+    }
+#endif
+}
+void GbaEditor::parentHierarchyChanged() {
+    juce::AudioProcessorEditor::parentHierarchyChanged();
+    configureRenderer();
+}
+void GbaEditor::visibilityChanged() {
+    juce::AudioProcessorEditor::visibilityChanged();
+    configureRenderer();
+}
 void GbaEditor::paint(juce::Graphics& g) {
+    if(getLocalBounds().isEmpty())return;
     g.addTransform(juce::AffineTransform::scale(float(getWidth())/1280.0f,float(getHeight())/646.0f));
     g.fillAll(juce::Colour(0xff11143d));
     auto body=juce::Rectangle<float>(2,2,1276,642);
@@ -485,6 +505,9 @@ void GbaEditor::paint(juce::Graphics& g) {
     g.setColour(juce::Colour(0xffb789ff).withAlpha(.6f));g.drawRoundedRectangle(body,20,3);
 }
 void GbaEditor::resized() {
+    // Hosts can temporarily collapse an editor while attaching or hiding it.
+    // Do not pass a zero key width to JUCE or persist that transient editor size.
+    if(getWidth()<=0||getHeight()<=0)return;
     const auto firstKey=keyboard.getLowestVisibleKey();
     float sx=float(getWidth())/1280,sy=float(getHeight())/646;
     auto bounds=[sx,sy](juce::Component& component,float x,float y,float w,float h){component.setBounds(int(std::round(x*sx)),int(std::round(y*sy)),int(std::round(w*sx)),int(std::round(h*sy)));};

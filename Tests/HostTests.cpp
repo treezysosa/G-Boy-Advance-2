@@ -1,11 +1,18 @@
 #include <juce_audio_utils/juce_audio_utils.h>
 #include "dsp/Parameters.h"
 #include <atomic>
+#include <chrono>
 #include <cmath>
 #include <iostream>
 #include <stdexcept>
 #include <thread>
 #include <vector>
+#if JUCE_WINDOWS
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+#include <windows.h>
+#endif
 
 namespace {
 int checks=0;
@@ -44,11 +51,70 @@ float render(Plugin& p,juce::AudioBuffer<float>& audio,int blocks) {
     float peak=0;for(int i=0;i<blocks;++i){juce::MidiBuffer midi;peak=std::max(peak,process(p,audio,midi));}return peak;
 }
 void pump(int ms) {juce::MessageManager::getInstance()->runDispatchLoopUntil(ms);}
+void editorLifecycle(Plugin& p) {
+    std::cout<<"Opening actual VST3 editor under a native parent while audio runs"<<std::endl;
+    dry(p);prepare(p,48000,64);
+    juce::AudioBuffer<float> warmup(2,64);juce::MidiBuffer note;
+    note.addEvent(juce::MidiMessage::noteOn(1,60,.8f),0);process(p,warmup,note);
+    juce::Component parent;
+    parent.setName("GBA2 native embedding test (not FL Studio)");
+    parent.setBounds(20,20,1400,800);
+    parent.addToDesktop(juce::ComponentPeer::windowHasTitleBar);
+    parent.setVisible(true);
+    std::atomic<bool> bad{false},audible{false};std::atomic<int> blocks{0};
+    std::jthread audio([&](std::stop_token stop) {
+        try {
+            juce::AudioBuffer<float> buffer(2,64);
+            while(!stop.stop_requested()) {
+                juce::MidiBuffer events;
+                if(process(p,buffer,events)>.0001f)audible=true;
+                ++blocks;
+                std::this_thread::sleep_for(std::chrono::milliseconds(1));
+            }
+        } catch(const std::exception&) {bad=true;}
+    });
+    for(int cycle=0;cycle<6;++cycle) {
+        std::cout<<"Editor attach/resize/hide/reopen cycle "<<cycle+1<<std::endl;
+        std::unique_ptr<juce::AudioProcessorEditor> editor(p.createEditorIfNeeded());
+        check(editor!=nullptr,"Actual VST3 editor creation failed");
+        parent.addAndMakeVisible(*editor);
+        editor->setTopLeftPosition(0,0);pump(60);
+        check(editor->isShowing()&&editor->getPeer()!=nullptr,"Hosted editor has no visible native parent");
+#if JUCE_WINDOWS
+        int children=0;
+        EnumChildWindows(static_cast<HWND>(parent.getPeer()->getNativeHandle()),
+            [](HWND child,LPARAM count)->BOOL {
+                if(IsWindowVisible(child))++*reinterpret_cast<int*>(count);
+                return TRUE;
+            },reinterpret_cast<LPARAM>(&children));
+        check(children>0,"VST3 view did not attach a visible native child window");
+#endif
+        for(const auto size:{juce::Point<int>(960,485),juce::Point<int>(1280,646),juce::Point<int>(1440,727)}) {
+            editor->setSize(size.x,size.y);pump(20);
+            check(editor->getWidth()>0&&editor->getHeight()>0,"Hosted editor lost its size");
+        }
+        set(p,gba::Param::Cutoff,1200.0f+float(cycle)*500);
+        juce::MemoryBlock saved;p.getStateInformation(saved);
+        check(saved.getSize()>0,"State serialization failed with visible VST3 editor");
+        editor->setVisible(false);pump(20);editor->setVisible(true);pump(30);
+        check(editor->isShowing(),"Actual VST3 editor did not reshow");
+        parent.removeChildComponent(editor.get());editor.reset();pump(30);
+        check(p.getActiveEditor()==nullptr,"Destroyed VST3 editor remains active");
+    }
+    audio.request_stop();audio.join();
+    check(!bad&&blocks>0&&audible,"Editor lifecycle interrupted finite audible processing");
+    parent.removeFromDesktop();p.reset();
+    std::cout<<"PASS native VST3 editor lifecycle; processed "<<blocks<<" concurrent audio blocks"<<std::endl;
+}
 }
 int main(int argc,char** argv) {
     juce::ScopedJuceInitialiser_GUI gui;
     try {
-        check(argc==2,"Usage: gba2-host-tests <bundle.vst3>");
+        check(argc==2||(argc==3&&juce::String(argv[2])=="--fl-hostname"),"Usage: gba2-host-tests <bundle.vst3> [--fl-hostname]");
+        if(argc==3) {
+            check(juce::PluginHostType().isFruityLoops(),"FL-style test executable did not activate JUCE's host detection");
+            std::cout<<"FL-style executable-name coverage only; this executable is not FL Studio"<<std::endl;
+        }
         auto bundle=juce::File(juce::String::fromUTF8(argv[1]));
         juce::AudioPluginFormatManager manager;manager.addFormat(new juce::VST3PluginFormat());
         juce::OwnedArray<juce::PluginDescription> types;
@@ -120,6 +186,8 @@ int main(int argc,char** argv) {
         set(*p,gba::Param::Reverb,.8f);set(*p,gba::Param::ReverbSize,1);set(*p,gba::Param::Release,12);
         render(*p,audio,2);check(p->getTailLengthSeconds()>120,"VST3 wrapper truncated long export-tail estimate");
         p->releaseResources();restored->releaseResources();
+        editorLifecycle(*p);
+        p->releaseResources();
         std::cout<<"PASS "<<checks<<" actual VST3 host checks; prepared latency 16 samples at 44.1/48/96 kHz.\n";
         return 0;
     } catch(const std::exception& ex){std::cerr<<"FAIL host acceptance: "<<ex.what()<<"\n";return 1;}

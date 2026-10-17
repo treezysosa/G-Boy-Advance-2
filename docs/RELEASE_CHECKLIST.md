@@ -18,7 +18,7 @@ Actual per-build results are recorded in PHASE_10.md and VALIDATION.md. Automati
 
 | Host | Load/scan | MIDI + sustain/pitch/glide | Automation + program/UI | Save/reopen + user bank | Bypass/latency/bounce/tail | Multi-instance stress |
 |---|---|---|---|---|---|---|
-| FL Studio | Pending | Pending | Pending | Pending | Pending | Pending |
+| FL Studio | 0.10.1: owner reports lost connection opening editor in FL Studio 20; 0.10.2 candidate pending | Pending | Pending | Pending | Pending | Pending |
 | Ableton Live | Pending | Pending | Pending | Pending | Pending | Pending |
 | REAPER | Pending | Pending | Pending | Pending | Pending | Pending |
 | Cubase | Pending | Pending | Pending | Pending | Pending | Pending |
