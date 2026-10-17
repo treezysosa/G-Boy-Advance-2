@@ -6,7 +6,7 @@ Development revision 0.2.0. This phase builds on the working VST3 foundation; it
 
 - Wide 1280×646 reference layout, resizing from approximately 960 to 1920 pixels without moving the selected piano octave.
 - Deep indigo main body, layered purple casing bevels, inset panels, moulded-plastic detail and rounded speaker slots. All artwork is generated with JUCE vector drawing.
-- Original heavy slanted G BOY lettering, smaller ADVANCE lettering, purple 2, compact VST subtitle and white pixel LCD text sized to the reference.
+- Original heavy slanted G BOY lettering, smaller ADVANCE lettering, purple 2, compact VST subtitle and white pixel LCD text sized to the reference. Front-panel captions and START/SELECT use original vector pixel lettering; text-heavy Windows panels select Consolas instead of the serif default monospace font.
 - Silver volume/macro/glide knobs, full dotted purple master LED ring, spring-return ridged pitch wheel and shaded black/white piano keys.
 - Native A/B buttons with circular hit areas, silver START/SELECT caps and visible keyboard-focus feedback.
 - Four separate accessible D-pad buttons; blank corners and the neutral centre do not select patches. Arrow keys select patches/categories on the main page.
@@ -22,14 +22,20 @@ Development revision 0.2.0. This phase builds on the working VST3 foundation; it
 
 ![Advanced editor at minimum size](images/phase2-advanced.png)
 
-These are software renders from the compiled Linux JUCE test executable, not generated mockups. The supplied reference image is not bundled or used as a background.
+These are actual component renders from the compiled Windows JUCE test executable, not generated mockups. The supplied reference image is not bundled or used as a background.
 
 ## Verification
 
 - Strict C++20 compilation against JUCE 8.0.6: PASS on Linux.
 - JUCE integration suite: 171 checks PASS on Linux.
 - Snapshot coverage: 960/1280/1920 logical widths, main at 125%/150%/200% render scales, browser and advanced editor at minimum size.
-- Windows x64 VST3/standalone rebuild, native-window mouse interaction and pluginval strictness 10: pending for this revision.
+- Windows x64 VST3/standalone build: PASS.
+- Windows integration suite: 174 checks PASS, including native-window C4 mouse-down/audio delivery/mouse-up.
+- Pluginval 1.0.4 strictness 10: SUCCESS.
+- Portable ZIP and installer compilation: PASS. Interactive installation remains pending.
+- [Windows CI run 39007537286](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39007537286), source `5ed4948b2d182693f05a98d896cd92e59fd87f22`.
+
+The final typography revision passes all checks above. The implementation is ready for visual and interactive acceptance; the checks below remain open.
 
 ## Remaining visual acceptance
 

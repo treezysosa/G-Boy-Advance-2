@@ -2,11 +2,11 @@
 
 A C++20 / JUCE 8 hybrid synthesis instrument targeting Windows x64 VST3 and standalone. The purple, wide console interface uses native scalable controls. All sound is generated mathematically: there is no sampler, sample import, commercial game audio, or network dependency at runtime.
 
-**Development build 0.2.0 — Phase 2 UI refinement.** The synthesis foundation already passed Windows builds and pluginval strictness 10 in version 0.1.1. This revision adds closer reference typography, inset casing details, a dotted master LED ring, shaped control hit areas, shaded playable keys and keyboard-focus fixes. The updated local JUCE integration suite passes 171 checks. Windows compilation, the additional native-window piano mouse test and pluginval are being rerun for this revision; see [Phase 2 progress](docs/PHASE_2.md) and [validation](docs/VALIDATION.md).
+**Development build 0.2.0 — Phase 2 UI implementation ready for visual/interactive acceptance.** The updated Windows x64 VST3 and standalone build successfully, 1,387 DSP checks and 174 JUCE integration checks pass on Windows, and the actual VST3 passes pluginval 1.0.4 at strictness 10. This revision adds closer reference typography, inset casing details, a dotted master LED ring, shaped control hit areas, shaded playable keys and keyboard-focus fixes. See [Phase 2 progress](docs/PHASE_2.md) and [validation](docs/VALIDATION.md).
 
 ![G Boy Advance 2 Phase 2 native JUCE editor](docs/images/phase2-main.png)
 
-Actual Phase 2 JUCE software render at 1280×646 from the Linux integration executable. All controls are native components with vector painting; no reference bitmap is used. Interactive Windows high-DPI and DAW testing remain pending.
+Actual Phase 2 Windows JUCE component render at 1280×646 from [passing CI run 39007537286](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39007537286). All controls are native components with vector painting; no reference bitmap is used. Interactive Windows high-DPI and DAW testing remain pending.
 
 ## Build on Windows
 
@@ -18,7 +18,7 @@ cd G-Boy-Advance-2
 powershell -ExecutionPolicy Bypass -File scripts/build-windows.ps1
 ```
 
-You can also open [Build and validate in GitHub Actions](https://github.com/treezysosa/G-Boy-Advance-2/actions/workflows/build.yml), choose **Run workflow**, and download the Windows artifact after the job succeeds. The workflow and Windows script are included in the corrected source upload. Windows compilation, both test suites, pluginval at strictness 10, and packaging all pass in [run 39004957883](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39004957883).
+You can also open [Build and validate in GitHub Actions](https://github.com/treezysosa/G-Boy-Advance-2/actions/workflows/build.yml), choose **Run workflow**, and download the Windows artifact after the job succeeds. The workflow and Windows script are included in the corrected source upload. Windows compilation, both test suites, pluginval at strictness 10, and packaging all pass for 0.2.0 in [run 39007537286](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39007537286).
 
 The first local build downloads the pinned JUCE 8.0.6 source. For an offline build, supply an existing checkout:
 

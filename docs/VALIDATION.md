@@ -72,7 +72,17 @@ The updated editor and tests compile with GCC C++20 and strict warnings. The Lin
 
 The mouse-event piano test requires a native window because JUCE's containment checks depend on a platform peer. It is compiled into Windows CI and intentionally excluded from the Linux runner, which has no display server. The pre-existing GUI MIDI-state/audio test still runs on Linux. Software snapshots do not establish behavior under Windows per-monitor DPI changes.
 
-Current screenshots in `docs/images/phase2-*.png` are actual Linux component renders and were visually inspected against the supplied reference. The current Windows build and pluginval validation are pending.
+[Windows run 39007537286](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39007537286), source commit `5ed4948b2d182693f05a98d896cd92e59fd87f22`:
+
+- Visual Studio 2022 x64 VST3 and standalone compilation/linking: PASS.
+- DSP: 1,387 checks PASS (2.15 s).
+- JUCE integration: **174 checks PASS** (1.85 s), including the additional native-window mouse-down/note-on, audio-engine delivery and mouse-up/note-off checks for C4.
+- Pluginval 1.0.4, strictness 10: **SUCCESS**, seed `0x6076a20`. Steinberg's separate validator remains unconfigured/pending.
+- Portable ZIP and Inno Setup installer compilation: PASS.
+- Downloaded Windows artifact `12091647203`: SHA256 `ed915f93da94dfd6aeb06f10e2d90c6b8e87240aa7cf9c0adc09da420e1ca282`, verified against GitHub's digest; ZIP integrity and AMD64 PE checks pass.
+- Seven UI snapshots are included under `build/ui-snapshots/`, with the 1920-wide main image at `build/GBA2-editor.png`. The documentation screenshots in `docs/images/phase2-*.png` are now the actual Windows renders and have been visually inspected.
+
+A synthetic mouse event delivered to a real native Windows peer is an automated interaction check; physical mouse/touch, screen-reader and per-monitor DPI acceptance remain manual. The final typography revision uses original vector front-panel labels and Consolas in the text-heavy Windows panels. All recorded checks and current screenshots correspond to this revision. The final documentation commit changes only evidence/screenshots; application code and build settings match the validated commit.
 
 ## Manual host acceptance matrix
 

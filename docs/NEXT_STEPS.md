@@ -1,6 +1,6 @@
 # Exact next steps
 
-1. Phase 2 version 0.2.0 is implemented and its 171-check local JUCE suite passes. Finish the updated Windows CI build, native-window piano mouse test and pluginval run; the previous 0.1.1 foundation passed all Windows checks. See PHASE_2.md.
+1. Phase 2 version 0.2.0 is implemented: Windows VST3/standalone compilation, 1,387 DSP checks, 174 integration checks, native-window piano mouse events, pluginval strictness 10 and installer packaging pass in run 39007537286. Begin the visual/interactive acceptance below; see PHASE_2.md.
 2. Open the standalone interactively on Windows; compare against the supplied purple reference. Refine typeface, bevels, control hit areas, all resize limits, focus, screen readers, and high-DPI appearance. Actual Linux and Windows component renders have been captured and visually inspected; interactive Windows/host behavior and DPI scaling remain pending.
 3. Run the Steinberg VST3 validator; pluginval strictness 10 has passed and remains part of the Windows workflow. Test rapid host program changes, automation, concurrent project serialization, sysex rejection, transport stops, and stress lifecycle.
 4. Complete the DAW matrix in VALIDATION.md. Test sustain and overlapping same notes in all modes, preview while playing external MIDI, and automation during preset loads.
