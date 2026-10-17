@@ -13,7 +13,7 @@ Development revision 0.6.0 refines the existing 382-preset library rather than a
 
 ## Validation
 
-Strict GCC C++20 builds pass all 6,231 DSP checks: 1,836 existing checks plus 4,395 factory-audit checks. Linux JUCE integration passes 177 checks, including factory-state restoration. The original four DSP suites pass ASan/UBSan; the expanded bank audit is still running under sanitizers. Windows build, six CTest suites, pluginval and packaging remain pending.
+Strict GCC C++20 builds pass all 6,231 DSP checks: 1,836 existing checks plus 4,395 factory-audit checks. Linux JUCE integration passes 177 checks, including factory-state restoration. All five DSP suites pass ASan/UBSan with halt-on-error; leak detection is disabled because LeakSanitizer is unsupported in this sandbox. Windows validation and artifact checks also pass, as recorded below.
 
 | Same native audit metric | 0.5.0 baseline | 0.6.0 |
 |---|---:|---:|
@@ -22,6 +22,20 @@ Strict GCC C++20 builds pass all 6,231 DSP checks: 1,836 existing checks plus 4,
 | Dry spectral/envelope groups at that threshold | Not recorded | 382 |
 
 The 0.6.0 central RMS range is 0.0108593–0.036; largest measured central-note peak is 0.214519. All 191 base/Afterglow pairs differ above the dry threshold. Factory JSON/embedded data regenerate byte-for-byte, and all 382 legacy identity/name/category/program positions match the prior bank. Baseline 0.5.0 central-note max-100ms stereo RMS spread was 21.9986 dB, with 46 nearest-neighbor flags under the 0.025 dry-analysis threshold. The comparison uses identical deterministic excitation and renderer/analysis settings.
+
+## Windows build and artifact evidence
+
+[Run 39037896323](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39037896323), application/build source `2214c4dc58d5105b95e00cc2d85f9a9e88baaa81`:
+
+- Visual Studio 2022 x64 VST3 and standalone compilation/linking: PASS.
+- CTest: **6/6 PASS** in 92.99 seconds, including **4,395 factory checks** (84.11 seconds) and **180 JUCE integration checks**. Total DSP checks: **6,231**.
+- Actual VST3: pluginval 1.0.4 **strictness 10 SUCCESS**, seed `0x56a454`, version 0.6.0. Its separate Steinberg validator remains unconfigured.
+- Portable ZIP and Inno Setup installer compilation: PASS. Downloaded Windows artifact `12102966872`, SHA256 `ac27fcda39f631b7845bfb4b1878d0109611fa71674686fb3b65e74ae9658f87`, matches GitHub's digest. ZIP integrity, AMD64 PE VST3/standalone, six packaged test logs and 382-preset payload verified; no audio or authoring banks are in the portable package.
+- Separate audition artifact `12103036745`, SHA256 `006c50a93715550606aeeafe4b8d81775053546a6eb2385affd207ddf7087488`, also matches GitHub's digest. All 17 WAVs are six-second, stereo 48 kHz / 16-bit PCM synthesized outputs, accompanied by an index, 1,528 render rows and 382 nearest-neighbor rows.
+- The [factory report](FACTORY_LIBRARY.md) is generated from these Windows CSVs. Windows and GCC results agree at the reported precision: 382 dry groups, zero flags, 312/382 within 0.5 dB of category targets; 85 gain-ceiling cases remain. These statistics do not replace listening acceptance.
+- Ubuntu CI CMake build, all five DSP suites and factory-generation reproducibility: PASS. Final repository changes after the tested source commit contain evidence/documentation only.
+
+Processor/DSP latency remains 16 samples in numerical tests. Pluginval's initial cached information line prints zero before preparation; a separate prepared-host latency query and manual compensation tests remain pending, as explained in [Phase 5](PHASE_5.md).
 
 ## Limits and next work
 
