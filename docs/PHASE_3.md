@@ -36,6 +36,18 @@ A probe built against the prior 0.2.0 source and this engine ran the same MIDI a
 
 These transition examples are numerical regressions, not a claim that every automation/preset change is perceptually click-free or alias-free.
 
+## Windows validation
+
+[Run 39009067423](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39009067423), source commit `a815bdd85f25382483ef93af0be4c41b5955491c`:
+
+- Visual Studio 2022 x64 VST3/standalone compilation: PASS.
+- All three CTest suites: PASS. Engine/factory/effects 1,387 checks (2.15 s); core synthesis 161 checks (0.77 s); processor/state/presets/UI 174 checks (1.77 s).
+- Pluginval 1.0.4 strictness 10: SUCCESS, seed `0x78f250d`.
+- Portable ZIP and installer compilation: PASS.
+- Downloaded artifact `12091714487`: SHA256 `83e215e66b01ff1291f072190dd44c0039762900f6a216d4f41130871b5fe4b0`, matching GitHub's digest. ZIP integrity, AMD64 binaries and packaged test logs were verified.
+
+The final documentation commit changes evidence only; application source and build settings match this validated commit. The 32-voice/96 kHz smoke benchmark is documented in [PERFORMANCE.md](PERFORMANCE.md).
+
 ## Remaining validation
 
-Windows x64 VST3/standalone compilation, all three CTest suites, pluginval strictness 10 and packaging are pending for this revision. Manual DAW/device listening, real host deadline/underrun tests, the Steinberg validator and the carried-forward Phase 2 DPI/accessibility/visual checks remain open. Advanced-engine quality work, arbitrary modulation-matrix expansion, measured anti-aliasing and synthesis-engine crossfades are later work.
+Phase 3 core implementation and automated validation have passed. Manual DAW/device listening, real host deadline/underrun tests, the Steinberg validator and the carried-forward Phase 2 DPI/accessibility/visual checks remain open. Advanced-engine quality work, arbitrary modulation-matrix expansion, measured anti-aliasing and synthesis-engine crossfades are later work.

@@ -1,6 +1,6 @@
 # Exact next steps
 
-1. Phase 3 version 0.3.0 hardens core synthesis. Local validation passes 1,548 DSP checks, sanitizers and 171 JUCE integration checks. Finish Windows CI/pluginval and record its actual artifact/results. Phase 2 visual/manual acceptance remains open; see PHASE_3.md and PHASE_2.md.
+1. Phase 3 version 0.3.0 core implementation and automated validation pass: 1,548 DSP checks, local sanitizers, Windows VST3/standalone builds, 174 Windows integration checks, pluginval strictness 10 and packaging (run 39009067423). Continue manual host/listening acceptance and advanced-engine refinement. Phase 2 visual/manual checks remain open; see PHASE_3.md and PHASE_2.md.
 2. Open the standalone interactively on Windows; compare against the supplied purple reference. Refine typeface, bevels, control hit areas, all resize limits, focus, screen readers, and high-DPI appearance. Actual Linux and Windows component renders have been captured and visually inspected; interactive Windows/host behavior and DPI scaling remain pending.
 3. Run the Steinberg VST3 validator; pluginval strictness 10 has passed and remains part of the Windows workflow. Test rapid host program changes, automation, concurrent project serialization, sysex rejection, transport stops, and stress lifecycle.
 4. Complete the DAW matrix in VALIDATION.md. Test sustain and overlapping same notes in all modes, preview while playing external MIDI, and automation during preset loads.

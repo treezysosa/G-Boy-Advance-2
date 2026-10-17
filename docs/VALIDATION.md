@@ -92,7 +92,11 @@ A synthetic mouse event delivered to a real native Windows peer is an automated 
 - ASan + UBSan: both DSP suites PASS with halt-on-error and leak detection disabled (sandbox limitation).
 - JUCE processor/state/preset/UI integration: 171 checks PASS on the Linux software runner.
 - Old/new behavioral probes and remaining boundaries: see [PHASE_3.md](PHASE_3.md).
-- Windows 0.3.0 CMake/Visual Studio build, three CTest suites, pluginval and packaging: pending. No local CMake execution is claimed; CMake is not installed in this workspace.
+- Windows [run 39009067423](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39009067423), source `a815bdd85f25382483ef93af0be4c41b5955491c`: Visual Studio 2022 x64 VST3/standalone build PASS; CTest 3/3 PASS (1,387 engine checks, 161 core-synthesis checks, 174 integration checks).
+- Actual Windows VST3: pluginval 1.0.4 strictness 10 SUCCESS, seed `0x78f250d`. Its separately configured Steinberg validator remains pending.
+- Windows portable archive and Inno Setup installer compilation PASS. Artifact `12091714487`, SHA256 `83e215e66b01ff1291f072190dd44c0039762900f6a216d4f41130871b5fe4b0`: downloaded digest, ZIP integrity, AMD64 binaries and packaged test logs verified.
+- Linux CI CMake build and both DSP CTest suites PASS. No local CMake execution is claimed; CMake is not installed in this workspace.
+- The final documentation commit changes evidence only; application source/build settings match the validated commit.
 
 ## Manual host acceptance matrix
 
