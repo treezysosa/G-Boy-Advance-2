@@ -1,5 +1,19 @@
 # Validation record
 
+## Latest — Phase 10, version 0.10.0
+
+[Windows/Ubuntu run 39046609234](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39046609234), application/build commit `e55a05356d3dc0b1b2c462d761e58c0378d4cb86`: all nine Windows CTest suites PASS (129.41 s), 7,983 DSP assertions, 286 Windows application checks and 209 actual-VST3 host checks. Prepared VST3 latency is 16 frames at 44.1/48/96 kHz and 64/257/1024 blocks. Bypass note-offs, state reload, instances, message-thread serialization concurrent with audio, offline rendering, release and tail reporting pass. Linux integration/changed-application ASan/UBSan: 281 checks PASS; cached JUCE/DSP sanitizer scope is detailed in PHASE_10.md.
+
+pluginval 1.0.4 strictness 10 SUCCESS, seed `0x5b67a8a`. Official Steinberg SDK validator pinned to `cc2adc90382dded9e347caf74e4532f1458715db`: **47 passed, zero failed**, exit 0. One duplicate compatibility-metadata warning is recorded. Float processing is supported; double-precision audio processing is not. Clean admin-VM silent install / same-version reinstall / three-second standalone liveness / uninstall: four acceptance statements PASS; installed hashes match and the unique user-data fixture survives. This does not certify physical audio, separate non-admin users or interactive wizard/old-version upgrades.
+
+The 54-case Windows native profiler renders 8,298 callbacks with finite audio; **812 exceed their time budget**, all in interrupted 32-voice engine blends (worst mean 2.2744× budget). This is an unresolved release-blocking performance result. Short steady-engine cases observe zero over-budget calls; these are not real-driver deadline guarantees. See PERFORMANCE.md for exact workload and quiet-run Linux results.
+
+Windows artifact `12105914337` digest `7659570018c946e72bdf5b3670a4e4b3bb91dd7b1a931a2c3c21d6ad8431ed24`, factory/vocal `12105904332` digest `cffaca14d03fd019086444aa3ba80e28c012d758e6fdd26324485ba89c955954`, retro `12106705232` digest `edbb04929503a870df816811176ed0e35d67b1c5966cc443205c5eee884efb08`: downloaded digests/ZIP integrity, AMD64 PE headers, nine-suite and validator/installer logs, final bank and exclusion of runtime audio/authoring banks verified. Audit CSVs contain 1,640 render and 410 nearest-neighbor rows; all 57 six-second stereo/48k/PCM16 WAV excerpts match Phase 9. Final source package contains 75 source/assets, with final evidence-only documentation updates after the validated build.
+
+**Phase 10 is not fully complete.** Full named-DAW/device, compensated bounce/export tails, physical UI/DPI/accessibility, human listening, non-admin/interactive installer and performance gates remain pending, as do owner licensing/notices/signing. Use RELEASE_CHECKLIST.md for the complete evidence matrix and PHASE_10.md for results, artifact hashes, sanitizer boundaries and the corrected first harness timeout. No production release or named-DAW compatibility is asserted.
+
+Earlier phase results follow as historical evidence.
+
 Development snapshot 0.6.0. The earlier 0.1.1/0.2.0 Windows evidence below is retained as the previous baseline. A passing DSP test is not proof that a host can load the VST3.
 
 ## Executed locally

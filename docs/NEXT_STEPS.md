@@ -1,6 +1,6 @@
 # Exact next steps
 
-Phase 10 version 0.10.0 adds actual-bundle VST3 hosting tests, official Steinberg validation, callback profiling, and installer lifecycle checks. Windows results will be recorded in PHASE_10.md when available. The bypass note-off bug is fixed; DSP/calibrated factory data and stable IDs are unchanged.
+Phase 10 version 0.10.0 adds actual-bundle VST3 hosting tests, official Steinberg validation, callback profiling, and installer lifecycle checks. Windows run 39046609234 passes all nine suites, 209 actual-host checks, pluginval strictness 10, 47 Steinberg tests and installer lifecycle checks; evidence is in PHASE_10.md. Windows profiling confirms 812 over-budget callbacks in the interrupted-blend workload, so full Phase 10 release acceptance is not complete. The bypass note-off bug is fixed; DSP/calibrated factory data and stable IDs are unchanged.
 
 1. Complete every pending manual entry in RELEASE_CHECKLIST.md on real Windows machines and the five named DAWs; record versions, device settings and evidence. Automated custom-host results do not establish named-DAW compatibility.
 2. Profile 32-voice and rapidly interrupted engine transitions under real device/GUI load. Initial native profiling exposes over-budget callbacks; do not treat a successful numerical test as a deadline pass. Optimize measured hot paths, revalidate and recalibrate if DSP changes alter factory audio.

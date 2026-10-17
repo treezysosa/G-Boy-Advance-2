@@ -2,7 +2,7 @@
 
 A C++20 / JUCE 8 hybrid synthesis instrument targeting Windows x64 VST3 and standalone. The purple, wide console interface uses native scalable controls. All sound is generated mathematically: there is no sampler, sample import, commercial game audio, or network dependency at runtime.
 
-**Development build 0.10.0 — Phase 10 validation in progress.** Adds actual-bundle VST3 host acceptance, a separate official Steinberg validator, callback profiling and clean installer/reinstall/uninstall tests. Fixes note-offs being dropped while bypassed. All 410 factory presets, program positions, 64 parameter IDs and DSP values remain unchanged from 0.9.0. New Windows results will be recorded after validation; no production release is claimed. See [Phase 10](docs/PHASE_10.md), [release checklist](docs/RELEASE_CHECKLIST.md) and [validation](docs/VALIDATION.md).
+**Development build 0.10.0 — Phase 10 automated validation passed; release acceptance remains open.** Fixes bypass note-offs and adds actual-bundle VST3 hosting, separate official Steinberg validation, callback profiling and installer lifecycle checks. Windows CI passes all nine CTest suites, 7,983 DSP checks, 286 application checks, 209 VST3 host checks, pluginval strictness 10, 47 Steinberg tests and install/reinstall/uninstall tests. The 32-voice interrupted-engine-blend profile exceeds callback budgets; performance optimization and manual DAW/device/DPI/listening acceptance, licensing and signing remain pending. All 410 patches, 64 parameter IDs, schema and DSP values remain stable. See [Phase 10](docs/PHASE_10.md), [release checklist](docs/RELEASE_CHECKLIST.md) and [validation](docs/VALIDATION.md).
 
 ![G Boy Advance 2 Phase 2 native JUCE editor](docs/images/phase2-main.png)
 
@@ -18,7 +18,7 @@ cd G-Boy-Advance-2
 powershell -ExecutionPolicy Bypass -File scripts/build-windows.ps1
 ```
 
-You can also open [Build and validate in GitHub Actions](https://github.com/treezysosa/G-Boy-Advance-2/actions/workflows/build.yml), choose **Run workflow**, and download the Windows artifact after the job succeeds. The workflow and Windows script are included in the corrected source upload. Version 0.9.0 passed all eight CTest suites, pluginval 1.0.4 strictness 10 and portable/installer packaging in [run 39044342090](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39044342090). The factory/vocal and retro audition artifacts are retained separately; all 57 WAV payloads match Phase 8 byte-for-byte. No audition audio is installed or loaded by the instrument. Full results are recorded in VALIDATION.md.
+You can also open [Build and validate in GitHub Actions](https://github.com/treezysosa/G-Boy-Advance-2/actions/workflows/build.yml), choose **Run workflow**, and download the Windows artifact after the job succeeds. The workflow and Windows script are included in the corrected source upload. Version 0.10.0 passed all nine CTest suites, pluginval 1.0.4 strictness 10, the separate official Steinberg validator (47 tests), and clean installer/reinstall/uninstall checks in [run 39046609234](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39046609234). The factory/vocal and retro audition artifacts are separate; all 57 WAV payloads match Phase 9. No audition audio is installed or loaded by the instrument. Profiling exposes an unresolved rapid-engine-blend CPU limit; see PERFORMANCE.md and PHASE_10.md.
 
 The first local build downloads the pinned JUCE 8.0.6 source. For an offline build, supply an existing checkout:
 
@@ -29,6 +29,21 @@ ctest --test-dir build -C Release --output-on-failure
 # Optional host validation (downloads the build-time pluginval tool):
 powershell -ExecutionPolicy Bypass -File scripts/validate-windows.ps1
 ```
+
+Additional Phase 10 checks (official SDK is a separate build-time tool):
+
+```powershell
+git clone --branch v3.7.12_build_20 --recurse-submodules https://github.com/steinbergmedia/vst3sdk.git Dependencies/vst3sdk
+powershell -ExecutionPolicy Bypass -File scripts/validate-steinberg-windows.ps1
+cmake -S . -B build -DGBA_BUILD_BENCHMARKS=ON
+cmake --build build --config Release --target gba2-benchmark
+./build/Release/gba2-benchmark.exe build/validation-logs/callback-profile.csv
+powershell -ExecutionPolicy Bypass -File scripts/package-windows.ps1 -Iscc 'C:/Program Files (x86)/Inno Setup 6/ISCC.exe'
+# Clean disposable admin VM only; refuses existing product installations:
+powershell -ExecutionPolicy Bypass -File scripts/test-installer-windows.ps1
+```
+
+The installer acceptance script uses the actual common VST3 folder and removes its test installation. Review the pending manual gates in [RELEASE_CHECKLIST.md](docs/RELEASE_CHECKLIST.md).
 
 Output:
 
