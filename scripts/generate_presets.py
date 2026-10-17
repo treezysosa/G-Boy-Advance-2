@@ -27,7 +27,7 @@ GROUPS = {
     'Vocals - Horror': '''Dark Horror Vocal Synth|Ghost Whisper Synth|Haunted Choir|Distorted Vocal Synth|Psychological Horror Voice Texture|Survival Horror-Inspired Vocal Synth|Cinematic Horror Choir''',
     'Vocals - Cartoon and Gaming': '''Mystery Cartoon-Inspired Vocal Synth|Retro Cartoon Vocal FX|Anime-Inspired Vocal Synth|Monster-Collecting Game-Inspired Vocal FX|Retro Platformer Vocal Synth|Arcade Announcer-Style Synth|16-Bit Vocal Synth|Handheld Console Vocal FX|Early 3D Console Vocal FX|Retro Sports Game Vocal FX|90s Sitcom-Inspired Vocal Synth|Vintage TV Vocal FX|Skateboarding Game-Inspired Vocal FX|Retro Action Game Vocal FX''',
     'Vocals - Choirs and Textures': '''Children's Choir-Style Synth|Rock Vocal-Style Synth|Ethereal High-Register Vocal Pad|Dreamy Vocal Synth|Nostalgic Vocal Pad|Lo-Fi Vocal Synth|Vintage Radio Vocal Synth|Synthetic Vocal Chop|Dark Formant Bass|Angelic Choir Synth|Neon 80s Pop Vowels|Velvet Smooth Soul Choir|Glossy R&B Formants|Melancholy Rap Vowels|Bedroom Indie Choir|West Coast Party Chant|Memphis Shadow Chant|Southern Club Formants''',
-    'Retro Games': '''8-Bit Lead|Handheld Dream Keys|16-Bit FM Bass|Retro Arcade Bell|Pixel Pluck|Game Menu Pad|Retro RPG Strings|Console Choir Synth|Dreamy Save-Point Pad|Pixel Horror Lead|Retro Racing Synth|Vintage Sports Game Lead|Retro Platformer Pluck|2000s Handheld Synth''',
+    'Retro Games': '''8-Bit Lead|Handheld Dream Keys|16-Bit FM Bass|Retro Arcade Bell|Pixel Pluck|Game Menu Pad|Retro RPG Strings|Console Choir Synth|Dreamy Save-Point Pad|Pixel Horror Lead|Retro Racing Synth|Vintage Sports Game Lead|Retro Platformer Pluck|2000s Handheld Synth|Pocket Duty Bass|Cartridge Noise Snare|Short Register Hat|Pocket Triangle Sub|Arcade Ring Keys|FM Glass Checkpoint|Vector Race Brass|Pixel Harmonic Organ|Original Table Flute|Late Night Polygon Pad|Low Bit Modal Marimba|Tape Menu Harp|Pixel Vowel Choir|Handheld Pulse Motion''',
 }
 
 
@@ -135,12 +135,12 @@ def make_patch(category, name, variation, specs):
     if 'reed' in low: setp(Engine=7, Brightness=.7, Drive=.24)
     if 'music box' in low or 'toy piano' in low: setp(Engine=7, Brightness=.9, Decay=1.1)
     # Named acoustic/keyboard/ensemble profiles take precedence over broad style words.
-    profile = (vocal_designs() if category.startswith('Vocals') else instrument_designs()).get(name)
+    profile = (retro_designs() if category=='Retro Games' else vocal_designs() if category.startswith('Vocals') else instrument_designs()).get(name)
     if profile:
         assert profile['category'] == category
         setp(**profile['parameters'])
     refinement=compatibility_refinements().get(name)
-    if refinement:setp(**refinement)
+    if refinement and category!='Retro Games':setp(**refinement)
     setp(Volume=1)
     if variation:
         engine=int(p['engine'])
@@ -170,6 +170,7 @@ def make_patch(category, name, variation, specs):
     full_name=name+(' - Afterglow' if variation else '')
     tags=[category.split(' - ')[-1].lower(),'synthesis', 'afterglow' if variation else 'original']
     tags += [ENGINE_NAMES[int(p['engine'])]]
+    if profile and category=='Retro Games':tags+=['designed retro',profile['technicalStyle']]
     if profile: tags+=['designed vocal' if category.startswith('Vocals') else 'designed instrument', 'percussive' if p['amp.sustain']<.15 else 'sustained']
     if category.startswith('Vocals'): tags+=['formant','synthetic vowels']
     return dict(id='factory.'+hashlib.sha256(full_name.encode()).hexdigest()[:16], name=full_name,
@@ -221,9 +222,26 @@ def vocal_designs():
                     assert type(value) in (int,float) and lo<=value<=hi,(name,symbol,value)
     return _VOCALS
 
+_RETRO=None
+def retro_designs():
+    global _RETRO
+    if _RETRO is None:
+        data=json.loads((ROOT/'Presets/retro-designs.json').read_text())
+        assert data['format']=='gba2.retro-designs' and data['schemaVersion']==1
+        _RETRO=data['designs'];specs={row[0]:row for row in schema()}
+        assert set(_RETRO)==set(GROUPS['Retro Games'].split('|'))
+        for name,profile in _RETRO.items():
+            assert profile['category']=='Retro Games' and profile['technicalStyle'] and profile['designNotes']
+            for parameters in (profile['parameters'],profile['afterglow']):
+                for symbol,value in parameters.items():
+                    assert symbol in specs
+                    _,_,lo,hi,_,_=specs[symbol]
+                    assert type(value) in (int,float) and lo<=value<=hi,(name,symbol,value)
+    return _RETRO
+
 def recipe_digest():
     digest=hashlib.sha256()
-    for name in ['scripts/generate_presets.py','Presets/instrument-designs.json','Presets/vocal-designs.json','Source/dsp/ParameterList.inc','Source/dsp/VocalEngine.h','Source/dsp/SynthEngine.cpp','Source/dsp/Effects.cpp','Source/dsp/DspMath.h']:
+    for name in ['scripts/generate_presets.py','Presets/instrument-designs.json','Presets/vocal-designs.json','Presets/retro-designs.json','Source/dsp/RetroEngine.h','Source/dsp/ParameterList.inc','Source/dsp/VocalEngine.h','Source/dsp/SynthEngine.cpp','Source/dsp/Effects.cpp','Source/dsp/DspMath.h']:
         digest.update(name.encode()+b'\0'+(ROOT/name).read_bytes().replace(b'\r\n',b'\n'))
     return digest.hexdigest()
 

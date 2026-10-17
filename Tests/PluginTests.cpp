@@ -42,6 +42,13 @@ int main() {
         auto factoryReload=std::make_unique<GbaProcessor>(root);factoryReload->setStateInformation(factoryState.getData(),int(factoryState.getSize()));
         check(factoryReload->presetId()==factoryId,"Factory project identity did not survive state reload");
         check(std::abs(factoryReload->snapshot()[gba::Param::Cutoff]-4321)<.1f&&std::abs(factoryReload->snapshot()[gba::Param::Volume]-.371f)<.0001f,"Factory state was replaced by current library values on project reload");
+        check(p.getNumPrograms()==410,"Expanded factory host-program count is wrong");
+        p.setCurrentProgram(409);p.servicePendingProgram();
+        check(p.getCurrentProgram()==409&&p.presetName()=="Handheld Pulse Motion - Afterglow","Appended retro host program is unreachable");
+        set(p,"volume",.43f);juce::MemoryBlock retroState;p.getStateInformation(retroState);
+        factoryReload->setStateInformation(retroState.getData(),int(retroState.getSize()));
+        check(factoryReload->getCurrentProgram()==409&&factoryReload->presetId()==p.presetId(),"Appended retro program identity did not restore");
+        check(factoryReload->snapshot()[gba::Param::Engine]==6&&factoryReload->snapshot()[gba::Param::Coarse]==-12&&std::abs(factoryReload->snapshot()[gba::Param::Volume]-.43f)<.0001f,"Appended retro settings did not restore");
         p.presets.restoreDefault();
         juce::AudioBuffer<float> audio(2,256);juce::MidiBuffer midi;
         // Verify the host wrapper splits rendering at MIDI sample offsets.

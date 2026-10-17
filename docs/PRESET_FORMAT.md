@@ -2,7 +2,7 @@
 
 Factory source is `Presets/factory.json`, a JSON object containing `format: "gba2.factory"`, `schemaVersion: 1`, and a `presets` array. Every entry has a stable ID, display name, category, tag array, and a `parameters` object keyed by the stable IDs in `Source/dsp/ParameterList.inc`. Values are real-world numeric values, not normalized host values. Every generated factory entry contains every parameter.
 
-Run `python scripts/generate_presets.py` after changing a recipe or schema. It deterministically generates 382 original voicings and `Source/FactoryData.h`, which the plugin embeds. It checks parameter-set uniqueness, complete explicit instrument/vocal designs, recipe provenance, calibrated volume coverage and the frozen identity/program-order registry. CI rejects drift between generated artifacts and recipes. `EngineTests.cpp` retains the short onset check. `PresetTests.cpp` additionally renders three notes and two velocities, checks release/headroom, and writes `factory-audit.csv` and `factory-similarity.csv`.
+Run `python scripts/generate_presets.py` after changing a recipe or schema. It deterministically generates 410 original voicings and `Source/FactoryData.h`, which the plugin embeds. It checks parameter-set uniqueness, complete explicit instrument/vocal/retro designs, recipe provenance, calibrated volume coverage and the frozen identity/program-order registry. CI rejects drift between generated artifacts and recipes. `EngineTests.cpp` retains the short onset check. `PresetTests.cpp` additionally renders three notes and two velocities, checks release/headroom, and writes `factory-audit.csv` and `factory-similarity.csv`.
 
 User files have extension `.gba2preset`:
 
@@ -33,7 +33,7 @@ There is no sample data, audio URL, waveform file, streaming handle, recorded vo
 
 ## Factory authoring and level calibration
 
-`instrument-designs.json` contains explicit base/Afterglow synthesis profiles for the 102 named instrument designs and a few measured compatibility refinements. `vocal-designs.json` adds 75 explicit vocal profiles and Afterglow overrides with original-synthesis design notes. `factory-levels.json` contains parameter-only master gains, category RMS targets and a digest of the recipes/schema and relevant DSP sources. `factory-index.json` freezes existing factory identities and program order; new entries append. The plugin embeds the final arrays, so these authoring files are not runtime dependencies.
+`instrument-designs.json` contains explicit base/Afterglow synthesis profiles for the 102 named instrument designs and a few measured compatibility refinements. `vocal-designs.json` adds 75 explicit vocal profiles and Afterglow overrides with original-synthesis design notes. `retro-designs.json` adds 28 explicit retro designs / 56 voicings with seven technical-style tags. All 382 legacy identities and program indices remain, and 28 new ones append. `factory-levels.json` contains parameter-only master gains, category RMS targets and a digest of the recipes/schema and relevant DSP sources. `factory-index.json` freezes existing factory identities and program order; new entries append. The plugin embeds the final arrays, so these authoring files are not runtime dependencies.
 
 After changing recipes, use the offline workflow (shown for a single-configuration CMake build):
 

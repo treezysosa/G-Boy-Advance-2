@@ -3,6 +3,7 @@
 #include "DspMath.h"
 #include "Effects.h"
 #include "VocalEngine.h"
+#include "RetroEngine.h"
 #include <array>
 #include <vector>
 
@@ -38,6 +39,7 @@ private:
         SVF filter;
         std::array<SVF,3> formants;
         VocalEngine vocal;
+        RetroEngine retro;
         Random noise;
         std::array<float,stringSize> string{};
         int stringPos=0;

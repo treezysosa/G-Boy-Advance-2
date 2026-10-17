@@ -52,7 +52,7 @@ This development version passes Windows compilation, automated tests and pluginv
 
 ## Factory bank revision 0.6
 
-The bank retains 382 patches, all factory names/IDs and program order. Named instruments have explicit synthesis profiles and Afterglow variants change active excitation/envelope controls. Factory levels are calibrated using a 100 ms stereo RMS metric; quieter articulations remain quieter when the master knob reaches its gain ceiling. This is not perceptual loudness normalization.
+The bank retains all 382 legacy factory names/IDs and program positions, with 28 new retro entries appended (410 total). Named instruments have explicit synthesis profiles and Afterglow variants change active excitation/envelope controls. Factory levels are calibrated using a 100 ms stereo RMS metric; quieter articulations remain quieter when the master knob reaches its gain ceiling. This is not perceptual loudness normalization.
 
 Saved projects restore their actual parameter values, even when their factory ID also exists in the revised bank. Loading the factory preset again selects its new voicing. User presets remain independent. Optional category audition WAVs are original test renders for listening review; they are never loaded by the instrument.
 
@@ -61,3 +61,9 @@ Saved projects restore their actual parameter values, even when their factory ID
 Select a vocal preset or choose the Formant engine in SELECT. Vowel moves continuously through A/E/I/O/U; formant shift changes the resonance range independently of note pitch. Brightness opens the harmonic source's spectral tilt. Breath blends harmonic excitation into filtered noise; high settings create whisper-like tone. Choir blends two additional pitched layers; detune controls their spacing. LFO destination Vowel and syllabic motion animate the vowel. Pitch bend, modulation wheel, velocity, sustain and glide remain playable. These produce melodic synthetic vowel textures, not spoken phrases or identifiable voices.
 
 Version 0.7.0 revises engine 5, so older projects restore the same parameters but can sound different. Audition before replacing a production installation. Offline test artifacts contain 12 vocal examples plus 17 category excerpts; the instrument never reads these audio files.
+
+## Retro synthesis (0.8.0)
+
+Choose the Retro Games category or select Chiptune in SELECT. Oscillator 1 and 2 waveforms, blend, coarse tuning and detune now work in this engine. Pulse width changes pulse duty. Brightness opens the source tone filter and blends long/short clocked noise when Noise is selected. Triangle and sine have 16 digital levels; saw has 32. The deliberate digital steps can alias. Use the shared filter, ADSRs, LFOs, glide, bitcrusher and effects to shape the result. The retro bank also uses FM, additive, original wavetables, plucked strings, modal keys and formants for other technical eras. No commercial game sound, ROM or audio sample is used.
+
+All 14 original requested retro names remain; 14 additional designs each have an Afterglow variation. Search style tags such as `16-bit FM`, `early 3D` or `arcade`. Existing chiptune projects restore their saved parameters but may sound different under the revised engine. Offline retro audition WAVs are test outputs, never plugin assets.

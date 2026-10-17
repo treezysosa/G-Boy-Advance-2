@@ -2,7 +2,7 @@
 
 A C++20 / JUCE 8 hybrid synthesis instrument targeting Windows x64 VST3 and standalone. The purple, wide console interface uses native scalable controls. All sound is generated mathematically: there is no sampler, sample import, commercial game audio, or network dependency at runtime.
 
-**Development build 0.7.0 — Phase 7 synthetic vocals.** A dedicated five-resonance vocal module adds harmonic spectral tilt, voiced/unvoiced blending and three pitched choir layers. All 75 named vocal designs / 150 voicings have explicit profiles, active Afterglow variations and recalibrated levels. The bank retains 382 presets across 17 categories, 64 parameter IDs and project schema 1. Validation passes 7,307 DSP checks, 177 Linux / 180 Windows integration checks, all seven Windows CTest suites and pluginval strictness 10. All six DSP suites pass ASan/UBSan. Human listening and manual DAW acceptance remain pending. See [Phase 7](docs/PHASE_7.md), [factory audit](docs/FACTORY_LIBRARY.md), [preset authoring](docs/PRESET_FORMAT.md), [validation](docs/VALIDATION.md) and [Phase 2 visual acceptance](docs/PHASE_2.md).
+**Development build 0.8.0 — Phase 8 original retro synthesis.** The expanded chiptune engine adds two pitched oscillators, 16/32-level digital waveforms and clocked 15/7-bit noise. All 28 named retro designs / 56 voicings have explicit profiles and active Afterglow variations across seven technical styles. The library now has 410 presets in 17 categories; 28 new presets append after all 382 legacy program positions. Parameter IDs (64), schema 1 and plugin identifiers remain stable. Final automated Phase 8 validation is running. See [Phase 8](docs/PHASE_8.md), [factory audit](docs/FACTORY_LIBRARY.md), [preset authoring](docs/PRESET_FORMAT.md), [validation](docs/VALIDATION.md) and [Phase 2 visual acceptance](docs/PHASE_2.md).
 
 ![G Boy Advance 2 Phase 2 native JUCE editor](docs/images/phase2-main.png)
 
@@ -18,7 +18,7 @@ cd G-Boy-Advance-2
 powershell -ExecutionPolicy Bypass -File scripts/build-windows.ps1
 ```
 
-You can also open [Build and validate in GitHub Actions](https://github.com/treezysosa/G-Boy-Advance-2/actions/workflows/build.yml), choose **Run workflow**, and download the Windows artifact after the job succeeds. The workflow and Windows script are included in the corrected source upload. Version 0.7.0 passed all seven CTest suites, pluginval 1.0.4 strictness 10 and portable/installer packaging in [run 39039531021](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39039531021). The separate `Factory-preset-auditions-Windows` artifact includes 17 category and 12 vocal audition excerpts plus audit data. No audition audio is installed or loaded by the instrument. Full results are recorded in VALIDATION.md.
+You can also open [Build and validate in GitHub Actions](https://github.com/treezysosa/G-Boy-Advance-2/actions/workflows/build.yml), choose **Run workflow**, and download the Windows artifact after the job succeeds. The workflow and Windows script are included in the corrected source upload. The previous 0.7.0 passed all seven CTest suites, pluginval 1.0.4 strictness 10 and portable/installer packaging in [run 39039531021](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39039531021). Phase 8 adds an eighth CTest suite and a separate `Retro-preset-auditions-Windows` artifact with 28 retro excerpts. The existing factory/vocal artifact retains 17 category and 12 vocal excerpts plus audit data. Final Windows validation is pending. No audition audio is installed or loaded by the instrument. Full results are recorded in VALIDATION.md.
 
 The first local build downloads the pinned JUCE 8.0.6 source. For an offline build, supply an existing checkout:
 
@@ -43,7 +43,7 @@ Close your DAW, copy the entire `.vst3` directory into `C:\Program Files\Common 
 - Sine, harmonic-limited triangle, PolyBLEP saw / square / pulse, and noise; resonant low-pass, high-pass, band-pass, notch, and formant filters.
 - Two ADSRs, two routable LFOs, vibrato, tremolo, velocity, 16-channel MIDI pitch bend / modulation / sustain, 1–32 voices, stealing, mono / legato, glide.
 - Reverb, delay, chorus, phaser, flanger, saturation, distortion, bitcrusher, tape wow / flutter, low / high shelves, and stereo width.
-- 382 original factory patches across 17 categories, explicit named-instrument and vocal profiles, calibrated levels and stable program identities. Vocal patches are synthesized vowel-like timbres and contain no recorded voices or speech.
+- 410 original factory patches across 17 categories, explicit named-instrument, vocal and retro profiles, calibrated levels and stable program identities. Vocal patches are synthesized vowel-like timbres and contain no recorded voices or speech.
 - Reference-based vector UI, playable keyboard, spring-return pitch wheel, functional D-pad, preview A / stop B, START browser, SELECT advanced editor, assignable A–D controls.
 - Host-visible parameters, project state, user preset Save As / rename / delete, favorites / recent patches, category search, tags, keyboard navigation.
 - Windows CI, portable packaging and Inno Setup installer script, DSP and JUCE integration tests.
@@ -62,7 +62,7 @@ cmake --build build-core --parallel 2
 ctest --test-dir build-core --output-on-failure
 ```
 
-Or, run all six DSP suites with a C++20 compiler alone:
+Or, run all seven DSP suites with a C++20 compiler alone:
 
 ```sh
 bash scripts/test-core.sh
@@ -87,7 +87,7 @@ See [performance measurements](docs/PERFORMANCE.md) for the additive-engine opti
 
 With Inno Setup 6 installed, run `scripts/package-windows.ps1` after a successful release build. This creates an unsigned Windows archive and installer under `dist/`. Release signing, listening review, the separate Steinberg VST3 validator, interactive installer checks, and DAW testing remain release gates. Pluginval strictness 10 has passed on Windows.
 
-Engine 5 has a revised sound in 0.7.0, including existing formant patches. Saved parameters remain compatible; audio renders may differ.
+Engine 6 has a revised sound in 0.8.0, including existing chiptune patches; the Phase 7 formant revision remains. Saved parameters retain their IDs, but audio renders may differ.
 
 Read [third-party and licensing notes](docs/LICENSING.md) before distribution. JUCE 8 is dual licensed under AGPLv3 and commercial terms; source availability by itself does not fulfill all license obligations. No Nintendo branding or artwork is bundled.
 

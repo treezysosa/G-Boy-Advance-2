@@ -60,7 +60,7 @@ void SynthEngine::start(Voice& v,int channel,int note,float velocity,bool previe
         v.frequency=(target[Param::Glide]>0 && lastFrequency>0)?lastFrequency:v.targetFrequency;
         v.amp.start(true);v.filterEnv.start(true);v.p1=0;v.p2=0;v.fmPhase=0;v.subPhase=0;v.modalPhase={};v.modalElapsed=0;v.stringActive=false;v.modalActive=false;
         v.lfo1={};v.lfo2={};v.vibrato={};v.tremolo={};v.syllable={};v.panMod=0;
-        v.filter.clear();for(auto& f:v.formants) f.clear();v.vocal.reset();v.controlCounter=0;
+        v.filter.clear();for(auto& f:v.formants) f.clear();v.vocal.reset();v.retro.reset();v.controlCounter=0;
     } else {v.frequency=std::max(v.frequency,1.0f);v.tail=0;}
     lastFrequency=v.targetFrequency;
 }
@@ -203,7 +203,7 @@ float SynthEngine::excitation(Voice& v,int engine,float frequency,float dt,float
             break;
         }
         case 5:x=v.vocal.next(v.p1,v.p2,dt,dt2,s[Param::Choir],s[Param::Breath],v.noise);break;
-        case 6:x=mixedOscillator(wave1Fade,v.p1,dt,s[Param::PulseWidth],v.noise);x=std::round(x*15)/15;break;
+        case 6:x=v.retro.next(wave1Fade,wave2Fade,v.p1,v.p2,dt,dt2,s[Param::PulseWidth],s[Param::OscMix]);break;
         case 7:{ // Original modal bar / tine synthesis with inharmonic resonances.
             if(!v.modalActive){v.modalPhase={};v.modalElapsed=0;v.modalActive=true;}
             v.modalElapsed+=1/double(sampleRate);
@@ -241,6 +241,7 @@ float SynthEngine::voiceSample(Voice& v) noexcept {
     if(v.controlCounter==0||(engineFade.weights[4]>0&&!v.stringActive)) {
         v.filter.coefficients(s[Param::Cutoff]*std::exp2(fenv*s[Param::FilterEnv]+modFilter),s[Param::Resonance],sampleRate);
         updateFormants(v,s[Param::Vowel]+modVowel+s[Param::Syllable]*syllableMotion*0.8f);
+        if(engineFade.weights[6]>0)v.retro.configure(s[Param::Brightness],sampleRate);
         if(engineFade.weights[4]>0) {
             // Compensate the feedback low-pass phase delay so brightness does not detune the string.
             const float omega=tau*frequency/sampleRate,alpha=.15f+.8f*s[Param::Brightness],r=1-alpha;

@@ -21,7 +21,8 @@ def main():
         volume=max(.05,min(.95,target(row['category'])*prior/measured))
         volumes[row['id']]=round(volume,6)
         if volume==.95:limited.append(row['id'])
-    assert len(volumes)==382 and len(rows)==382
+    patches=json.loads((ROOT/'Presets/factory.json').read_text())['presets']
+    assert len(rows)==len(patches) and set(volumes)=={p['id'] for p in patches}
     data={'format':'gba2.factory-levels','schemaVersion':1,'recipeSha256':recipe_digest(),
           'metric':'Maximum rolling 100 ms stereo RMS at 48 kHz, MIDI 60 (bass 48), velocity 0.9, hold max(0.8s, attack+0.35s). Master volume is after the limiter; no audio is stored.',
           'targets':{category:target(category) for category in sorted({r['category'] for r in rows})},

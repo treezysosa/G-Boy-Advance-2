@@ -73,3 +73,8 @@ jobs:
             build/vocal-auditions/**
             build/factory-audit.csv
             build/factory-similarity.csv
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: Retro-preset-auditions-Windows
+          path: build/retro-auditions/**

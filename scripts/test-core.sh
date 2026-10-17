@@ -8,10 +8,12 @@ mkdir -p build-core
 "${CXX:-g++}" -std=c++20 -O2 -Wall -Wextra -Wpedantic -Werror -ISource Source/dsp/SynthEngine.cpp Source/dsp/Effects.cpp Tests/EffectsTests.cpp Tests/AllocationTracker.cpp -o build-core/gba2-effects-tests
 "${CXX:-g++}" -std=c++20 -O2 -Wall -Wextra -Wpedantic -Werror -ISource Source/dsp/SynthEngine.cpp Source/dsp/Effects.cpp Tests/PresetTests.cpp -o build-core/gba2-preset-tests
 "${CXX:-g++}" -std=c++20 -O2 -Wall -Wextra -Wpedantic -Werror -ISource Source/dsp/SynthEngine.cpp Source/dsp/Effects.cpp Tests/VocalTests.cpp Tests/AllocationTracker.cpp -o build-core/gba2-vocal-tests
+"${CXX:-g++}" -std=c++20 -O2 -Wall -Wextra -Wpedantic -Werror -ISource Source/dsp/SynthEngine.cpp Source/dsp/Effects.cpp Tests/RetroTests.cpp Tests/AllocationTracker.cpp -o build-core/gba2-retro-tests
 cd build-core
 ./gba2-tests "$@"
 ./gba2-core-tests
 ./gba2-advanced-tests
 ./gba2-effects-tests
 ./gba2-vocal-tests
+./gba2-retro-tests
 ./gba2-preset-tests --auditions

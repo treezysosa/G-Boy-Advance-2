@@ -6,10 +6,10 @@ ROOT_FILES = {'CMakeLists.txt', 'README.md', '.gitignore', 'LICENSE', 'LICENSE.m
 SOURCE_DIRS = {'Source', 'Tests', 'Presets', 'scripts', 'docs', 'packaging', '.github'}
 REQUIRED = {
     'CMakeLists.txt', 'README.md', 'Source/PluginProcessor.cpp', 'Source/PluginEditor.cpp',
-    'Source/PresetManager.cpp', 'Source/dsp/SynthEngine.cpp', 'Source/dsp/Effects.cpp', 'Source/dsp/Effects.h', 'Source/dsp/VocalEngine.h', 'Source/FactoryData.h',
+    'Source/PresetManager.cpp', 'Source/dsp/SynthEngine.cpp', 'Source/dsp/Effects.cpp', 'Source/dsp/Effects.h', 'Source/dsp/VocalEngine.h', 'Source/dsp/RetroEngine.h', 'Tests/RetroTests.cpp', 'Presets/retro-designs.json', 'Source/FactoryData.h',
     'Presets/factory.json', 'Presets/instrument-designs.json', 'Presets/factory-levels.json', 'Presets/factory-index.json', 'Tests/EngineTests.cpp', 'Tests/CoreSynthesisTests.cpp', 'Tests/AdvancedSynthesisTests.cpp', 'Tests/PluginTests.cpp', 'Tests/EffectsTests.cpp', 'Tests/PresetTests.cpp', 'Tests/VocalTests.cpp', 'Presets/vocal-designs.json',
     'scripts/calibrate_presets.py', 'scripts/report_presets.py', 'scripts/build-windows.ps1', 'scripts/validate-windows.ps1', 'scripts/package-windows.ps1', 'packaging/installer.iss',
-    '.github/workflows/build.yml', 'docs/PHASE_4.md', 'docs/PHASE_5.md', 'docs/PHASE_6.md', 'docs/PHASE_7.md',
+    '.github/workflows/build.yml', 'docs/PHASE_4.md', 'docs/PHASE_5.md', 'docs/PHASE_6.md', 'docs/PHASE_7.md', 'docs/PHASE_8.md',
 }
 
 

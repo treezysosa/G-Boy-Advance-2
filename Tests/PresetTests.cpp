@@ -100,6 +100,9 @@ int main(int argc,char** argv){try{
         for(std::string_view name:{"Smooth R&B Vocal Pad","Modern Pop Vocal Synth","Japanese City Pop Vocal Synth","Middle Eastern Pop-Inspired Vocal Synth","Dark Southern Chant Synth","Ghost Whisper Synth","Haunted Choir","16-Bit Vocal Synth","Children's Choir-Style Synth","Synthetic Vocal Chop","Dark Formant Bass","Angelic Choir Synth"}){
             auto it=std::find_if(gba::factoryPatches.begin(),gba::factoryPatches.end(),[&](const auto& p){return p.name==name;});if(it==gba::factoryPatches.end())throw std::runtime_error("Missing audition preset");excerpt(*it,"vocal-auditions",++number,vocalIndex);
         }
+        std::filesystem::create_directories("retro-auditions");std::ofstream retroIndex("retro-auditions/README.txt");retroIndex<<"Original mathematical synthesis, not commercial game audio. No instrument reads these test WAVs. Human listening acceptance pending; six-second excerpts may truncate tails.\n";number=0;
+        for(const auto& p:gba::factoryPatches)if(std::string_view(p.category)=="Retro Games"&&std::string_view(p.name).find(" - Afterglow")==std::string_view::npos)excerpt(p,"retro-auditions",++number,retroIndex);
+
     }
     std::cout<<"Central-note max-100ms stereo RMS range: "<<quietest<<" to "<<loudest<<" ("<<20*std::log10(loudest/quietest)<<" dB); peak "<<largestPeak<<"\n";
     std::cout<<"All "<<checks<<" Phase 6 factory preset checks passed.\n";return 0;
