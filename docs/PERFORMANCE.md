@@ -1,5 +1,21 @@
 # Development performance measurements
 
+## Latest — 0.10.1 finalization
+
+[Windows run 39059534979](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39059534979), VS2022 Release, native DSP on a shared VM: 66 cases, 10,142 callbacks, all finite. Rates 44.1/48/96 kHz; 64/256-frame blocks; 32 voices; effects plus cutoff/delay automation. Each case measures about 0.25 rendered seconds after 16 warm-up blocks. Initialization, initial note bursts, output validation, real driver/host/GUI load and CSV writes are outside the timed region.
+
+| Switching workload | Worst mean / budget | Worst p99 / budget | Calls over budget |
+|---|---:|---:|---:|
+| Rapid eight-choice requests (engine 8) | 0.74079 | 0.88717 | 0 |
+| Modal / additive (engine 9) | 0.84167 | 0.89865 | 0 |
+| Modal / retro (engine 10) | 0.88767 | 0.95865 | 2 |
+
+All case means and p99 values fit their sampled budgets. Two of 10,142 calls are over budget, maximum 1.06545×; these excursions are recorded, not attributed to a cause without measurement. The original rapid-cycle group recorded 812 over-budget calls / 2.2744 worst mean in 0.10.0. The systematic accumulation and mean-budget failures are addressed; real-driver deadline/underrun acceptance remains pending.
+
+Engine changes now finish each two-engine 5 ms fade before starting the latest choice. Other selectors retain their interrupted fades. Glide and detune factors are shared per sample; zero-depth LFO clocks skip sine work; modal decay uses one exponential plus powers. Triangle odd harmonics use a double recurrence instead of up to eight sine calls. Direct-sum tests measure over 140 dB SNR; the modal reference grid matches 3,385,800 float samples. All 410 measured factory levels remain stable within 1.25e-8 relative RMS, with parameter arrays unchanged. Two of 57 audition WAVs have only one-PCM16-step differences in 23 samples total.
+
+Two expensive-pair cases were added to the original 54-case profiler. They exposed remaining modal/retro costs that rapid cycling alone missed, motivating the modal and triangle work. Full results, sanitizer scope and artifact evidence are in PHASE_10_FINALIZATION.md. Older measurements below are historical, including the superseded 0.10.0 release-blocking CPU result.
+
 These are wall-clock timings of the native DSP loop on the development Linux VM, not audio-deadline or DAW compatibility guarantees.
 
 ## Additive optimization

@@ -84,6 +84,6 @@ These unsigned development builds still require manual host, audio-device, high-
 
 ## Engine changes in 0.10.1
 
-Engine changes crossfade for 5 ms. If automation requests another engine during a fade, the current fade finishes and then the latest request begins; intermediate requests are coalesced. A held engine selection settles within 10 ms. This bounds processing to two engines and avoids the accumulating CPU cost of rapidly retargeted blends. All 32 voices remain available. Existing waveform/filter/LFO fade behavior is unchanged.
+Engine changes crossfade for 5 ms. If automation requests another engine during a fade, the current fade finishes and then the latest request begins; intermediate requests are coalesced. After the next audio block observes it, a held engine selection settles within about 10 ms (two fades rounded to sample frames). This bounds processing to two engines and avoids the accumulating CPU cost of rapidly retargeted blends. All 32 voices remain available. Existing waveform/filter/LFO fade behavior is unchanged.
 
-Third-party notice files are included with portable and installed builds. The licensing route and signing certificate still require owner setup before a production release.
+Third-party notice files are included with portable and installed builds. The owner must choose applicable licensing terms before distribution. Optional code signing requires an owner certificate.

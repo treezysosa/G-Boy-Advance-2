@@ -1,5 +1,7 @@
 # Phase 10 — Windows release validation
 
+This is the historical 0.10.0 record. Version 0.10.1 addresses the sustained CPU-budget issue and passes expanded automated validation; see [Phase 10 finalization](PHASE_10_FINALIZATION.md). Manual hardware/DAW acceptance remains open.
+
 Development version 0.10.0. Automated Windows validation passed; full release acceptance remains pending. Plugin identifiers, 64 parameter IDs, schema 1, factory identities and DSP/factory values remain stable.
 
 ## New checks

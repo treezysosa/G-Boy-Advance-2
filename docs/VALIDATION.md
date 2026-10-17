@@ -1,6 +1,18 @@
 # Validation record
 
-## Latest — Phase 10, version 0.10.0
+## Latest — Phase 10 finalization, 0.10.1
+
+[Windows/Ubuntu run 39059534979](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39059534979), validated application/build `f6891afa8d2facb4fa83b9dc2c0f7a8fd24ea253`: **nine Windows CTest suites PASS**, 134.97 seconds, **8,007 DSP / 286 application / 209 actual-VST3 host checks**. pluginval 1.0.4 strictness 10 SUCCESS, seed `0x5552b94`; separate official Steinberg validator **47 passed, zero failed**. Clean install/reinstall/standalone-liveness/uninstall checks PASS, installed hashes match and user fixture survives. All 18 packaged notice texts match pinned upstream content (checkout newline conversion allowed). Both VST3/standalone are AMD64 PE.
+
+The CPU fix bounds simultaneous engines to two and optimizes shared coefficients, modal decay and triangle harmonics. All **66 workload means and p99 times fit the sampled callback budgets**; **two of 10,142 calls exceed budget**, maximum 1.06545×. Original rapid cycling now has zero overruns / worst mean 0.74079×, compared with 812 / 2.2744× in 0.10.0. The sustained mean-budget problem is addressed; these VM/native timings do not certify real-device deadlines. Source/test details and numerical comparison are in PHASE_10_FINALIZATION.md and PERFORMANCE.md.
+
+All seven fully instrumented DSP ASan/UBSan suites PASS **8,007 checks**; the application integration executable with instrumented application/DSP sources passes **281 checks**, with cached JUCE modules uninstrumented and leak detection disabled. Triangle reference errors remain below 6e-7 / over 140 dB SNR across the measured grid; modal reference renders match 3,385,800 floats. All factory parameter arrays / IDs / schema / program positions are unchanged. Factory max RMS relative difference is 1.25e-8. Of 57 offline audition WAVs, 55 are identical to 0.10.0; two differ in 23 samples total, by one PCM16 step at most.
+
+Final Windows artifact `12110608147` digest `0d430dce404e69d70a3753400e34488c18059ee48fc743d062ab056a2a4b7104`, factory/vocal `12110448564` digest `4eb7f554a299deb4ec0645fe61b9967c38b1dabdfb244eaf35c7c8f5770dd52d`, retro `12111350595` digest `1d26ce52cda0b8c247b7521aca4114bc4e892e7ca40b603670ced0151247202c`: downloaded digests/ZIP integrity, logs, 410-preset parameter-only payload, notices, 1,640 audit/410 similarity rows and all 57 six-second stereo/48k/PCM16 clips verified. No audio/authoring banks are in the plugin package. Final source ZIP contains 98 source/assets, including complete workflow/scripts/tests/notices; final evidence-only docs preserve validated application/build source.
+
+**Available code work and automated validation are complete; full manual acceptance is not claimed.** Named-DAW/device, compensated bounce/tails, physical DPI/accessibility, listening and non-admin/interactive/old-version installer checks remain pending. Licensing terms need owner selection; code signing is optional and no signed build is claimed. See RELEASE_CHECKLIST.md. Earlier phase records below are historical; the 0.10.0 CPU blocker is superseded by these results.
+
+## Phase 10 baseline, version 0.10.0
 
 [Windows/Ubuntu run 39046609234](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39046609234), application/build commit `e55a05356d3dc0b1b2c462d761e58c0378d4cb86`: all nine Windows CTest suites PASS (129.41 s), 7,983 DSP assertions, 286 Windows application checks and 209 actual-VST3 host checks. Prepared VST3 latency is 16 frames at 44.1/48/96 kHz and 64/257/1024 blocks. Bypass note-offs, state reload, instances, message-thread serialization concurrent with audio, offline rendering, release and tail reporting pass. Linux integration/changed-application ASan/UBSan: 281 checks PASS; cached JUCE/DSP sanitizer scope is detailed in PHASE_10.md.
 
