@@ -2,7 +2,7 @@
 
 A C++20 / JUCE 8 hybrid synthesis instrument targeting Windows x64 VST3 and standalone. The purple, wide console interface uses native scalable controls. All sound is generated mathematically: there is no sampler, sample import, commercial game audio, or network dependency at runtime.
 
-**Development build 0.7.0 — Phase 7 synthetic vocals.** A dedicated five-resonance vocal module adds harmonic spectral tilt, voiced/unvoiced blending and three pitched choir layers. All 75 named vocal designs / 150 voicings have explicit profiles, active Afterglow variations and recalibrated levels. The bank retains 382 presets across 17 categories, 64 parameter IDs and project schema 1. Final Phase 7 validation is running. See [Phase 7](docs/PHASE_7.md), [factory audit](docs/FACTORY_LIBRARY.md), [preset authoring](docs/PRESET_FORMAT.md), [validation](docs/VALIDATION.md) and [Phase 2 visual acceptance](docs/PHASE_2.md).
+**Development build 0.7.0 — Phase 7 synthetic vocals.** A dedicated five-resonance vocal module adds harmonic spectral tilt, voiced/unvoiced blending and three pitched choir layers. All 75 named vocal designs / 150 voicings have explicit profiles, active Afterglow variations and recalibrated levels. The bank retains 382 presets across 17 categories, 64 parameter IDs and project schema 1. Validation passes 7,307 DSP checks, 177 Linux / 180 Windows integration checks, all seven Windows CTest suites and pluginval strictness 10. All six DSP suites pass ASan/UBSan. Human listening and manual DAW acceptance remain pending. See [Phase 7](docs/PHASE_7.md), [factory audit](docs/FACTORY_LIBRARY.md), [preset authoring](docs/PRESET_FORMAT.md), [validation](docs/VALIDATION.md) and [Phase 2 visual acceptance](docs/PHASE_2.md).
 
 ![G Boy Advance 2 Phase 2 native JUCE editor](docs/images/phase2-main.png)
 
@@ -18,7 +18,7 @@ cd G-Boy-Advance-2
 powershell -ExecutionPolicy Bypass -File scripts/build-windows.ps1
 ```
 
-You can also open [Build and validate in GitHub Actions](https://github.com/treezysosa/G-Boy-Advance-2/actions/workflows/build.yml), choose **Run workflow**, and download the Windows artifact after the job succeeds. The workflow and Windows script are included in the corrected source upload. The previous 0.6.0 passed all six CTest suites, pluginval 1.0.4 strictness 10 and portable/installer packaging in [run 39037896323](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39037896323). Phase 7 adds a seventh CTest suite and 12 vocal audition excerpts to the separate `Factory-preset-auditions-Windows` artifact. Final Windows validation is pending. No audition audio is installed or loaded by the instrument. Full results are recorded in VALIDATION.md.
+You can also open [Build and validate in GitHub Actions](https://github.com/treezysosa/G-Boy-Advance-2/actions/workflows/build.yml), choose **Run workflow**, and download the Windows artifact after the job succeeds. The workflow and Windows script are included in the corrected source upload. Version 0.7.0 passed all seven CTest suites, pluginval 1.0.4 strictness 10 and portable/installer packaging in [run 39039531021](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39039531021). The separate `Factory-preset-auditions-Windows` artifact includes 17 category and 12 vocal audition excerpts plus audit data. No audition audio is installed or loaded by the instrument. Full results are recorded in VALIDATION.md.
 
 The first local build downloads the pinned JUCE 8.0.6 source. For an offline build, supply an existing checkout:
 
