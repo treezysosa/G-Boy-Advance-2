@@ -208,7 +208,19 @@ float SynthEngine::excitation(Voice& v,int engine,float frequency,float dt,float
             if(!v.modalActive){v.modalPhase={};v.modalElapsed=0;v.modalActive=true;}
             v.modalElapsed+=1/double(sampleRate);
             constexpr float ratios[]{1,2.01f,2.76f,4.07f,5.43f,6.79f};
-            for(int i=0;i<6;++i) {float ratio=std::lerp(float(i+1),ratios[i],s[Param::Brightness]);if(ratio*dt>=0.45f)break;v.modalPhase[i]=wrap(v.modalPhase[i]+dt*ratio);x+=sine(v.modalPhase[i])*float(std::exp(-v.modalElapsed*double(i+1)/(0.3+s[Param::Decay])))/float(i+1);}break;}
+            // exp(-t*(i+1)/decayTime) is a power of exp(-t/decayTime). Compute
+            // one exponential and multiply successive partial decays in double
+            // precision, retaining the original response to decay automation.
+            const double fundamentalDecay=std::exp(-v.modalElapsed/(0.3+s[Param::Decay]));
+            double partialDecay=fundamentalDecay;
+            for(int i=0;i<6;++i) {
+                float ratio=std::lerp(float(i+1),ratios[i],s[Param::Brightness]);
+                if(ratio*dt>=0.45f)break;
+                v.modalPhase[i]=wrap(v.modalPhase[i]+dt*ratio);
+                x+=sine(v.modalPhase[i])*float(partialDecay)/float(i+1);
+                partialDecay*=fundamentalDecay;
+            }
+            break;}
         default:break;
     }
     return x;
@@ -217,7 +229,9 @@ float SynthEngine::voiceSample(Voice& v) noexcept {
     const auto& s=current;
     v.lfo1.advance(s[Param::Lfo1Rate],sampleRate);v.lfo2.advance(s[Param::Lfo2Rate],sampleRate);
     v.vibrato.advance(5.3,sampleRate);v.tremolo.advance(4.2,sampleRate);v.syllable.advance(3,sampleRate);
-    const float lfo1=v.lfo1.value(),lfo2=v.lfo2.value();
+    // Keep both clocks advancing, but zero depth needs no sine evaluation.
+    const float lfo1=s[Param::Lfo1Depth]>0?v.lfo1.value():0;
+    const float lfo2=s[Param::Lfo2Depth]>0?v.lfo2.value():0;
     float modPitch=0,modFilter=0,modAmp=0,modVowel=0;
     const auto route=[&](int destination,float amount) {
         switch(destination) {case 1:modPitch+=amount*2;break;case 2:modFilter+=amount*3;break;case 3:modAmp+=amount*0.45f;break;case 4:modVowel+=amount*2;break;default:break;}

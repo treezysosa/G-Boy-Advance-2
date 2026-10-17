@@ -6,7 +6,7 @@ The 0.10.0 profiler exposed excessive CPU during rapidly retargeted engine blend
 
 Engine transitions now finish each 5 ms two-engine crossfade before starting the latest requested engine. Requests are sampled every audio frame; intermediate choices during an unfinished fade are coalesced. At most two engines run concurrently. A stable request begins within 5 ms and settles within 10 ms, without dropping the current blend abruptly. Reset/prepare immediately chooses the selected engine. Waveform/filter/LFO routing retain their existing interruptible fades. This intentionally changes the behavior of very rapid engine automation while retaining ordinary engine fades and all parameter IDs.
 
-Shared glide and oscillator-2 detune calculations run once per sample instead of once per voice, including smoothed automation. Polyphony remains 1–32 voices; no audio-thread allocation/locks or voice-limit reduction is introduced.
+Shared glide and oscillator-2 detune calculations run once per sample instead of once per voice, including smoothed automation. Zero-depth LFOs advance their clocks without evaluating an inaudible sine. The modal engine computes one exponential decay and derives the other five partial decays as powers in double precision, preserving the original decay-automation formula. Polyphony remains 1–32 voices; no audio-thread allocation/locks or voice-limit reduction is introduced.
 
 New regression checks verify two-engine bounds, gain normalization, fade continuity, reset and latest-target convergence at 44.1/48/96 kHz. The profiler adds alternating modal/additive and modal/retro workloads: 66 cases total. Timing remains observational on a shared VM and is not a hardware/DAW underrun certificate.
 
@@ -21,3 +21,9 @@ Eighteen upstream JUCE 8.0.6/dependency notices are retained under docs/licenses
 ## Remaining external acceptance
 
 The licensing route is awaiting the owner's choice. Named DAW/device, real compensated bounce/export tails, physical DPI/accessibility, human preset listening, separate non-admin/interactive wizard and signed-package acceptance remain pending in RELEASE_CHECKLIST.md. The environment provides Linux development and Windows CI, with no access to a user's audio interface, physical monitors or installed commercial DAWs. These entries cannot be changed to PASS from source inspection or numerical tests. No production release/tag or false compatibility claim will be made.
+
+## Numerical optimization check
+
+`Tests/ModalReferenceProbe.cpp` (optional benchmark target `gba2-modal-reference-probe`) renders 54 modal cases: 44.1/48/96 kHz, MIDI 24/60/96, decay .005/.4/4 seconds, velocities .4/1. A GCC `-O2` comparison against the preceding direct six-exponential implementation produces **3,385,800 identical float samples**. This is differential evidence for that grid, not a proof for all automation/notes/compiler configurations.
+
+The first bounded-transition Windows candidate passed all functional suites and validators, but the newly added modal/retro workload still measured 1.0915 times budget on average. The modal/LFO optimization addresses this additional case; its Windows performance results are pending.

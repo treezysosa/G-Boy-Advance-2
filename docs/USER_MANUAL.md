@@ -81,3 +81,9 @@ Refresh never replaces the parameters currently playing in a project. After Refr
 Version 0.10.0 consumes MIDI and advances synthesis while host-bypassed, muting its stereo output. Note-offs and sustain changes during bypass therefore continue to affect the instrument. Bypass retains normal synthesis CPU use. The fixed processing latency remains 16 samples; host compensation and export-tail behavior require the DAW checks in RELEASE_CHECKLIST.md.
 
 These unsigned development builds still require manual host, audio-device, high-DPI/accessibility and listening acceptance. The callback profiler exposes timing limits under 32-voice/rapid-engine automation loads; consult PERFORMANCE.md before release use.
+
+## Engine changes in 0.10.1
+
+Engine changes crossfade for 5 ms. If automation requests another engine during a fade, the current fade finishes and then the latest request begins; intermediate requests are coalesced. A held engine selection settles within 10 ms. This bounds processing to two engines and avoids the accumulating CPU cost of rapidly retargeted blends. All 32 voices remain available. Existing waveform/filter/LFO fade behavior is unchanged.
+
+Third-party notice files are included with portable and installed builds. The licensing route and signing certificate still require owner setup before a production release.

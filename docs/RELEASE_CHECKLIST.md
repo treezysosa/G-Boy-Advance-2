@@ -8,7 +8,7 @@ This is an unsigned development build, not a certified production release. Recor
 - Windows x64 VST3/standalone compile; seven DSP suites and JUCE application tests.
 - Actual-bundle host acceptance: prepared latency, MIDI, bypass, state and instances.
 - pluginval strictness 10; separate pinned official Steinberg validator.
-- 54-workload native DSP timing CSV, reviewed for over-budget calls.
+- 66-workload native DSP timing CSV (including bounded engine switching and two expensive engine pairs), reviewed for over-budget calls.
 - Clean silent install/reinstall/uninstall, installed hashes, user-data preservation, standalone liveness.
 - Artifact integrity, AMD64 binaries, no runtime audio assets, complete source inventory.
 
@@ -36,4 +36,4 @@ For latency compare a dry note rendered live and offline with host compensation 
 
 ## Owner release decisions (pending)
 
-Choose a source/distribution license and applicable JUCE terms; satisfy obligations and collect exact third-party license/trademark notices from pinned dependencies. Audit branding. Obtain signing credentials and sign/verify executable, VST3 binary and installer in the correct packaging order. Run acceptance again on the signed packages. Only after evidence is complete, create a release tag and publish binaries. Do not infer licensing compliance from source availability.
+Choose a source/distribution license and applicable JUCE terms; satisfy obligations and review retained third-party notices. Eighteen exact upstream texts are now included and hash-checked. Audit branding. For signed distribution, supply an owner code-signing certificate and use scripts/sign-release-windows.ps1 to sign/verify executable, VST3 binary and installer in the correct order, then run acceptance on those signed packages. Signing is optional for using the functional Windows build; no signature is claimed for unsigned packages. Only after evidence is complete, create a release tag and publish binaries. Do not infer licensing compliance from source availability.

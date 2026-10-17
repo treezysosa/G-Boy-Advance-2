@@ -5,7 +5,7 @@ ROOT = Path(__file__).resolve().parents[1]
 ROOT_FILES = {'CMakeLists.txt', 'README.md', '.gitignore', 'LICENSE', 'LICENSE.md', 'NOTICE', 'CHANGELOG.md'}
 SOURCE_DIRS = {'Source', 'Tests', 'Presets', 'scripts', 'docs', 'packaging', '.github'}
 REQUIRED = {
-    'docs/PHASE_10_FINALIZATION.md', 'scripts/check-notices.py', 'scripts/sign-release-windows.ps1', 'docs/licenses/manifest.json',
+    'Tests/ModalReferenceProbe.cpp', 'docs/PHASE_10_FINALIZATION.md', 'scripts/check-notices.py', 'scripts/sign-release-windows.ps1', 'docs/licenses/manifest.json',
     'Tests/HostTests.cpp', 'Tests/Benchmark.cpp', 'scripts/test-installer-windows.ps1',
     'scripts/validate-steinberg-windows.ps1', 'docs/PHASE_10.md', 'docs/RELEASE_CHECKLIST.md',
     'CMakeLists.txt', 'README.md', 'Source/PluginProcessor.cpp', 'Source/PluginEditor.cpp',
