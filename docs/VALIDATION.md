@@ -40,11 +40,11 @@ The application/test C++ sources compiled with strict warnings against pinned JU
 
 This is a Linux software-rendering/in-process test executable, not a VST3 host. The local build disabled ALSA/JACK, D-Bus and optional X extensions, used installed FreeType/fontconfig/HarfBuzz libraries, and required no display server or physical audio device. A writable font cache was configured inside the build directory. The normal Windows CMake targets retain JUCE's Windows device backends.
 
-The main Linux render was visually compared with the supplied reference. Master-knob proportions, metallic shading, the wordmark, D-pad arrows and silver START/SELECT caps were refined. Native Windows/high-DPI rendering and physical mouse/keyboard interaction in a DAW still need review.
+The main Linux render was visually compared with the supplied reference. Master-knob proportions, metallic shading, the wordmark, D-pad arrows and silver START/SELECT caps were refined. The Windows screenshot was subsequently captured and visually inspected as well (`docs/images/GBA2-editor-windows.png`). High-DPI scaling and physical mouse/keyboard interaction in a DAW still need review.
 
 Additive output equivalence and the 32-voice benchmark are documented in [PERFORMANCE.md](PERFORMANCE.md).
 
-## Windows build executed; host acceptance pending
+## Windows build and VST3 host validation executed
 
 The local machine has no Windows SDK or Visual Studio; the actual Windows build ran on GitHub's `windows-2022` runner using Visual Studio 2022 x64.
 
@@ -55,8 +55,16 @@ The local machine has no Windows SDK or Visual Studio; the actual Windows build 
 - Windows CTest: 2/2 suites PASS (synthesis 2.13 s, plugin state/presets/UI 0.68 s).
 - Inno Setup 6.7.1 installer and portable archive packaging: PASS.
 - Downloaded artifact SHA256 matches GitHub's digest. The VST3 binary and standalone executable are AMD64 PE images.
+- Portable ZIP integrity and bundle structure: PASS. PE import inspection confirms no separate MSVC runtime DLL dependency.
+- Actual Windows component screenshot: captured and visually inspected at 1920×969; interactive high-DPI testing remains pending.
 
-The original export helper incorrectly omitted files whose names began with `build`, including the workflow and Windows script. The corrected inventory explicitly checks both entry points, and the corrected workflow ran successfully. The workflow now adds pluginval 1.0.4 at strictness 10 to check the actual VST3 before packaging. That host validation has not completed yet; no DAW compatibility is claimed.
+[Run 39004957883](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39004957883), commit `6c14e9ef66a5f57ea52a0201672006d3ad6ba803`, repeated Windows compilation and both CTest suites successfully, then validated the actual `.vst3` bundle with **pluginval 1.0.4 at strictness 10: SUCCESS**, random seed `0x7329198`.
+
+Pluginval found one instrument, scanned all 382 program names, opened the VST3 and editor, processed audio at 44.1/48/96 kHz with 64/128/256/512/1024-sample blocks, restored state, exercised automation and editor lifecycle, tested concurrent parameter changes, and fuzzed parameters. Its separate Steinberg validator subtest was explicitly skipped because no Steinberg validator executable was supplied; that test remains pending. Pluginval success does not establish compatibility with every DAW.
+
+The run packaged and uploaded Windows artifact `12090861809`, `G-Boy-Advance-2-Windows-x64`, archive SHA256 `1aa3b0ecb7edef835a499e57b9363ed697fd021c3b6c6fa61fafa5aeed28af0b`. Full pluginval output is included in the artifact at `build/validation-logs/pluginval.txt`. Installer compilation is verified; running installation/uninstallation on an end-user Windows machine remains pending.
+
+The original export helper incorrectly omitted files whose names began with `build`, including the workflow and Windows script. The corrected inventory explicitly checks these entry points and the validator script; all published file hashes match the local source.
 
 ## Manual host acceptance matrix
 

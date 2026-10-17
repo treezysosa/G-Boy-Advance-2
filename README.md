@@ -2,11 +2,11 @@
 
 A C++20 / JUCE 8 hybrid synthesis instrument targeting Windows x64 VST3 and standalone. The purple, wide console interface uses native scalable controls. All sound is generated mathematically: there is no sampler, sample import, commercial game audio, or network dependency at runtime.
 
-**Development build 0.1.1 — Windows x64 builds and automated tests pass; DAW acceptance is pending.** The native DSP passes 1,387 checks; the compiled and linked JUCE test executable passes 112 integration checks on Linux. Project state, user presets, the on-screen keyboard connection, preview buttons, D-pad navigation, macro reassignment, and editor resizing have been exercised. Visual Studio 2022 has built the Windows VST3, standalone, installer and portable archive, and both test suites pass on Windows. VST3 host stress validation and manual DAW loading remain to be checked. See [validation status](docs/VALIDATION.md) and [exact next steps](docs/NEXT_STEPS.md).
+**Development build 0.1.1 — Windows x64 builds and automated tests pass; DAW acceptance is pending.** The native DSP passes 1,387 checks; the compiled and linked JUCE test executable passes 112 integration checks on Linux. Project state, user presets, the on-screen keyboard connection, preview buttons, D-pad navigation, macro reassignment, and editor resizing have been exercised. Visual Studio 2022 has built the Windows VST3, standalone, installer and portable archive, and both test suites pass on Windows. The actual Windows VST3 also passes pluginval 1.0.4 at strictness 10. Manual DAW loading remains to be checked. See [validation status](docs/VALIDATION.md) and [exact next steps](docs/NEXT_STEPS.md).
 
-![G Boy Advance 2 native JUCE editor](docs/images/GBA2-editor.png)
+![G Boy Advance 2 native JUCE editor](docs/images/GBA2-editor-windows.png)
 
-Actual native JUCE component rendering on Linux at 1920×969. Windows font rendering and high-DPI behavior remain to be checked.
+Actual native JUCE component rendering from the passing Windows CI test at 1920×969. The screenshot was inspected; interactive DAW behavior and high-DPI scaling remain to be checked.
 
 ## Build on Windows
 
@@ -18,7 +18,7 @@ cd G-Boy-Advance-2
 powershell -ExecutionPolicy Bypass -File scripts/build-windows.ps1
 ```
 
-You can also open [Build and validate in GitHub Actions](https://github.com/treezysosa/G-Boy-Advance-2/actions/workflows/build.yml), choose **Run workflow**, and download the Windows artifact after the job succeeds. The workflow and Windows script are included in the corrected source upload; The first Windows build passed; the workflow also runs pluginval at strictness 10 for subsequent build artifacts.
+You can also open [Build and validate in GitHub Actions](https://github.com/treezysosa/G-Boy-Advance-2/actions/workflows/build.yml), choose **Run workflow**, and download the Windows artifact after the job succeeds. The workflow and Windows script are included in the corrected source upload. Windows compilation, both test suites, pluginval at strictness 10, and packaging all pass in [run 39004957883](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39004957883).
 
 The first local build downloads the pinned JUCE 8.0.6 source. For an offline build, supply an existing checkout:
 
@@ -26,6 +26,8 @@ The first local build downloads the pinned JUCE 8.0.6 source. For an offline bui
 cmake -S . -B build -G "Visual Studio 17 2022" -A x64 -DGBA_JUCE_PATH=C:/SDKs/JUCE-8.0.6
 cmake --build build --config Release --parallel 2
 ctest --test-dir build -C Release --output-on-failure
+# Optional host validation (downloads the build-time pluginval tool):
+powershell -ExecutionPolicy Bypass -File scripts/validate-windows.ps1
 ```
 
 Output:
@@ -77,7 +79,7 @@ See [performance measurements](docs/PERFORMANCE.md) for the additive-engine opti
 
 `python scripts/package-source.py` creates a complete source ZIP and checks that the Windows build script and GitHub workflow are included.
 
-With Inno Setup 6 installed, run `scripts/package-windows.ps1` after a successful release build. This creates an unsigned Windows archive and installer under `dist/`. Release signing, listening review, pluginval / VST3 validation, and DAW testing remain release gates.
+With Inno Setup 6 installed, run `scripts/package-windows.ps1` after a successful release build. This creates an unsigned Windows archive and installer under `dist/`. Release signing, listening review, the separate Steinberg VST3 validator, interactive installer checks, and DAW testing remain release gates. Pluginval strictness 10 has passed on Windows.
 
 Read [third-party and licensing notes](docs/LICENSING.md) before distribution. JUCE 8 is dual licensed under AGPLv3 and commercial terms; source availability by itself does not fulfill all license obligations. No Nintendo branding or artwork is bundled.
 

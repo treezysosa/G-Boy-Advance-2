@@ -48,4 +48,4 @@ DAW project state includes every stable parameter, macro assignment, patch metad
 
 If silent: confirm the track is an instrument track, MIDI routing is active, stereo output is routed, master volume is nonzero, and the audio device is running. Try A to audition. A long-attack patch can take time to become loud. Verify plugin scan paths and use the complete `.vst3` bundle, not just the binary inside it.
 
-This development version still needs Windows/DAW acceptance and listening review. Consult VALIDATION.md before production use.
+This development version passes Windows compilation, automated tests and pluginval strictness 10. Interactive DAW/device acceptance, high-DPI checks and listening review remain pending. Consult VALIDATION.md before production use.
