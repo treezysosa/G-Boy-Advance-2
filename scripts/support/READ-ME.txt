@@ -1,4 +1,4 @@
-G BOY ADVANCE 2 - FL STUDIO SUPPORT REPORT
+G BOY ADVANCE 2 - FL STUDIO SUPPORT REPORT - REVISION 2
 
 1. Extract this ZIP completely.
 2. Double-click Run-diagnostics.cmd.
@@ -8,7 +8,8 @@ G BOY ADVANCE 2 - FL STUDIO SUPPORT REPORT
 Run this after reproducing the FL Studio error. Leaving FL Studio open helps
 identify its executable and full version. The plugin does not need to be running.
 
-This tool reads the installed plugin version/hash, FL Studio executable versions,
+This tool reads the installed plugin version/hash, FL Studio executable versions
+and PE architecture (32-bit/64-bit), available executables beside the running host,
 matching Windows crash events, and up to three recent FL Studio text crash logs
 from standard Documents folders. The report can include installation/project
 paths from those crash logs. Review the report before sharing it.
