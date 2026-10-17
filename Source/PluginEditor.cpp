@@ -3,7 +3,14 @@
 
 namespace {
 const juce::Colour purple {0xff7943ff}, deep {0xff131c61}, ink {0xff080c25}, silver {0xffe6e5e5}, text {0xffeeeeff};
-juce::Font font(float height,bool bold=false) {return juce::Font(juce::FontOptions(juce::Font::getDefaultMonospacedFontName(),height,bold?juce::Font::bold:juce::Font::plain));}
+juce::Font font(float height,bool bold=false) {
+#if JUCE_WINDOWS
+    const juce::String family="Consolas";
+#else
+    const auto family=juce::Font::getDefaultMonospacedFontName();
+#endif
+    return juce::Font(juce::FontOptions(family,height,bold?juce::Font::bold:juce::Font::plain));
+}
 void panel(juce::Graphics& g,juce::Rectangle<float> bounds,float radius) {
     g.setColour(juce::Colours::black.withAlpha(.55f));g.fillRoundedRectangle(bounds.expanded(2).translated(0,2),radius+2);
     juce::ColourGradient surface(juce::Colour(0xff263179),bounds.getX(),bounds.getY(),ink,bounds.getRight(),bounds.getBottom(),false);
@@ -11,7 +18,7 @@ void panel(juce::Graphics& g,juce::Rectangle<float> bounds,float radius) {
     g.setColour(juce::Colour(0xffb792ff).withAlpha(.38f));g.drawRoundedRectangle(bounds.reduced(.5f),radius,1.5f);
     g.setColour(juce::Colours::black.withAlpha(.5f));g.drawRoundedRectangle(bounds.reduced(3),std::max(2.0f,radius-3),1);
 }
-void caption(juce::Graphics& g,const juce::String& label,juce::Rectangle<float> bounds,float size=17) {g.setColour(text);g.setFont(font(size,true));g.drawText(label,bounds,juce::Justification::centred);}
+void caption(juce::Graphics& g,const juce::String& label,juce::Rectangle<float> bounds,float size=17) {g.setColour(text);gba_ui::pixelText(g,label,bounds,size/9.5f);}
 void rotary(juce::Slider& slider,const juce::String& name) {
     slider.setName(name);slider.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);slider.setTextBoxStyle(juce::Slider::NoTextBox,false,0,0);
     slider.setPopupDisplayEnabled(true,true,nullptr);slider.setMouseDragSensitivity(160);slider.setRotaryParameters(juce::MathConstants<float>::pi*1.2f,juce::MathConstants<float>::pi*2.8f,true);
@@ -275,9 +282,8 @@ void ConsoleLook::drawButtonText(juce::Graphics& g,juce::TextButton& button,bool
     bool round=button.getProperties()["round"];g.setColour((round?ink:text).withAlpha(button.isEnabled()?1.0f:.35f));
     if(button.getName()=="Preset display") {gba_ui::pixelText(g,button.getButtonText(),button.getLocalBounds().toFloat().reduced(12,10),float(button.getHeight())*.043f);return;}
     if(button.getButtonText()=="START"||button.getButtonText()=="SELECT") {
-        g.setFont(font(float(button.getHeight())*.42f,true));
         auto label=button.getLocalBounds().toFloat();label.removeFromLeft(label.getWidth()*.45f);
-        g.drawText(button.getButtonText(),label,juce::Justification::centred,true);return;
+        gba_ui::pixelText(g,button.getButtonText(),label,float(button.getHeight())*.05f);return;
     }
     if(button.getButtonText()=="<"||button.getButtonText()==">") {
         const auto centre=button.getLocalBounds().toFloat().getCentre();
@@ -289,7 +295,8 @@ void ConsoleLook::drawButtonText(juce::Graphics& g,juce::TextButton& button,bool
                                               silver.darker(.25f),centre.x,centre.y+radius,false));
         g.fillPath(arrow);return;
     }
-    g.setFont(font(round?float(button.getHeight())*.43f:std::min(18.0f,float(button.getHeight())*.43f),true));
+    if(round)g.setFont(juce::Font(juce::FontOptions(juce::Font::getDefaultSansSerifFontName(),float(button.getHeight())*.43f,juce::Font::bold)));
+    else g.setFont(font(std::min(18.0f,float(button.getHeight())*.43f),true));
     g.drawText(button.getButtonText(),button.getLocalBounds().reduced(8),juce::Justification::centred,true);
 }
 void ConsoleLook::drawLinearSlider(juce::Graphics& g,int x,int y,int width,int height,float position,float min,float max,juce::Slider::SliderStyle style,juce::Slider& slider) {

@@ -80,6 +80,7 @@ int main() {
             p.panic();render(p,audio,1);auto key=piano->getRectangleForKey(60);auto event=mouse(*piano,{key.getCentreX(),key.getBottom()-8});
             piano->mouseDown(event);check(p.keyboard.isNoteOn(1,60),"Mouse click on piano did not start C4");render(p,audio,8);check(p.voiceCount()>0,"Mouse piano note did not reach audio engine");
             piano->mouseUp(event);check(!p.keyboard.isNoteOn(1,60),"Mouse release left the piano note held");
+            piano->mouseExit(mouse(*piano,{-1,-1}));
             editor->removeFromDesktop();
 #endif
             p.presets.restoreDefault();
