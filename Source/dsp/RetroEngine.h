@@ -31,7 +31,7 @@ struct RetroEngine {
     static float wave(int shape,float p,float dt,float width,float noiseValue) noexcept {
         switch(shape){
             case 0:return dac(sine(p),16);
-            case 1:{float x=0;for(int h=1;h<=15;h+=2)if(float(h)*dt<.48f)x+=sine(p*float(h))*((h%4==1)?1.f:-1.f)/float(h*h);return dac(x*.81f,16);}
+            case 1:return dac(triangle(p,dt),16);
             case 2:return dac(2*p-1-blep(p,dt),32);
             case 3:width=.5f;[[fallthrough]];
             case 4:return (p<width?1.f:-1.f)+blep(p,dt)-blep(wrap(p+1-width),dt);

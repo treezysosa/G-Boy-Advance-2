@@ -123,6 +123,27 @@ void vocals(gba::SynthEngine& e) {
     check(finite&&rms(a)>.001,"Vocal excitation plus independent formant filter failed");
     std::cout<<"PASS synthetic vowel resonances, formant shift, detuned choir and independent filter bank\n";
 }
+void triangleRecurrence() {
+    for(double sr:{44100.,48000.,96000.}) {
+        double maximum=0,error=0,power=0;bool finite=true;
+        for(int note:{12,36,60,84,108,127}) {
+            const float dt=std::min(.4f,gba::midiHz(float(note))/float(sr));float phase=0;
+            for(int n=0;n<8192;++n) {
+                phase=gba::wrap(phase+dt);float reference=0;
+                for(int h=1;h<=15;h+=2)if(float(h)*dt<.48f)
+                    reference+=gba::sine(phase*float(h))*((h%4==1)?1.f:-1.f)/float(h*h);
+                reference*=.81f;const double value=gba::triangle(phase,dt),delta=value-reference;
+                maximum=std::max(maximum,std::abs(delta));error+=delta*delta;power+=double(reference)*reference;
+                finite&=std::isfinite(value)&&std::abs(value)<=1;
+            }
+        }
+        check(finite,"Triangle recurrence became nonfinite or unbounded");
+        check(maximum<1e-6,"Triangle recurrence diverged from the reference harmonic sum");
+        check(error<power*1e-12,"Triangle recurrence error exceeded -120 dB");
+        std::cout<<"Triangle reference "<<sr<<" Hz: max error "<<maximum<<", SNR "<<(error>0?10*std::log10(power/error):999)<<" dB\n";
+    }
+    std::cout<<"PASS triangle recurrence vs direct harmonic sum across six registers and three rates\n";
+}
 void boundedEngineChanges() {
     for(double sr:{44100.,48000.,96000.}) {
         const int fadeSamples=int(std::round(sr*.005));
@@ -165,7 +186,7 @@ void transitions(gba::SynthEngine& e) {
 }
 }
 int main() {
-    try {auto e=std::make_unique<gba::SynthEngine>();fmAndAdditive(*e);wavetables(*e);physicalModels(*e);vocals(*e);boundedEngineChanges();transitions(*e);
+    try {auto e=std::make_unique<gba::SynthEngine>();fmAndAdditive(*e);wavetables(*e);physicalModels(*e);vocals(*e);triangleRecurrence();boundedEngineChanges();transitions(*e);
         std::cout<<"All "<<checks<<" Phase 4 advanced synthesis checks passed.\n";return 0;
     }catch(const std::exception& error){trackAllocations=false;std::cerr<<"FAIL: "<<error.what()<<"\n";return 1;}
 }

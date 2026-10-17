@@ -134,9 +134,7 @@ int SynthEngine::activeVoices() const noexcept {int n=0;for(const auto& v:voices
 float SynthEngine::oscillator(int wave,float p,float dt,float width,Random& random) noexcept {
     switch(wave) {
         case 0:return sine(p);
-        case 1:{ // Harmonic-limited triangle avoids the aliases of a naive corner waveform.
-            float x=0;for(int h=1;h<=15;h+=2) if(float(h)*dt<0.48f) x+=sine(p*float(h))*((h%4==1)?1.0f:-1.0f)/float(h*h);return x*0.81f;
-        }
+        case 1:return triangle(p,dt);
         case 2:return 2*p-1-blep(p,dt);
         case 3:width=0.5f;[[fallthrough]];
         case 4:return (p<width?1.0f:-1.0f)+blep(p,dt)-blep(wrap(p+1-width),dt);

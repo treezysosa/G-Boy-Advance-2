@@ -15,6 +15,23 @@ inline float blep(float t, float dt) noexcept {
     if (t > 1-dt) { t=(t-1)/dt; return t*t+t+t+1; }
     return 0;
 }
+// The same odd-harmonic, Nyquist-limited triangle as the direct sine sum.
+// A double-precision recurrence derives successive odd harmonics from two trig
+// calls, rather than evaluating as many as eight sines for each oscillator.
+inline float triangle(float phase,float dt) noexcept {
+    if(dt>=.48f)return 0;
+    if(3*dt>=.48f)return sine(phase)*.81f;
+    const double angle=double(tau*phase),first=std::sin(angle);
+    const double factor=2*std::cos(2*angle);
+    double previous=-first,partial=first;float sum=0;
+    for(int h=1;h<=15;h+=2) {
+        if(float(h)*dt>=.48f)break;
+        sum+=float(partial)*((h%4==1)?1.f:-1.f)/float(h*h);
+        const double next=factor*partial-previous;
+        previous=partial;partial=next;
+    }
+    return sum*.81f;
+}
 struct Random {
     std::uint32_t state = 0x1579ab23u;
     float next() noexcept { state^=state<<13; state^=state>>17; state^=state<<5; return float(state>>8)*(2.0f/16777216.0f)-1; }

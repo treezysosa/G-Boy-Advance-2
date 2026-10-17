@@ -1,6 +1,6 @@
 # Phase 10 finalization — 0.10.1
 
-The 0.10.0 profiler exposed excessive CPU during rapidly retargeted engine blends. This patch addresses that implementation issue and adds retained dependency notices and a signing script. Current Windows verification is pending; successful 0.10.0 results are historical evidence in PHASE_10.md.
+The 0.10.0 profiler exposed excessive CPU during rapidly retargeted engine blends. This patch addresses that implementation issue and adds retained dependency notices and a signing script. Final-candidate Windows verification is pending; successful 0.10.0 results are historical evidence in PHASE_10.md.
 
 ## DSP change
 
@@ -27,3 +27,7 @@ The licensing route is awaiting the owner's choice. Named DAW/device, real compe
 `Tests/ModalReferenceProbe.cpp` (optional benchmark target `gba2-modal-reference-probe`) renders 54 modal cases: 44.1/48/96 kHz, MIDI 24/60/96, decay .005/.4/4 seconds, velocities .4/1. A GCC `-O2` comparison against the preceding direct six-exponential implementation produces **3,385,800 identical float samples**. This is differential evidence for that grid, not a proof for all automation/notes/compiler configurations.
 
 The first bounded-transition Windows candidate passed all functional suites and validators, but the newly added modal/retro workload still measured 1.0915 times budget on average. The modal/LFO optimization addresses this additional case; its Windows performance results are pending.
+
+## Triangle hot path
+
+The modal/retro pair remained slightly over budget after the modal optimization (Windows mean/budget 1.0114 in run 39058257788). The final candidate computes the identical eight odd-harmonic triangle definition with a double-precision trigonometric recurrence (two trigonometric calls instead of eight). The harmonic count / Nyquist bound, coefficients and output gain remain the same; high-frequency single-harmonic output retains the original direct sine. Both subtractive and retro engines use it. New tests compare against the direct sine sum over six registers and three sample rates, requiring max error below 1e-6 and error below -120 dB, alongside existing harmonic/alias/DAC tests. This is a numerical optimization; bit-identical audio is not promised at quantizer boundaries.
