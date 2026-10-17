@@ -4,6 +4,8 @@ cd "$(dirname "$0")/.."
 mkdir -p build-core
 "${CXX:-g++}" -std=c++20 -O2 -Wall -Wextra -Wpedantic -Werror -ISource Source/dsp/SynthEngine.cpp Tests/EngineTests.cpp Tests/AllocationTracker.cpp -o build-core/gba2-tests
 "${CXX:-g++}" -std=c++20 -O2 -Wall -Wextra -Wpedantic -Werror -ISource Source/dsp/SynthEngine.cpp Tests/CoreSynthesisTests.cpp Tests/AllocationTracker.cpp -o build-core/gba2-core-tests
+"${CXX:-g++}" -std=c++20 -O2 -Wall -Wextra -Wpedantic -Werror -ISource Source/dsp/SynthEngine.cpp Tests/AdvancedSynthesisTests.cpp Tests/AllocationTracker.cpp -o build-core/gba2-advanced-tests
 cd build-core
 ./gba2-tests "$@"
 ./gba2-core-tests
+./gba2-advanced-tests

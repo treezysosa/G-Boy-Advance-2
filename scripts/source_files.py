@@ -7,9 +7,9 @@ SOURCE_DIRS = {'Source', 'Tests', 'Presets', 'scripts', 'docs', 'packaging', '.g
 REQUIRED = {
     'CMakeLists.txt', 'README.md', 'Source/PluginProcessor.cpp', 'Source/PluginEditor.cpp',
     'Source/PresetManager.cpp', 'Source/dsp/SynthEngine.cpp', 'Source/FactoryData.h',
-    'Presets/factory.json', 'Tests/EngineTests.cpp', 'Tests/CoreSynthesisTests.cpp', 'Tests/PluginTests.cpp',
+    'Presets/factory.json', 'Tests/EngineTests.cpp', 'Tests/CoreSynthesisTests.cpp', 'Tests/AdvancedSynthesisTests.cpp', 'Tests/PluginTests.cpp',
     'scripts/build-windows.ps1', 'scripts/validate-windows.ps1', 'scripts/package-windows.ps1', 'packaging/installer.iss',
-    '.github/workflows/build.yml',
+    '.github/workflows/build.yml', 'docs/PHASE_4.md',
 }
 
 

@@ -1,6 +1,6 @@
 # Validation record
 
-Development snapshot 0.3.0. The earlier 0.1.1/0.2.0 Windows evidence below is retained as the previous baseline. A passing DSP test is not proof that a host can load the VST3.
+Development snapshot 0.4.0. The earlier 0.1.1/0.2.0 Windows evidence below is retained as the previous baseline. A passing DSP test is not proof that a host can load the VST3.
 
 ## Executed locally
 
@@ -110,3 +110,13 @@ A synthetic mouse event delivered to a real native Windows peer is an automated 
 | Resize / high DPI / keyboard / every button | Pending | Pending | Pending | Pending | Pending |
 
 Compare the real editor against the approved purple reference at 100%, 125%, 150%, and 200% Windows scaling. Inspect all overlay pages and user-preset failures, rapid preset changes, same-note overlaps, mono sustain, stolen-note releases, and device restart.
+
+## Phase 4 advanced synthesis 0.4.0
+
+- GCC 14.2 C++20 with strict warnings: PASS.
+- Engine/factory/effects 1,387 checks, core synthesis 161 checks and advanced synthesis 150 checks PASS: 1,698 total DSP checks.
+- JUCE processor/state/preset/UI integration: 171 checks PASS on the Linux software runner.
+- New spectral/tuning/transition coverage and quantified before/after probes: [PHASE_4.md](PHASE_4.md).
+- Windows build, actual VST3 host validation and packaging for 0.4.0: pending this revision's CI run. Previous-version evidence above remains historical.
+
+AddressSanitizer and UndefinedBehaviorSanitizer pass all three DSP suites with halt-on-error. Leak detection is disabled because LeakSanitizer is unsupported by this sandbox/ptrace environment; leak freedom is not claimed.

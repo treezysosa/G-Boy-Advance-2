@@ -43,3 +43,20 @@ The same `Tests/Benchmark.cpp` was compiled with GCC 14.2 `-O2` against the prio
 | Modal | 0.612911 | 0.593665 |
 
 This single-pass development-VM measurement shows no observed steady-state CPU regression from the precision/crossfade changes. It is not a statistical performance guarantee or a real host underrun/deadline test. Effects, routing, voice stealing, sample-rate changes, GUI load and discrete transitions need host stress measurements. Zero-depth tremolo/syllable/vibrato paths avoid unnecessary trigonometric evaluation; the new selector fades use fixed-size shared state.
+
+## Phase 4 steady-state smoke benchmark
+
+Same GCC 14.2 `-O2`, 32-voice / 96 kHz / 64-frame workload. The 0.3.0 and 0.4.0 binaries ran sequentially with other compilation/test jobs finished. One pass per engine:
+
+| Engine | 0.3.0 seconds | 0.4.0 seconds |
+|---|---:|---:|
+| Subtractive | 0.469775 | 0.481589 |
+| FM | 0.351911 | 0.358559 |
+| Additive | 0.49565 | 0.506934 |
+| Wavetable | 0.461547 | 0.496793 |
+| Plucked string | 0.343685 | 0.343543 |
+| Formant | 0.340574 | 0.346228 |
+| Chiptune | 0.287108 | 0.28992 |
+| Modal | 0.608348 | 0.602969 |
+
+This single-pass VM comparison observes a small steady-state cost increase for most engines and a larger wavetable difference; it is not a statistical estimate. It excludes engine-switch spikes. Interrupted 5 ms engine transitions can evaluate several engines simultaneously, and physical-model activation clears a fixed delay buffer. Measure worst-case callback deadlines on Windows before commercial release.

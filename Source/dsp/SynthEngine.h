@@ -45,13 +45,14 @@ private:
         bool held=false,preview=false;
         std::uint64_t age=0;
         float velocity=1,frequency=440,targetFrequency=440,p1=0,p2=0,fmPhase=0,subPhase=0;
-        double elapsed=0;
+        double modalElapsed=0;
+        bool stringActive=false,modalActive=false;
         LfoPhase lfo1,lfo2,vibrato,tremolo,syllable;
         std::array<float,6> modalPhase{};
-        float tail=0,tailStep=0,last=0,stringLow=0,panMod=0;
+        float tail=0,tailStep=0,last=0,stringLow=0,stringDelay=100,panMod=0;
         Envelope amp,filterEnv;
         SVF filter;
-        std::array<SVF,3> formants;
+        std::array<SVF,3> formants,vocalFormants;
         Random noise;
         std::array<float,stringSize> string{};
         int stringPos=0;
@@ -66,6 +67,7 @@ private:
     int choiceFadeSamples=240;
     ChoiceFade<6> wave1Fade,wave2Fade,lfo1Route,lfo2Route;
     ChoiceFade<5> filterFade;
+    ChoiceFade<8> engineFade;
     std::array<Voice,maxVoices> voices{};
     std::array<float,16> bend{},wheel{};
     std::array<bool,16> sustain{};
@@ -81,6 +83,8 @@ private:
     float mixedOscillator(const ChoiceFade<6>&,float phase,float dt,float width,Random&) noexcept;
     float wavetable(float phase,float frequency,float position) const noexcept;
     float voiceSample(Voice&) noexcept;
+    float excitation(Voice&,int engine,float frequency,float dt,float dt2,float filterEnvelope) noexcept;
+    void exciteString(Voice&) noexcept;
     void updateFormants(Voice&,float vowel) noexcept;
 };
 }

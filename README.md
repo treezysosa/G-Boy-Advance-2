@@ -2,7 +2,7 @@
 
 A C++20 / JUCE 8 hybrid synthesis instrument targeting Windows x64 VST3 and standalone. The purple, wide console interface uses native scalable controls. All sound is generated mathematically: there is no sampler, sample import, commercial game audio, or network dependency at runtime.
 
-**Development build 0.3.0 — Phase 3 core synthesis hardening.** Subtractive waveforms, ADSR timing, filter response, all 1–32 voice limits, mono/legato, glide, velocity and both LFO routes now have focused numerical coverage. Repeated pedal-up messages no longer extend releases, long-held modulation uses bounded double-precision clocks, and waveform/filter/LFO-destination changes crossfade over 5 ms. Local validation passes 1,548 DSP checks (1,387 existing + 161 Phase 3), sanitizers with leak detection disabled, and 171 JUCE integration checks. The Windows VST3 and standalone build successfully; all three CTest suites pass, including 174 Windows integration checks, and the actual VST3 passes pluginval strictness 10. See [Phase 3](docs/PHASE_3.md), [validation](docs/VALIDATION.md) and the [Phase 2 visual acceptance notes](docs/PHASE_2.md).
+**Development build 0.4.0 — Phase 4 advanced synthesis.** Engine changes now crossfade over 5 ms, plucked strings compensate their feedback-filter phase delay, wavetable mip blends retire unsafe harmonics before Nyquist, and vocal excitation has a separate formant bank from the selectable filter. All 64 parameter IDs and project schema 1 remain stable. Local validation passes 1,698 DSP checks (including 150 new advanced-engine checks) and 171 JUCE integration checks. Windows build/host validation for this revision is pending CI; the prior 0.3.0 build passed. See [Phase 4](docs/PHASE_4.md), [validation](docs/VALIDATION.md) and the [Phase 2 visual acceptance notes](docs/PHASE_2.md).
 
 ![G Boy Advance 2 Phase 2 native JUCE editor](docs/images/phase2-main.png)
 
@@ -18,7 +18,7 @@ cd G-Boy-Advance-2
 powershell -ExecutionPolicy Bypass -File scripts/build-windows.ps1
 ```
 
-You can also open [Build and validate in GitHub Actions](https://github.com/treezysosa/G-Boy-Advance-2/actions/workflows/build.yml), choose **Run workflow**, and download the Windows artifact after the job succeeds. The workflow and Windows script are included in the corrected source upload. Version 0.3.0 builds and passes all three test suites, pluginval strictness 10 and packaging in [run 39009067423](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39009067423). Full results are recorded in VALIDATION.md.
+You can also open [Build and validate in GitHub Actions](https://github.com/treezysosa/G-Boy-Advance-2/actions/workflows/build.yml), choose **Run workflow**, and download the Windows artifact after the job succeeds. The workflow and Windows script are included in the corrected source upload. The previous version 0.3.0 passed all three test suites, pluginval strictness 10 and packaging in [run 39009067423](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39009067423). Version 0.4.0 adds a fourth CTest suite; its Windows validation is pending. Full results are recorded in VALIDATION.md.
 
 The first local build downloads the pinned JUCE 8.0.6 source. For an offline build, supply an existing checkout:
 
@@ -62,7 +62,7 @@ cmake --build build-core --parallel 2
 ctest --test-dir build-core --output-on-failure
 ```
 
-Or, run both DSP suites with a C++20 compiler alone:
+Or, run all three DSP suites with a C++20 compiler alone:
 
 ```sh
 bash scripts/test-core.sh
