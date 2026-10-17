@@ -17,8 +17,8 @@ void Effects::prepare(float rate) {
     reset();
 }
 void Effects::reset() noexcept {
-    for(auto* lines:{&delay,&mod,&tape}) for(auto& l:*lines) {std::fill(l.data.begin(),l.data.end(),0);l.pos=0;l.damp=0;}
-    for(auto& l:room) {std::fill(l.data.begin(),l.data.end(),0);l.pos=0;l.damp=0;}
+    for(auto* lines:{&delay,&mod,&tape}) for(auto& l:*lines) {std::fill(l.data.begin(),l.data.end(),0.0f);l.pos=0;l.damp=0;}
+    for(auto& l:room) {std::fill(l.data.begin(),l.data.end(),0.0f);l.pos=0;l.damp=0;}
     allpass={};phase=0;counter=0;holdL=holdR=lowL=lowR=highL=highR=prevL=prevR=0;
 }
 void Effects::process(float& l,float& r,const Settings& s) noexcept {
@@ -67,6 +67,7 @@ void Effects::process(float& l,float& r,const Settings& s) noexcept {
 void SynthEngine::prepare(double rate) {
     sampleRate=static_cast<float>(std::clamp(rate,8000.0,192000.0));
     smoothing=1-std::exp(-1/(0.015f*sampleRate));
+    choiceFadeSamples=std::max(1,int(std::round(sampleRate*.005f)));
     for(std::size_t i=0;i<harmonicInverseRoot.size();++i)harmonicInverseRoot[i]=1/std::sqrt(float(i+1));
     effects.prepare(sampleRate);if(!tablesReady){buildTables();tablesReady=true;}reset();prepared=true;
 }
@@ -74,6 +75,8 @@ void SynthEngine::reset() noexcept {
     for(auto& v:voices) {v.note=-1;v.amp={};v.filterEnv={};v.filter.clear();v.tail=0;v.last=0;v.held=false;v.preview=false;}
     bend.fill(0);wheel.fill(0);sustain.fill(false);keys={};clock=0;previewSamples=0;lastFrequency=0;
     current=target;effects.reset();lastMode=int(target[Param::Mode]);lastVoiceCount=int(target[Param::Voices]);
+    wave1Fade.reset(int(target[Param::Wave1]));wave2Fade.reset(int(target[Param::Wave2]));filterFade.reset(int(target[Param::FilterType]));
+    lfo1Route.reset(int(target[Param::Lfo1Dest]));lfo2Route.reset(int(target[Param::Lfo2Dest]));
 }
 void SynthEngine::setSettings(const Settings& s) noexcept {
     target=s;
@@ -114,7 +117,8 @@ void SynthEngine::start(Voice& v,int channel,int note,float velocity,bool previe
     v.channel=channel;v.note=note;v.held=true;v.preview=preview;v.age=++clock;v.velocity=velocity;v.targetFrequency=midiHz(float(note));
     if(!legato) {
         v.frequency=(target[Param::Glide]>0 && lastFrequency>0)?lastFrequency:v.targetFrequency;
-        v.amp.start(true);v.filterEnv.start(true);v.p1=0;v.p2=0;v.fmPhase=0;v.subPhase=0;v.modalPhase={};v.elapsed=0;v.lfo1=0;v.lfo2=0;
+        v.amp.start(true);v.filterEnv.start(true);v.p1=0;v.p2=0;v.fmPhase=0;v.subPhase=0;v.modalPhase={};v.elapsed=0;
+        v.lfo1={};v.lfo2={};v.vibrato={};v.tremolo={};v.syllable={};v.panMod=0;
         v.filter.clear();for(auto& f:v.formants) f.clear();v.controlCounter=0;
         const int period=std::clamp(int(sampleRate/v.targetFrequency),2,stringSize-2);
         v.string.fill(0);v.stringPos=0;v.stringLow=0;
@@ -202,6 +206,12 @@ float SynthEngine::oscillator(int wave,float p,float dt,float width,Random& rand
         default:return random.next();
     }
 }
+float SynthEngine::mixedOscillator(const ChoiceFade<6>& fade,float p,float dt,float width,Random& random) noexcept {
+    if(fade.remaining==0)return oscillator(fade.target,p,dt,width,random);
+    float sum=0;
+    for(std::size_t i=0;i<fade.weights.size();++i)if(fade.weights[i]>0)sum+=fade.weights[i]*oscillator(int(i),p,dt,width,random);
+    return sum;
+}
 void SynthEngine::updateFormants(Voice& v,float vowel) noexcept {
     constexpr float vowels[5][3] {{800,1150,2900},{400,1700,2600},{300,2200,3000},{500,800,2600},{350,600,2400}};
     vowel=std::clamp(vowel,0.0f,4.0f);int a=int(vowel),b=std::min(a+1,4);float t=vowel-float(a);
@@ -210,14 +220,22 @@ void SynthEngine::updateFormants(Voice& v,float vowel) noexcept {
 }
 float SynthEngine::voiceSample(Voice& v) noexcept {
     const auto& s=current;
-    v.elapsed+=1/sampleRate;
-    v.lfo1=wrap(v.lfo1+s[Param::Lfo1Rate]/sampleRate);v.lfo2=wrap(v.lfo2+s[Param::Lfo2Rate]/sampleRate);
+    v.elapsed+=1/double(sampleRate);
+    v.lfo1.advance(s[Param::Lfo1Rate],sampleRate);v.lfo2.advance(s[Param::Lfo2Rate],sampleRate);
+    v.vibrato.advance(5.3,sampleRate);v.tremolo.advance(4.2,sampleRate);v.syllable.advance(3,sampleRate);
+    const float lfo1=v.lfo1.value(),lfo2=v.lfo2.value();
     float modPitch=0,modFilter=0,modAmp=0,modVowel=0;
     const auto route=[&](int destination,float amount) {
         switch(destination) {case 1:modPitch+=amount*2;break;case 2:modFilter+=amount*3;break;case 3:modAmp+=amount*0.45f;break;case 4:modVowel+=amount*2;break;default:break;}
     };
-    route(int(s[Param::Lfo1Dest]),sine(v.lfo1)*s[Param::Lfo1Depth]);route(int(s[Param::Lfo2Dest]),sine(v.lfo2)*s[Param::Lfo2Depth]);
-    modPitch+=sine(v.elapsed*5.3f)*(s[Param::Vibrato]+wheel[v.channel-1]*0.6f)*0.6f;
+    const auto applyRoute=[&](const ChoiceFade<6>& fade,float amount) {
+        if(fade.remaining==0)route(fade.target,amount);
+        else for(int destination=1;destination<5;++destination)route(destination,amount*fade.weights[std::size_t(destination)]);
+    };
+    applyRoute(lfo1Route,lfo1*s[Param::Lfo1Depth]);applyRoute(lfo2Route,lfo2*s[Param::Lfo2Depth]);
+    v.panMod=lfo1*s[Param::Lfo1Depth]*.45f*lfo1Route.weights[5]+lfo2*s[Param::Lfo2Depth]*.45f*lfo2Route.weights[5];
+    const float vibrato=s[Param::Vibrato]+wheel[v.channel-1]*0.6f;
+    if(vibrato>0)modPitch+=v.vibrato.value()*vibrato*0.6f;
     float glide=s[Param::Glide];v.frequency+=(v.targetFrequency-v.frequency)*(glide<0.001f?1.0f:1-std::exp(-1/(glide*sampleRate)));
     float frequency=std::clamp(v.frequency*std::exp2((bend[v.channel-1]*s[Param::BendRange]+modPitch)/12),8.0f,sampleRate*0.4f);
     v.fmPhase=wrap(v.fmPhase+frequency*current[Param::FmRatio]/sampleRate);v.subPhase=wrap(v.subPhase+frequency*0.5f/sampleRate);
@@ -225,9 +243,15 @@ float SynthEngine::voiceSample(Voice& v) noexcept {
     v.p1=wrap(v.p1+dt);v.p2=wrap(v.p2+dt2);
     float env=v.amp.next(s[Param::Attack],s[Param::Decay],s[Param::Sustain],sampleRate);
     float fenv=v.filterEnv.next(s[Param::FilterAttack],s[Param::FilterDecay],s[Param::FilterSustain],sampleRate);
+    const float syllableMotion=s[Param::Syllable]>0?v.syllable.value():0;
+    if(v.controlCounter==0) {
+        v.filter.coefficients(s[Param::Cutoff]*std::exp2(fenv*s[Param::FilterEnv]+modFilter),s[Param::Resonance],sampleRate);
+        updateFormants(v,s[Param::Vowel]+modVowel+s[Param::Syllable]*syllableMotion*0.8f);
+    }
+    v.controlCounter=(v.controlCounter+1)&15;
     int engine=int(s[Param::Engine]);float x=0;
     switch(engine) {
-        case 0:x=std::lerp(oscillator(int(s[Param::Wave1]),v.p1,dt,s[Param::PulseWidth],v.noise),oscillator(int(s[Param::Wave2]),v.p2,dt2,s[Param::PulseWidth],v.noise),s[Param::OscMix]);break;
+        case 0:x=std::lerp(mixedOscillator(wave1Fade,v.p1,dt,s[Param::PulseWidth],v.noise),mixedOscillator(wave2Fade,v.p2,dt2,s[Param::PulseWidth],v.noise),s[Param::OscMix]);break;
         case 1:{float ratio=s[Param::FmRatio],index=s[Param::FmIndex]*(0.15f+0.85f*fenv);float limit=std::max(0.0f,(sampleRate*0.45f/frequency-1)/std::max(1.0f,ratio));index=std::min(index,limit);x=std::sin(tau*v.p1+sine(v.fmPhase)*index);x=std::lerp(x,sine(v.subPhase),s[Param::OscMix]*0.4f);break;}
         case 2:{
             // sin((n+1)t) = 2 cos(t) sin(nt) - sin((n-1)t).
@@ -248,22 +272,21 @@ float SynthEngine::voiceSample(Voice& v) noexcept {
         case 3:x=std::lerp(wavetable(v.p1,frequency,s[Param::Wavetable]),wavetable(v.p2,dt2*sampleRate,s[Param::Wavetable]),s[Param::OscMix]);break;
         case 4:{float period=std::clamp(sampleRate/frequency,2.0f,float(stringSize-2));float read=float(v.stringPos)-period;if(read<0)read+=stringSize;int a=int(read),b=(a+1)%stringSize;float delayed=std::lerp(v.string[a],v.string[b],read-float(a));v.stringLow+=(0.15f+0.8f*s[Param::Brightness])*(delayed-v.stringLow);float value=0.5f*(delayed+v.stringLow)*s[Param::StringDamping];v.string[v.stringPos]=value;v.stringPos=(v.stringPos+1)%stringSize;x=delayed*2.2f;break;}
         case 5:{float saw=oscillator(2,v.p1,dt,0.5f,v.noise);float choir=oscillator(2,v.p2,dt2,0.5f,v.noise);float excitation=(saw+choir*s[Param::Choir])*0.5f;excitation=std::lerp(excitation,v.noise.next()*0.35f,s[Param::Breath]);for(int i=0;i<3;++i)x+=v.formants[i].next(excitation,2)*(i==0?1.0f:0.65f);x*=0.6f;break;}
-        case 6:x=oscillator(int(s[Param::Wave1]),v.p1,dt,s[Param::PulseWidth],v.noise);x=std::round(x*15)/15;break;
+        case 6:x=mixedOscillator(wave1Fade,v.p1,dt,s[Param::PulseWidth],v.noise);x=std::round(x*15)/15;break;
         case 7:{ // Original modal bar / tine synthesis with inharmonic resonances.
             constexpr float ratios[]{1,2.01f,2.76f,4.07f,5.43f,6.79f};
-            for(int i=0;i<6;++i) {float ratio=std::lerp(float(i+1),ratios[i],s[Param::Brightness]);if(ratio*dt>=0.45f)break;v.modalPhase[i]=wrap(v.modalPhase[i]+dt*ratio);x+=sine(v.modalPhase[i])*std::exp(-v.elapsed*float(i+1)/(0.3f+s[Param::Decay]))/float(i+1);}break;}
+            for(int i=0;i<6;++i) {float ratio=std::lerp(float(i+1),ratios[i],s[Param::Brightness]);if(ratio*dt>=0.45f)break;v.modalPhase[i]=wrap(v.modalPhase[i]+dt*ratio);x+=sine(v.modalPhase[i])*float(std::exp(-v.elapsed*double(i+1)/(0.3+s[Param::Decay])))/float(i+1);}break;}
         default:break;
     }
-    if(v.controlCounter++%16==0) {
-        v.filter.coefficients(s[Param::Cutoff]*std::exp2(fenv*s[Param::FilterEnv]+modFilter),s[Param::Resonance],sampleRate);
-        updateFormants(v,s[Param::Vowel]+modVowel+s[Param::Syllable]*sine(v.elapsed*3)*0.8f);
-    }
-    int type=int(s[Param::FilterType]);
-    if(type==4 && engine!=5) {float y=0;for(auto& f:v.formants)y+=f.next(x,2)*0.22f;x=y;}
-    else x=v.filter.next(x,std::min(type,3));
-    float syllable=1-s[Param::Syllable]*0.6f*(0.5f+0.5f*sine(v.elapsed*3));
+    const auto filtered=v.filter.process(x);
+    float formant=filtered.notch; // The vocal engine already applies its formant bank to the excitation.
+    if((filterFade.target==4||filterFade.weights[4]>0)&&engine!=5) {formant=0;for(auto& f:v.formants)formant+=f.next(x,2)*0.22f;}
+    if(filterFade.remaining==0)x=filterFade.target==4?formant:filtered.select(filterFade.target);
+    else x=filtered.low*filterFade.weights[0]+filtered.high*filterFade.weights[1]+filtered.band*filterFade.weights[2]+filtered.notch*filterFade.weights[3]+formant*filterFade.weights[4];
+    float syllable=1-s[Param::Syllable]*0.6f*(0.5f+0.5f*syllableMotion);
     float velocity=std::lerp(1.0f,std::sqrt(v.velocity),s[Param::Velocity]);
-    x*=env*velocity*std::max(0.0f,1+modAmp-s[Param::Tremolo]*(0.5f+0.5f*sine(v.elapsed*4.2f)))*syllable*0.16f;
+    const float tremolo=s[Param::Tremolo]>0?s[Param::Tremolo]*(0.5f+0.5f*v.tremolo.value()):0;
+    x*=env*velocity*std::max(0.0f,1+modAmp-tremolo)*syllable*0.16f;
     if(std::abs(v.tail)>std::abs(v.tailStep)) {x+=v.tail;v.tail-=v.tailStep;} else v.tail=0;
     v.last=x;return x;
 }
@@ -274,6 +297,8 @@ void SynthEngine::render(float* left,float* right,int samples) noexcept {
             if(specs[p].step>0 || p>=index(Param::MacroA)) current.values[p]=target.values[p];
             else current.values[p]+=(target.values[p]-current.values[p])*smoothing;
         }
+        wave1Fade.advance(int(current[Param::Wave1]),choiceFadeSamples);wave2Fade.advance(int(current[Param::Wave2]),choiceFadeSamples);filterFade.advance(int(current[Param::FilterType]),choiceFadeSamples);
+        lfo1Route.advance(int(current[Param::Lfo1Dest]),choiceFadeSamples);lfo2Route.advance(int(current[Param::Lfo2Dest]),choiceFadeSamples);
         if(int(current[Param::Engine])==2) {
             // Brightness is shared by all voices. Compute harmonic weights and their
             // prefix normalization once per sample, preserving continuous smoothing.
@@ -291,8 +316,7 @@ void SynthEngine::render(float* left,float* right,int samples) noexcept {
         for(auto& v:voices) if(v.amp.stage!=Envelope::Off) {
             float x=voiceSample(v);
             float pan=0.5f+0.16f*float((v.note%5)-2);
-            if(int(current[Param::Lfo1Dest])==5) pan+=sine(v.lfo1)*current[Param::Lfo1Depth]*0.45f;
-            if(int(current[Param::Lfo2Dest])==5) pan+=sine(v.lfo2)*current[Param::Lfo2Depth]*0.45f;
+            pan+=v.panMod;
             pan=std::clamp(pan,0.0f,1.0f);l+=x*std::sqrt(1-pan);r+=x*std::sqrt(pan);
         }
         effects.process(l,r,current);

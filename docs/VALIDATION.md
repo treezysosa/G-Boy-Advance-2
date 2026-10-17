@@ -1,6 +1,6 @@
 # Validation record
 
-Development snapshot 0.2.0. The 0.1.1 Windows evidence below is retained as the previous baseline. A passing DSP test is not proof that a host can load the VST3.
+Development snapshot 0.3.0. The earlier 0.1.1/0.2.0 Windows evidence below is retained as the previous baseline. A passing DSP test is not proof that a host can load the VST3.
 
 ## Executed locally
 
@@ -83,6 +83,16 @@ The mouse-event piano test requires a native window because JUCE's containment c
 - Seven UI snapshots are included under `build/ui-snapshots/`, with the 1920-wide main image at `build/GBA2-editor.png`. The documentation screenshots in `docs/images/phase2-*.png` are now the actual Windows renders and have been visually inspected.
 
 A synthetic mouse event delivered to a real native Windows peer is an automated interaction check; physical mouse/touch, screen-reader and per-monitor DPI acceptance remain manual. The final typography revision uses original vector front-panel labels and Consolas in the text-heavy Windows panels. All recorded checks and current screenshots correspond to this revision. The final documentation commit changes only evidence/screenshots; application code and build settings match the validated commit.
+
+## Phase 3 core synthesis 0.3.0
+
+- Direct GCC 14.2 C++20 compilation with strict warnings: PASS.
+- Existing engine/factory/effects suite: 1,387 checks PASS.
+- Dedicated core-synthesis suite: 161 checks PASS, including all waveform spectra, filter response, ADSR timing, every voice limit, glide/mono/legato/velocity, both LFO routes, ten-minute clocks and allocation-free choice fades.
+- ASan + UBSan: both DSP suites PASS with halt-on-error and leak detection disabled (sandbox limitation).
+- JUCE processor/state/preset/UI integration: 171 checks PASS on the Linux software runner.
+- Old/new behavioral probes and remaining boundaries: see [PHASE_3.md](PHASE_3.md).
+- Windows 0.3.0 CMake/Visual Studio build, three CTest suites, pluginval and packaging: pending. No local CMake execution is claimed; CMake is not installed in this workspace.
 
 ## Manual host acceptance matrix
 

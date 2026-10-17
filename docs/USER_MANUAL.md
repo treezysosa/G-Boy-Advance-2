@@ -28,7 +28,7 @@ User files live in `%APPDATA%\Treezy Audio\G Boy Advance 2\Presets`. Copy `.gba2
 
 **Oscillators:** select one of eight engines and its timbre controls. Saw / square / pulse use PolyBLEP; additive and generated wavetables limit harmonic content. FM and modal engines limit upper partials where feasible. These strategies reduce aliasing but do not certify alias-free output at every setting.
 
-**Filter & envelopes:** low-pass, high-pass, band-pass, notch, or a vowel filter bank; resonance, cutoff, and filter-envelope amount. Both amplitude and filter ADSRs are editable. Releasing a note starts the corresponding release stage. A zero-sustain pluck naturally fades while the key is held.
+**Filter & envelopes:** low-pass, high-pass, band-pass, notch, or a vowel filter bank; resonance, cutoff, and filter-envelope amount. Both amplitude and filter ADSRs are editable. Releasing a note starts the corresponding release stage. Repeated pedal-up/controller messages do not restart an existing release. Waveform, filter-type and LFO-destination changes blend over 5 ms; changing the synthesis engine remains a discrete transition. A zero-sustain pluck naturally fades while the key is held.
 
 **Modulation & voices:** two sine LFOs route independently to pitch, filter, amplitude, vowel, or pan. Vibrato and tremolo have dedicated depth controls; MIDI CC1 adds vibrato. Choose 1–32 voices, mono retriggering, or legato with held-note return. CC64 controls sustain per MIDI channel. CC120 silences that channel immediately; CC123 releases it.
 

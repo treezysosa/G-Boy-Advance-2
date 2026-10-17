@@ -26,3 +26,20 @@ cmake --build build-perf --parallel 2
 Or compile `Tests/Benchmark.cpp` and `Source/dsp/SynthEngine.cpp` with a C++20 compiler and `-ISource`. Output is CSV: engine index 0–7 and seconds per rendered second. Engine order is subtractive, FM, additive, wavetable, plucked string, formant, chiptune, modal keys.
 
 Native host scheduling, multiple plugin instances, effects extremes, automation, and low-latency audio-device behavior still require profiling on Windows. A low average render time alone does not establish that every callback meets its deadline.
+
+## Phase 3 core smoke benchmark
+
+The same `Tests/Benchmark.cpp` was compiled with GCC 14.2 `-O2` against the prior 0.2.0 source and 0.3.0, then run sequentially after other local compile/test jobs had finished. One second of audio per engine, 32 voices, 96 kHz, 64-sample blocks:
+
+| Engine | 0.2.0 seconds | 0.3.0 seconds |
+|---|---:|---:|
+| Subtractive | 0.519948 | 0.496808 |
+| FM | 0.382416 | 0.349760 |
+| Additive | 0.541680 | 0.508282 |
+| Wavetable | 0.482911 | 0.457603 |
+| Plucked string | 0.374959 | 0.337368 |
+| Formant | 0.367864 | 0.336436 |
+| Chiptune | 0.302595 | 0.283635 |
+| Modal | 0.612911 | 0.593665 |
+
+This single-pass development-VM measurement shows no observed steady-state CPU regression from the precision/crossfade changes. It is not a statistical performance guarantee or a real host underrun/deadline test. Effects, routing, voice stealing, sample-rate changes, GUI load and discrete transitions need host stress measurements. Zero-depth tremolo/syllable/vibrato paths avoid unnecessary trigonometric evaluation; the new selector fades use fixed-size shared state.
