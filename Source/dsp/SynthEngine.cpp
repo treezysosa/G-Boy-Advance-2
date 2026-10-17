@@ -230,10 +230,10 @@ float SynthEngine::voiceSample(Voice& v) noexcept {
     v.panMod=lfo1*s[Param::Lfo1Depth]*.45f*lfo1Route.weights[5]+lfo2*s[Param::Lfo2Depth]*.45f*lfo2Route.weights[5];
     const float vibrato=s[Param::Vibrato]+wheel[v.channel-1]*0.6f;
     if(vibrato>0)modPitch+=v.vibrato.value()*vibrato*0.6f;
-    float glide=s[Param::Glide];v.frequency+=(v.targetFrequency-v.frequency)*(glide<0.001f?1.0f:1-std::exp(-1/(glide*sampleRate)));
+    v.frequency+=(v.targetFrequency-v.frequency)*glideStep;
     float frequency=std::clamp(v.frequency*std::exp2((bend[v.channel-1]*s[Param::BendRange]+modPitch)/12),8.0f,sampleRate*0.4f);
     v.fmPhase=wrap(v.fmPhase+frequency*current[Param::FmRatio]/sampleRate);v.subPhase=wrap(v.subPhase+frequency*0.5f/sampleRate);
-    float dt=frequency/sampleRate,dt2=std::min(0.45f,dt*std::exp2((s[Param::Coarse]+s[Param::Detune]/100)/12));
+    float dt=frequency/sampleRate,dt2=std::min(0.45f,dt*oscillator2Ratio);
     v.p1=wrap(v.p1+dt);v.p2=wrap(v.p2+dt2);
     float env=v.amp.next(s[Param::Attack],s[Param::Decay],s[Param::Sustain],sampleRate);
     float fenv=v.filterEnv.next(s[Param::FilterAttack],s[Param::FilterDecay],s[Param::FilterSustain],sampleRate);
@@ -277,6 +277,10 @@ void SynthEngine::render(float* left,float* right,int samples) noexcept {
             if(specs[p].step>0 || p>=index(Param::MacroA)) current.values[p]=target.values[p];
             else current.values[p]+=(target.values[p]-current.values[p])*smoothing;
         }
+        // Shared by every voice, including continuously smoothed automation.
+        const float glide=current[Param::Glide];
+        glideStep=glide<0.001f?1.0f:1-std::exp(-1/(glide*sampleRate));
+        oscillator2Ratio=std::exp2((current[Param::Coarse]+current[Param::Detune]/100)/12);
         wave1Fade.advance(int(current[Param::Wave1]),choiceFadeSamples);wave2Fade.advance(int(current[Param::Wave2]),choiceFadeSamples);filterFade.advance(int(current[Param::FilterType]),choiceFadeSamples);
         lfo1Route.advance(int(current[Param::Lfo1Dest]),choiceFadeSamples);lfo2Route.advance(int(current[Param::Lfo2Dest]),choiceFadeSamples);
         engineFade.advance(int(current[Param::Engine]),choiceFadeSamples);

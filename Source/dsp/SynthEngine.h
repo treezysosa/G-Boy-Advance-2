@@ -54,7 +54,8 @@ private:
     int choiceFadeSamples=240;
     ChoiceFade<6> wave1Fade,wave2Fade,lfo1Route,lfo2Route;
     ChoiceFade<5> filterFade;
-    ChoiceFade<8> engineFade;
+    EngineFade engineFade;
+    float glideStep=1,oscillator2Ratio=1;
     std::array<Voice,maxVoices> voices{};
     std::array<float,16> bend{},wheel{};
     std::array<bool,16> sustain{};

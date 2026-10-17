@@ -1,0 +1,96 @@
+{
+  "dependency": "JUCE 8.0.6",
+  "upstreamTree": "51a8a6d7aeae7326956d747737ccf1575e61e209",
+  "files": [
+    {
+      "file": "JUCE-8.0.6.md",
+      "upstream": "LICENSE.md",
+      "gitBlobSha": "39e3c57e17255c1e628a3a0a65584ae9ffc691f0"
+    },
+    {
+      "file": "juce_audio_formats__codecs__flac__Flac-Licence.txt.txt",
+      "upstream": "modules/juce_audio_formats/codecs/flac/Flac Licence.txt",
+      "gitBlobSha": "6ca17228ad24edf9304234bfe8809df4ca1c00f1"
+    },
+    {
+      "file": "juce_audio_formats__codecs__oggvorbis__Ogg-Vorbis-Licence.txt.txt",
+      "upstream": "modules/juce_audio_formats/codecs/oggvorbis/Ogg Vorbis Licence.txt",
+      "gitBlobSha": "0fab923d50ff2ba204fd816e2c852dfd21337926"
+    },
+    {
+      "file": "juce_audio_processors__format_types__VST3_SDK__LICENSE.txt.txt",
+      "upstream": "modules/juce_audio_processors/format_types/VST3_SDK/LICENSE.txt",
+      "gitBlobSha": "f5df1de438030fc6ccf39ff62c8c1a07bddec218"
+    },
+    {
+      "file": "juce_audio_processors__format_types__VST3_SDK__base__LICENSE.txt.txt",
+      "upstream": "modules/juce_audio_processors/format_types/VST3_SDK/base/LICENSE.txt",
+      "gitBlobSha": "ec797c8bd323dba3dccbb41d71c184e42f12f60a"
+    },
+    {
+      "file": "juce_audio_processors__format_types__VST3_SDK__pluginterfaces__LICENSE.txt.txt",
+      "upstream": "modules/juce_audio_processors/format_types/VST3_SDK/pluginterfaces/LICENSE.txt",
+      "gitBlobSha": "f5df1de438030fc6ccf39ff62c8c1a07bddec218"
+    },
+    {
+      "file": "juce_audio_processors__format_types__VST3_SDK__public.sdk__LICENSE.txt.txt",
+      "upstream": "modules/juce_audio_processors/format_types/VST3_SDK/public.sdk/LICENSE.txt",
+      "gitBlobSha": "ec797c8bd323dba3dccbb41d71c184e42f12f60a"
+    },
+    {
+      "file": "juce_graphics__fonts__harfbuzz__COPYING.txt",
+      "upstream": "modules/juce_graphics/fonts/harfbuzz/COPYING",
+      "gitBlobSha": "1dd917e9f2e72167de69e3b5dadbc4e7db417da1"
+    },
+    {
+      "file": "juce_graphics__image_formats__pnglib__LICENSE.txt",
+      "upstream": "modules/juce_graphics/image_formats/pnglib/LICENSE",
+      "gitBlobSha": "e0c5b531cf548d608e911c43c577cd4ba9a1526e"
+    },
+    {
+      "file": "juce_graphics__unicode__sheenbidi__LICENSE.txt",
+      "upstream": "modules/juce_graphics/unicode/sheenbidi/LICENSE",
+      "gitBlobSha": "d645695673349e3947e8e5ae42332d0ac3164cd7"
+    },
+    {
+      "file": "juce_graphics__image_formats__jpglib__README.txt",
+      "upstream": "modules/juce_graphics/image_formats/jpglib/README",
+      "gitBlobSha": "86cc20669d6123ee2999fd0c8f6c21641825fda6"
+    },
+    {
+      "file": "juce_core__zip__zlib__README.txt",
+      "upstream": "modules/juce_core/zip/zlib/README",
+      "gitBlobSha": "758cc50020dfefc53d518fd56072849cd5cbc9c7"
+    },
+    {
+      "file": "juce_audio_processors__format_types__LV2_SDK__lilv__COPYING.txt",
+      "upstream": "modules/juce_audio_processors/format_types/LV2_SDK/lilv/COPYING",
+      "gitBlobSha": "9748bb93d7df723dec8445a500f13ad46b4c3fa5"
+    },
+    {
+      "file": "juce_audio_processors__format_types__LV2_SDK__lv2__COPYING.txt",
+      "upstream": "modules/juce_audio_processors/format_types/LV2_SDK/lv2/COPYING",
+      "gitBlobSha": "4d594524595d54287da633bf590f8d5005cf55e7"
+    },
+    {
+      "file": "juce_audio_processors__format_types__LV2_SDK__serd__COPYING.txt",
+      "upstream": "modules/juce_audio_processors/format_types/LV2_SDK/serd/COPYING",
+      "gitBlobSha": "9748bb93d7df723dec8445a500f13ad46b4c3fa5"
+    },
+    {
+      "file": "juce_audio_processors__format_types__LV2_SDK__sord__COPYING.txt",
+      "upstream": "modules/juce_audio_processors/format_types/LV2_SDK/sord/COPYING",
+      "gitBlobSha": "9748bb93d7df723dec8445a500f13ad46b4c3fa5"
+    },
+    {
+      "file": "juce_audio_processors__format_types__LV2_SDK__sratom__COPYING.txt",
+      "upstream": "modules/juce_audio_processors/format_types/LV2_SDK/sratom/COPYING",
+      "gitBlobSha": "4d998ccc335de09d46838a1259a9ce10003275ff"
+    },
+    {
+      "file": "juce_audio_processors__format_types__pslextensions__ipslcontextinfo.h.txt",
+      "upstream": "modules/juce_audio_processors/format_types/pslextensions/ipslcontextinfo.h",
+      "gitBlobSha": "6410e934193a8071cde047d41e5bdf15216a562c"
+    }
+  ]
+}

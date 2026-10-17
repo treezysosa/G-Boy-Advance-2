@@ -1,0 +1,23 @@
+# Phase 10 finalization — 0.10.1
+
+The 0.10.0 profiler exposed excessive CPU during rapidly retargeted engine blends. This patch addresses that implementation issue and adds retained dependency notices and a signing script. Current Windows verification is pending; successful 0.10.0 results are historical evidence in PHASE_10.md.
+
+## DSP change
+
+Engine transitions now finish each 5 ms two-engine crossfade before starting the latest requested engine. Requests are sampled every audio frame; intermediate choices during an unfinished fade are coalesced. At most two engines run concurrently. A stable request begins within 5 ms and settles within 10 ms, without dropping the current blend abruptly. Reset/prepare immediately chooses the selected engine. Waveform/filter/LFO routing retain their existing interruptible fades. This intentionally changes the behavior of very rapid engine automation while retaining ordinary engine fades and all parameter IDs.
+
+Shared glide and oscillator-2 detune calculations run once per sample instead of once per voice, including smoothed automation. Polyphony remains 1–32 voices; no audio-thread allocation/locks or voice-limit reduction is introduced.
+
+New regression checks verify two-engine bounds, gain normalization, fade continuity, reset and latest-target convergence at 44.1/48/96 kHz. The profiler adds alternating modal/additive and modal/retro workloads: 66 cases total. Timing remains observational on a shared VM and is not a hardware/DAW underrun certificate.
+
+Remeasurement of all 410 factory central notes gives identical volume, max-100ms stereo RMS, peak and DC metrics to the prior Linux audit, at its stored numeric precision. The calibration fingerprint is refreshed after this verification. Factory JSON and embedded FactoryData arrays remain byte-identical; all IDs/program positions and schema remain stable. Full numerical/sanitizer/Windows and audition regression results will be recorded here after completion.
+
+## Packaging
+
+Eighteen upstream JUCE 8.0.6/dependency notices are retained under docs/licenses with original paths and Git blob hashes. The check script permits only checkout newline conversion. Portable and installer packages include these notices. This does not choose a source/JUCE license or imply all listed libraries are active on Windows.
+
+`sign-release-windows.ps1` uses an owner's existing valid code-signing certificate/private key in the Windows certificate store. It signs/verifies SHA256 timestamped payloads, repackages, then signs/verifies the installer and writes public signature metadata. No signing certificate/private key is configured in this environment; syntax can be checked here, signing/trust cannot be certified without that credential. Do not share private keys/passwords in chat or the repository.
+
+## Remaining external acceptance
+
+The licensing route is awaiting the owner's choice. Named DAW/device, real compensated bounce/export tails, physical DPI/accessibility, human preset listening, separate non-admin/interactive wizard and signed-package acceptance remain pending in RELEASE_CHECKLIST.md. The environment provides Linux development and Windows CI, with no access to a user's audio interface, physical monitors or installed commercial DAWs. These entries cannot be changed to PASS from source inspection or numerical tests. No production release/tag or false compatibility claim will be made.

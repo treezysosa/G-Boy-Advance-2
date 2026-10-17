@@ -17,6 +17,7 @@ $factory=Join-Path $stage 'Presets'
 New-Item -ItemType Directory -Force $factory | Out-Null
 Copy-Item -Force (Join-Path $root 'Presets\factory.json') $factory
 Copy-Item -Force (Join-Path $root 'docs\LICENSING.md') $stage
+Copy-Item -Recurse -Force (Join-Path $root 'docs\licenses') (Join-Path $stage 'Third-party notices')
 Compress-Archive -Force -Path "$stage\*" -DestinationPath (Join-Path $dist 'G-Boy-Advance-2-Windows-x64.zip')
 & $Iscc "/DArtifacts=$artifacts" "/DOutput=$dist" (Join-Path $root 'packaging\installer.iss')
 if ($LASTEXITCODE -ne 0) { throw 'Inno Setup compilation failed.' }

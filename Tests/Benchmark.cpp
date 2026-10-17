@@ -15,8 +15,8 @@ int main(int argc,char** argv) {
     auto& out=argc==2?static_cast<std::ostream&>(file):std::cout;
     out<<"sample_rate,block,engine,callbacks,mean_us,p50_us,p95_us,p99_us,max_us,budget_us,max_budget_ratio,over_budget,invalid_samples\n"<<std::setprecision(9);
     auto e=std::make_unique<gba::SynthEngine>();bool invalid=false;
-    for(double sr:{44100.,48000.,96000.})for(int block:{64,256})for(int mode=0;mode<9;++mode) {
-        gba::Settings s;s.set(gba::Param::Voices,32);s.set(gba::Param::Engine,float(mode%8));
+    for(double sr:{44100.,48000.,96000.})for(int block:{64,256})for(int mode=0;mode<11;++mode) {
+        gba::Settings s;s.set(gba::Param::Voices,32);s.set(gba::Param::Engine,float(mode<8?mode:mode==8?0:7));
         s.set(gba::Param::Harmonics,24);s.set(gba::Param::Brightness,.95f);s.set(gba::Param::Sustain,1);
         s.set(gba::Param::Reverb,.7f);s.set(gba::Param::Delay,.4f);s.set(gba::Param::Chorus,.5f);
         s.set(gba::Param::Flanger,.4f);s.set(gba::Param::Phaser,.5f);s.set(gba::Param::Drive,.5f);
@@ -28,8 +28,10 @@ int main(int argc,char** argv) {
         const double budget=1e6*block/sr;int missed=0,bad=0;double sum=0;
         for(int i=0;i<count;++i) {
             auto start=std::chrono::steady_clock::now();
-            // Ninth workload interrupts the 5 ms engine blend every callback.
+            // Rapid selector changes, then the two expensive engine pairs.
             if(mode==8)s.set(gba::Param::Engine,float(i%8));
+            if(mode==9)s.set(gba::Param::Engine,float(i%2?2:7));
+            if(mode==10)s.set(gba::Param::Engine,float(i%2?6:7));
             s.set(gba::Param::Cutoff,500.f+15000.f*float(i%31)/30.f);
             s.set(gba::Param::DelayTime,.08f+.6f*float(i%19)/18.f);
             e->setSettings(s);e->render(left.data(),right.data(),block);

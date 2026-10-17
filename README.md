@@ -2,7 +2,7 @@
 
 A C++20 / JUCE 8 hybrid synthesis instrument targeting Windows x64 VST3 and standalone. The purple, wide console interface uses native scalable controls. All sound is generated mathematically: there is no sampler, sample import, commercial game audio, or network dependency at runtime.
 
-**Development build 0.10.0 — Phase 10 automated validation passed; release acceptance remains open.** Fixes bypass note-offs and adds actual-bundle VST3 hosting, separate official Steinberg validation, callback profiling and installer lifecycle checks. Windows CI passes all nine CTest suites, 7,983 DSP checks, 286 application checks, 209 VST3 host checks, pluginval strictness 10, 47 Steinberg tests and install/reinstall/uninstall tests. The 32-voice interrupted-engine-blend profile exceeds callback budgets; performance optimization and manual DAW/device/DPI/listening acceptance, licensing and signing remain pending. All 410 patches, 64 parameter IDs, schema and DSP values remain stable. See [Phase 10](docs/PHASE_10.md), [release checklist](docs/RELEASE_CHECKLIST.md) and [validation](docs/VALIDATION.md).
+**Development build 0.10.1 — Phase 10 finalization under validation.** Bounds rapid engine changes to two simultaneous engines and shares glide/detune calculations across voices, addressing the 0.10.0 interrupted-blend CPU issue. Retains all 410 patches and stable parameter/program identities, bundles pinned dependency notices and provides owner-certificate signing automation. New Windows validation is pending; prior results are recorded below. See [finalization](docs/PHASE_10_FINALIZATION.md), [release checklist](docs/RELEASE_CHECKLIST.md) and [validation](docs/VALIDATION.md).
 
 ![G Boy Advance 2 Phase 2 native JUCE editor](docs/images/phase2-main.png)
 

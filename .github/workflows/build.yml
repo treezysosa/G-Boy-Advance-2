@@ -10,6 +10,8 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
+      - name: Check pinned third-party notices
+        run: python3 scripts/check-notices.py
       - name: Check complete source packaging
         run: python3 scripts/package-source.py
       - name: Validate generated factory library
@@ -45,6 +47,14 @@ jobs:
           ref: cc2adc90382dded9e347caf74e4532f1458715db
           submodules: recursive
           path: Dependencies/vst3sdk
+      - name: Check Windows script syntax
+        shell: pwsh
+        run: |
+          Get-ChildItem scripts/*.ps1 | ForEach-Object {
+            $tokens=$null; $parseErrors=$null
+            [System.Management.Automation.Language.Parser]::ParseFile($_.FullName,[ref]$tokens,[ref]$parseErrors) | Out-Null
+            if ($parseErrors) { throw ($parseErrors | Out-String) }
+          }
       - name: Configure Visual Studio 2022 x64
         run: cmake -S . -B build -G "Visual Studio 17 2022" -A x64 -DGBA_JUCE_PATH="${{ github.workspace }}/Dependencies/JUCE" -DBUILD_TESTING=ON -DGBA_BUILD_BENCHMARKS=ON
       - name: Build VST3, standalone and tests
@@ -57,7 +67,7 @@ jobs:
       - name: Run separate official Steinberg validator
         shell: pwsh
         run: ./scripts/validate-steinberg-windows.ps1
-      - name: Profile 54 callback workloads
+      - name: Profile 66 callback workloads
         shell: pwsh
         run: |
           ./build/Release/gba2-benchmark.exe build/validation-logs/callback-profile.csv

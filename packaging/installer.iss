@@ -7,7 +7,7 @@
 [Setup]
 AppId={{2C50A781-6FD5-4B9C-BC20-C0CF1C2D8CA2}
 AppName=G Boy Advance 2
-AppVersion=0.10.0
+AppVersion=0.10.1
 AppPublisher=Treezy Audio
 DefaultDirName={autopf}\Treezy Audio\G Boy Advance 2
 ArchitecturesAllowed=x64compatible
@@ -24,5 +24,6 @@ Source: "{#Artifacts}\Standalone\G Boy Advance 2.exe"; DestDir: "{app}"; Flags: 
 Source: "..\docs\USER_MANUAL.md"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\docs\LICENSING.md"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\Presets\factory.json"; DestDir: "{app}\Factory Presets"; Flags: ignoreversion
+Source: "..\docs\licenses\*"; DestDir: "{app}\Third-party notices"; Flags: ignoreversion recursesubdirs createallsubdirs
 [Icons]
 Name: "{autoprograms}\G Boy Advance 2"; Filename: "{app}\G Boy Advance 2.exe"

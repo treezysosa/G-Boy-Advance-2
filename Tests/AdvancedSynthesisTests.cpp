@@ -123,6 +123,31 @@ void vocals(gba::SynthEngine& e) {
     check(finite&&rms(a)>.001,"Vocal excitation plus independent formant filter failed");
     std::cout<<"PASS synthetic vowel resonances, formant shift, detuned choir and independent filter bank\n";
 }
+void boundedEngineChanges() {
+    for(double sr:{44100.,48000.,96000.}) {
+        const int fadeSamples=int(std::round(sr*.005));
+        gba::EngineFade fade;fade.reset(0);
+        bool bounded=true,normalized=true,continuous=true;
+        for(int i=0;i<fadeSamples*40;++i) {
+            const auto prior=fade.weights;
+            fade.advance((i/7)%8,fadeSamples);
+            int active=0;float sum=0;
+            for(std::size_t j=0;j<fade.weights.size();++j) {
+                const auto value=fade.weights[j];active+=value>0;sum+=value;
+                bounded&=std::isfinite(value)&&value>=-1e-5f&&value<=1.00001f;
+                continuous&=std::abs(value-prior[j])<=1.f/float(fadeSamples)+1e-4f;
+            }
+            bounded&=active<=2;normalized&=std::abs(sum-1)<1e-4f;
+        }
+        check(bounded,"Rapid engine changes activate more than two engines or invalid weights");
+        check(normalized,"Engine retargeting changed total blend gain");
+        check(continuous,"Engine retargeting abruptly discarded an audible engine");
+        for(int i=0;i<2*fadeSamples;++i)fade.advance(7,fadeSamples);
+        check(fade.remaining==0&&fade.target==7&&fade.weights[7]==1,"Latest engine request did not settle within 10 ms");
+        fade.reset(4);check(fade.weights[4]==1&&fade.remaining==0,"Prepare/reset retained an engine transition");
+    }
+    std::cout<<"PASS bounded two-engine transitions, continuity, unity gain and latest-target convergence at three rates\n";
+}
 void transitions(gba::SynthEngine& e) {
     Audio warm(4064),one(1),settle(12000);
     for(double sr:{44100.,48000.,96000.})for(int next=1;next<8;++next) {
@@ -140,7 +165,7 @@ void transitions(gba::SynthEngine& e) {
 }
 }
 int main() {
-    try {auto e=std::make_unique<gba::SynthEngine>();fmAndAdditive(*e);wavetables(*e);physicalModels(*e);vocals(*e);transitions(*e);
+    try {auto e=std::make_unique<gba::SynthEngine>();fmAndAdditive(*e);wavetables(*e);physicalModels(*e);vocals(*e);boundedEngineChanges();transitions(*e);
         std::cout<<"All "<<checks<<" Phase 4 advanced synthesis checks passed.\n";return 0;
     }catch(const std::exception& error){trackAllocations=false;std::cerr<<"FAIL: "<<error.what()<<"\n";return 1;}
 }

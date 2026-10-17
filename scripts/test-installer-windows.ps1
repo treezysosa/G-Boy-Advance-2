@@ -33,7 +33,7 @@ function Check-Installed {
         if (-not (Test-Path -LiteralPath $pair[1])) { throw "Installed binary missing: $($pair[1])" }
         if ((Get-FileHash -LiteralPath $pair[0]).Hash -ne (Get-FileHash -LiteralPath $pair[1]).Hash) { throw 'Installed binary hash mismatch.' }
     }
-    foreach($name in @('USER_MANUAL.md','LICENSING.md','Factory Presets/factory.json','unins000.exe')) {
+    foreach($name in @('USER_MANUAL.md','LICENSING.md','Factory Presets/factory.json','Third-party notices/manifest.json','unins000.exe')) {
         if (-not (Test-Path -LiteralPath (Join-Path $app $name))) { throw "Installed file missing: $name" }
     }
     if ((Get-FileHash -LiteralPath $sentinel).Hash -ne $sentinelHash) { throw 'Installer changed user preset data.' }

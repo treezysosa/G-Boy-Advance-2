@@ -59,6 +59,16 @@ template<std::size_t Count> struct ChoiceFade {
         }
     }
 };
+// Engine changes have a bounded cost: finish the current transition before
+// beginning the latest requested choice. Selection is polled every sample, so
+// an intervening request is coalesced without an allocation or a queue. A held
+// request starts within one fade and settles within two fades (10 ms total).
+// Unlike waveform/routing fades, no more than two engines run simultaneously.
+struct EngineFade : ChoiceFade<8> {
+    void advance(int choice,int samples) noexcept {
+        ChoiceFade<8>::advance(remaining>0?target:choice,samples);
+    }
+};
 // Topology preserving state variable filter, stable as cutoff approaches Nyquist.
 struct SVF {
     struct Outputs {
