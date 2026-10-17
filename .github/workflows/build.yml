@@ -70,5 +70,6 @@ jobs:
           name: Factory-preset-auditions-Windows
           path: |
             build/preset-auditions/**
+            build/vocal-auditions/**
             build/factory-audit.csv
             build/factory-similarity.csv

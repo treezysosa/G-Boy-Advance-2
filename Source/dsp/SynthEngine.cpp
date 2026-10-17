@@ -60,7 +60,7 @@ void SynthEngine::start(Voice& v,int channel,int note,float velocity,bool previe
         v.frequency=(target[Param::Glide]>0 && lastFrequency>0)?lastFrequency:v.targetFrequency;
         v.amp.start(true);v.filterEnv.start(true);v.p1=0;v.p2=0;v.fmPhase=0;v.subPhase=0;v.modalPhase={};v.modalElapsed=0;v.stringActive=false;v.modalActive=false;
         v.lfo1={};v.lfo2={};v.vibrato={};v.tremolo={};v.syllable={};v.panMod=0;
-        v.filter.clear();for(auto& f:v.formants) f.clear();for(auto& f:v.vocalFormants) f.clear();v.controlCounter=0;
+        v.filter.clear();for(auto& f:v.formants) f.clear();v.vocal.reset();v.controlCounter=0;
     } else {v.frequency=std::max(v.frequency,1.0f);v.tail=0;}
     lastFrequency=v.targetFrequency;
 }
@@ -155,8 +155,9 @@ void SynthEngine::updateFormants(Voice& v,float vowel) noexcept {
     float shift=std::exp2(current[Param::FormantShift]/12);
     for(int i=0;i<3;++i) {
         v.formants[i].coefficients(std::lerp(vowels[a][i],vowels[b][i],t)*shift,0.87f,sampleRate);
-        v.vocalFormants[i].g=v.formants[i].g;v.vocalFormants[i].k=v.formants[i].k;
+
     }
+    if(engineFade.weights[5]>0)v.vocal.configure(vowel,current[Param::FormantShift],current[Param::Brightness],sampleRate);
 }
 void SynthEngine::exciteString(Voice& v) noexcept {
     const int length=std::min(stringSize-2,int(std::ceil(v.stringDelay))+1);
@@ -201,13 +202,7 @@ float SynthEngine::excitation(Voice& v,int engine,float frequency,float dt,float
             v.stringPos=(v.stringPos+1)%stringSize;x=delayed*2.2f;
             break;
         }
-        case 5:{
-            const float saw=oscillator(2,v.p1,dt,.5f,v.noise),choir=oscillator(2,v.p2,dt2,.5f,v.noise);
-            const float voiced=(saw+choir*s[Param::Choir])*.5f;
-            const float input=std::lerp(voiced,v.noise.next()*.35f,s[Param::Breath]);
-            for(int i=0;i<3;++i)x+=v.vocalFormants[i].next(input,2)*(i==0?1.0f:.65f);
-            x*=.6f;break;
-        }
+        case 5:x=v.vocal.next(v.p1,v.p2,dt,dt2,s[Param::Choir],s[Param::Breath],v.noise);break;
         case 6:x=mixedOscillator(wave1Fade,v.p1,dt,s[Param::PulseWidth],v.noise);x=std::round(x*15)/15;break;
         case 7:{ // Original modal bar / tine synthesis with inharmonic resonances.
             if(!v.modalActive){v.modalPhase={};v.modalElapsed=0;v.modalActive=true;}

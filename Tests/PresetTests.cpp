@@ -89,8 +89,17 @@ int main(int argc,char** argv){try{
         std::cout<<"Dry spectral/envelope groups at 0.025 threshold: "<<groups.size()<<"\n";
         std::cout<<"Dry-spectrum/envelope near-neighbor flags (<0.025): "<<close<<" (listening review, not a perceptual certificate)\n";
     }
-    if(audition){std::filesystem::create_directories("preset-auditions");std::set<std::string> done;std::ofstream index("preset-auditions/README.txt");index<<"Original synthesized audit renders. Never loaded by the instrument. Human listening acceptance remains pending.\n";int number=0;
-        for(const auto& p:gba::factoryPatches)if(done.insert(p.category).second){gba::Settings s;s.values=p.values;auto e=engine(*prototype,s);Audio a(rate*6);int root=middle(p);e->noteOn(1,root,.85f);e->render(a.l.data(),a.r.data(),rate*2);e->noteOff(1,root);e->noteOn(1,root+7,.6f);e->render(a.l.data()+rate*2,a.r.data()+rate*2,rate*2);e->allNotesOff();e->render(a.l.data()+rate*4,a.r.data()+rate*4,rate*2);const auto file=std::to_string(++number)+"-"+p.id+".wav";writeWav(std::filesystem::path("preset-auditions")/file,a);index<<file<<" : "<<p.category<<" / "<<p.name<<"\n";}
+    if(audition){
+        const auto excerpt=[&](const gba::FactoryPatch& p,const std::filesystem::path& directory,int number,std::ofstream& index){
+            gba::Settings s;s.values=p.values;auto e=engine(*prototype,s);Audio a(rate*6);int root=middle(p);e->noteOn(1,root,.85f);e->render(a.l.data(),a.r.data(),rate*2);e->noteOff(1,root);e->noteOn(1,root+7,.6f);e->render(a.l.data()+rate*2,a.r.data()+rate*2,rate*2);e->allNotesOff();e->render(a.l.data()+rate*4,a.r.data()+rate*4,rate*2);
+            const auto file=std::to_string(number)+"-"+p.id+".wav";writeWav(directory/file,a);index<<file<<" : "<<p.category<<" / "<<p.name<<"\n";
+        };
+        std::filesystem::create_directories("preset-auditions");std::set<std::string> done;std::ofstream index("preset-auditions/README.txt");index<<"Original synthesized audit renders. Never loaded by the instrument. Human listening acceptance remains pending.\n";int number=0;
+        for(const auto& p:gba::factoryPatches)if(done.insert(p.category).second)excerpt(p,"preset-auditions",++number,index);
+        std::filesystem::create_directories("vocal-auditions");std::ofstream vocalIndex("vocal-auditions/README.txt");vocalIndex<<"Original synthesized vowel textures, not speech or identifiable voices. Never loaded by the instrument. Human listening acceptance pending. Six-second excerpts may truncate tails.\n";number=0;
+        for(std::string_view name:{"Smooth R&B Vocal Pad","Modern Pop Vocal Synth","Japanese City Pop Vocal Synth","Middle Eastern Pop-Inspired Vocal Synth","Dark Southern Chant Synth","Ghost Whisper Synth","Haunted Choir","16-Bit Vocal Synth","Children's Choir-Style Synth","Synthetic Vocal Chop","Dark Formant Bass","Angelic Choir Synth"}){
+            auto it=std::find_if(gba::factoryPatches.begin(),gba::factoryPatches.end(),[&](const auto& p){return p.name==name;});if(it==gba::factoryPatches.end())throw std::runtime_error("Missing audition preset");excerpt(*it,"vocal-auditions",++number,vocalIndex);
+        }
     }
     std::cout<<"Central-note max-100ms stereo RMS range: "<<quietest<<" to "<<loudest<<" ("<<20*std::log10(loudest/quietest)<<" dB); peak "<<largestPeak<<"\n";
     std::cout<<"All "<<checks<<" Phase 6 factory preset checks passed.\n";return 0;

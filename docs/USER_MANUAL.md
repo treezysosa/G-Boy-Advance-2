@@ -55,3 +55,9 @@ This development version passes Windows compilation, automated tests and pluginv
 The bank retains 382 patches, all factory names/IDs and program order. Named instruments have explicit synthesis profiles and Afterglow variants change active excitation/envelope controls. Factory levels are calibrated using a 100 ms stereo RMS metric; quieter articulations remain quieter when the master knob reaches its gain ceiling. This is not perceptual loudness normalization.
 
 Saved projects restore their actual parameter values, even when their factory ID also exists in the revised bank. Loading the factory preset again selects its new voicing. User presets remain independent. Optional category audition WAVs are original test renders for listening review; they are never loaded by the instrument.
+
+## Synthetic vocal controls (0.7.0)
+
+Select a vocal preset or choose the Formant engine in SELECT. Vowel moves continuously through A/E/I/O/U; formant shift changes the resonance range independently of note pitch. Brightness opens the harmonic source's spectral tilt. Breath blends harmonic excitation into filtered noise; high settings create whisper-like tone. Choir blends two additional pitched layers; detune controls their spacing. LFO destination Vowel and syllabic motion animate the vowel. Pitch bend, modulation wheel, velocity, sustain and glide remain playable. These produce melodic synthetic vowel textures, not spoken phrases or identifiable voices.
+
+Version 0.7.0 revises engine 5, so older projects restore the same parameters but can sound different. Audition before replacing a production installation. Offline test artifacts contain 12 vocal examples plus 17 category excerpts; the instrument never reads these audio files.

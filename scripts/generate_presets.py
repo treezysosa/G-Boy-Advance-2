@@ -135,7 +135,7 @@ def make_patch(category, name, variation, specs):
     if 'reed' in low: setp(Engine=7, Brightness=.7, Drive=.24)
     if 'music box' in low or 'toy piano' in low: setp(Engine=7, Brightness=.9, Decay=1.1)
     # Named acoustic/keyboard/ensemble profiles take precedence over broad style words.
-    profile = instrument_designs().get(name)
+    profile = (vocal_designs() if category.startswith('Vocals') else instrument_designs()).get(name)
     if profile:
         assert profile['category'] == category
         setp(**profile['parameters'])
@@ -170,7 +170,7 @@ def make_patch(category, name, variation, specs):
     full_name=name+(' - Afterglow' if variation else '')
     tags=[category.split(' - ')[-1].lower(),'synthesis', 'afterglow' if variation else 'original']
     tags += [ENGINE_NAMES[int(p['engine'])]]
-    if profile: tags+=['designed instrument', 'percussive' if p['amp.sustain']<.15 else 'sustained']
+    if profile: tags+=['designed vocal' if category.startswith('Vocals') else 'designed instrument', 'percussive' if p['amp.sustain']<.15 else 'sustained']
     if category.startswith('Vocals'): tags+=['formant','synthetic vowels']
     return dict(id='factory.'+hashlib.sha256(full_name.encode()).hexdigest()[:16], name=full_name,
                 category=category,tags=tags,parameters=p)
@@ -202,9 +202,28 @@ def compatibility_refinements():
     instrument_designs()
     return _REFINEMENTS
 
+_VOCALS=None
+def vocal_designs():
+    global _VOCALS
+    if _VOCALS is None:
+        data=json.loads((ROOT/'Presets/vocal-designs.json').read_text())
+        assert data['format']=='gba2.vocal-designs' and data['schemaVersion']==1
+        _VOCALS=data['designs'];specs={row[0]:row for row in schema()}
+        expected={name:cat for cat,names in GROUPS.items() if cat.startswith('Vocals') for name in names.split('|')}
+        assert set(_VOCALS)==set(expected)
+        for name,profile in _VOCALS.items():
+            assert profile['category']==expected[name] and profile['designNotes']
+            assert profile['parameters']['Engine']==5
+            for parameters in (profile['parameters'],profile['afterglow']):
+                for symbol,value in parameters.items():
+                    assert symbol in specs
+                    _,_,lo,hi,_,_=specs[symbol]
+                    assert type(value) in (int,float) and lo<=value<=hi,(name,symbol,value)
+    return _VOCALS
+
 def recipe_digest():
     digest=hashlib.sha256()
-    for name in ['scripts/generate_presets.py','Presets/instrument-designs.json','Source/dsp/ParameterList.inc']:
+    for name in ['scripts/generate_presets.py','Presets/instrument-designs.json','Presets/vocal-designs.json','Source/dsp/ParameterList.inc','Source/dsp/VocalEngine.h','Source/dsp/SynthEngine.cpp','Source/dsp/Effects.cpp','Source/dsp/DspMath.h']:
         digest.update(name.encode()+b'\0'+(ROOT/name).read_bytes().replace(b'\r\n',b'\n'))
     return digest.hexdigest()
 

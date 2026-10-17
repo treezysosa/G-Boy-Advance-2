@@ -1,10 +1,10 @@
 # Factory library audit
 
-382 parameter-only presets across 17 categories. The 102 named instrument designs each have an engine-aware Afterglow voicing. All legacy IDs and host program indices are frozen by `Presets/factory-index.json`.
+382 parameter-only presets across 17 categories. The 102 named instrument designs and 75 named vocal designs each have an active Afterglow voicing. All legacy IDs and host program indices are frozen by `Presets/factory-index.json`.
 
 This report describes native numerical renders at 48 kHz. It does not certify perceptual uniqueness, natural acoustic realism or commercial sound quality. Human listening acceptance remains pending.
 
-Central-note maximum rolling 100 ms stereo RMS: 0.010859–0.036000 (10.41 dB spread). 312/382 patches are within 0.5 dB of their category target. 85 master gains reached 0.95; quieter articulations remain rather than changing the engine gain or adding hidden normalization.
+Central-note maximum rolling 100 ms stereo RMS: 0.010859–0.036000 (10.41 dB spread). 346/382 patches are within 0.5 dB of their category target. 41 master gains reached 0.95; quieter articulations remain rather than changing the engine gain or adding hidden normalization.
 
 | Category | Presets | Engines | Central RMS min–max |
 |---|---:|---|---:|
@@ -13,22 +13,22 @@ Central-note maximum rolling 100 ms stereo RMS: 0.010859–0.036000 (10.41 dB sp
 | Bells | 20 | fm, modal | 0.02600–0.02600 |
 | Pads | 24 | additive, subtractive, wavetable | 0.01479–0.02800 |
 | Bass | 28 | chiptune, fm, physical modeling, subtractive, wavetable | 0.02338–0.03600 |
-| Flutes | 20 | additive, chiptune, formant, subtractive, wavetable | 0.01416–0.02600 |
+| Flutes | 20 | additive, chiptune, formant, subtractive, wavetable | 0.01533–0.02600 |
 | Plucks | 20 | additive, chiptune, fm, physical modeling, subtractive, wavetable | 0.01132–0.02600 |
-| Sax-Style Leads | 16 | formant | 0.01531–0.02600 |
+| Sax-Style Leads | 16 | formant | 0.02600–0.02600 |
 | Strings | 20 | additive, physical modeling, subtractive, wavetable | 0.01518–0.02800 |
-| Vocals - Soul and R&B | 18 | formant | 0.01851–0.02000 |
-| Vocals - Pop and Indie | 16 | formant | 0.01570–0.02000 |
-| Vocals - Global Pop Textures | 24 | formant | 0.01695–0.02000 |
+| Vocals - Soul and R&B | 18 | formant | 0.02000–0.02000 |
+| Vocals - Pop and Indie | 16 | formant | 0.02000–0.02000 |
+| Vocals - Global Pop Textures | 24 | formant | 0.02000–0.02000 |
 | Vocals - Southern and West Coast | 14 | formant | 0.02000–0.02000 |
-| Vocals - Horror | 14 | formant | 0.01395–0.02000 |
-| Vocals - Cartoon and Gaming | 28 | formant | 0.01629–0.02000 |
-| Vocals - Choirs and Textures | 36 | formant | 0.01310–0.02000 |
+| Vocals - Horror | 14 | formant | 0.02000–0.02000 |
+| Vocals - Cartoon and Gaming | 28 | formant | 0.02000–0.02000 |
+| Vocals - Choirs and Textures | 36 | formant | 0.01425–0.02000 |
 | Retro Games | 28 | chiptune, fm, formant, modal, wavetable | 0.01086–0.02500 |
 
 ## Listening renders
 
-`gba2-preset-tests --auditions` creates one six-second stereo PCM excerpt per category plus an index under `preset-auditions/`. Two notes at different velocities and a release section make patches easy to compare. These original synthesized WAVs are test output only and are never installed or loaded by the instrument. Six seconds may not contain the entire effects tail.
+`gba2-preset-tests --auditions` creates one six-second stereo PCM excerpt per category plus an index under `preset-auditions/`. Two notes at different velocities and a release section make patches easy to compare. Twelve additional contrasting vocal excerpts are written to `vocal-auditions/`. These original synthesized WAVs are test output only and are never installed or loaded by the instrument. Six seconds may not contain the entire effects tail.
 
 ## Similarity review
 

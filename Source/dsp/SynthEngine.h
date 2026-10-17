@@ -2,6 +2,7 @@
 #include "Parameters.h"
 #include "DspMath.h"
 #include "Effects.h"
+#include "VocalEngine.h"
 #include <array>
 #include <vector>
 
@@ -35,7 +36,8 @@ private:
         float tail=0,tailStep=0,last=0,stringLow=0,stringDelay=100,panMod=0;
         Envelope amp,filterEnv;
         SVF filter;
-        std::array<SVF,3> formants,vocalFormants;
+        std::array<SVF,3> formants;
+        VocalEngine vocal;
         Random noise;
         std::array<float,stringSize> string{};
         int stringPos=0;
