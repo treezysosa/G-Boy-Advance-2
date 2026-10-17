@@ -1,0 +1,12 @@
+# Exact next steps
+
+1. Run the Windows GitHub Actions build or `scripts/build-windows.ps1`. Fix any compiler/API issues and rerun the integration suite before calling the JUCE targets buildable.
+2. Open the generated editor screenshot and the standalone on Windows; compare against the supplied purple reference. Refine typeface, bevels, control hit areas, all resize limits, focus, screen readers, and high-DPI appearance. No visual comparison has been executed yet.
+3. Run Steinberg VST3 validator and pluginval at strictness 10 against the actual bundle. Test rapid host program changes, automation, concurrent project serialization, sysex rejection, transport stops, and stress lifecycle.
+4. Complete the DAW matrix in VALIDATION.md. Test sustain and overlapping same notes in all modes, preview while playing external MIDI, and automation during preset loads.
+5. Audition and level-match every factory patch across low, mid, high registers and velocities. Numerical uniqueness / audibility is already checked; perceptual uniqueness and commercial sound quality are not certified. Refine flute breath / sax articulation and per-style vocal envelopes. Add spectral similarity analysis to flag patches requiring further design.
+6. Profile 32-voice worst-case patches at 96 kHz and 64-sample buffers. Cache per-control-rate FX coefficients and optimize hot loops if needed. Measure aliasing; replace the simple interpolated nonlinear anti-aliasing with measured oversampling / antiderivative processing if required.
+7. Add smooth crossfades for discrete engine, oscillator, and filter-type changes. Continuous controls already use 15 ms smoothing; discrete automation and simultaneous preset parameter updates can still produce transitions requiring refinement.
+8. Extend the current two-source modulation routing into an arbitrary multi-slot modulation matrix if required. The implemented editor exposes two LFO destinations plus dedicated vibrato / tremolo / envelope routes, not a general matrix.
+9. Add sample-accurate automation support where the JUCE/host interface permits it; current parameters are read once per process block, then smoothed per sample. Host program requests are handled on the message thread at 20 Hz to avoid file I/O or GUI dispatch in the audio callback.
+10. Verify installer with a non-admin DAW user, preserve user banks on uninstall, select and meet a JUCE license, add source license / notices, and sign the executable and installer. Only then tag a release and publish tested binaries.

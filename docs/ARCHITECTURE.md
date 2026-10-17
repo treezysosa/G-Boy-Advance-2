@@ -1,0 +1,19 @@
+# Architecture and real-time contract
+
+`Source/dsp` is standard C++20 with no GUI, JUCE, filesystem, sample player, or network dependency. It is independently compiled and tested. `ParameterList.inc` defines all 64 stable parameter IDs, names, ranges, defaults, and choices. `Settings` is a fixed-size value object. Do not reorder enum values without regenerating `FactoryData.h`; do not rename stable IDs after release.
+
+`SynthEngine` owns 32 fixed voices, per-channel MIDI controls, a held-key priority map, and mathematically generated mipmapped tables. Voice excitation includes subtractive PolyBLEP oscillators, FM, additive banks, table morphs, a fractional-delay Karplus–Strong string, three-resonance formants, quantized retro oscillators, and six-mode inharmonic keys. There is no decoded or stored audio. Initialization allocates effect delay lines and creates tables; the sample render loop and core note/controller handlers allocate nothing.
+
+Each voice has an amplitude ADSR, a filter ADSR, a topology-preserving state-variable filter, formant bank, two LFO phases, portamento frequency, and note/channel ownership. Voice allocation prefers a free voice, then a releasing voice, then the oldest active one. A 64-sample old-output fade reduces stealing discontinuities. Mono and legato use last-held-key priority. Continuous parameters smooth over roughly 15 ms; choice parameters are discrete. Vowel coefficients and filter coefficients update every 16 samples.
+
+Effects use interpolated delay buffers, a four-line orthogonal feedback reverb, modulated chorus/flange delays, four-stage allpass phasing, nonlinear saturation/distortion, quantization/rate reduction, wow/flutter delay modulation, simple low/high shelves, and mid/side width. Nonlinearity uses two interpolated evaluations as a basic alias-reduction measure, not a measured high-quality oversampling implementation. The final signal is bounded with a soft limiter and master gain.
+
+`GbaProcessor` reads APVTS atomic parameter values once per audio block and splits DSP rendering at each MIDI event's sample offset. It skips non-short MIDI packets rather than allocating for sysex. GUI keyboard notes enter a fixed-size SPSC queue. Preview-stop, pitch and panic use atomics. The callback does not call `MidiKeyboardState::processNextMidiBuffer`, touch preset files, copy ValueTrees, use a mutex, or open windows. A queue overflow requests panic so a dropped note-off cannot leave a stuck voice.
+
+Host program changes are atomic requests polled by a message-thread timer at 20 Hz. Preset application uses host parameter notifications outside the audio callback. UI/library work and file I/O remain on the message thread; user file replacement is transactional via `TemporaryFile`. The processor supports one stereo output bus and no audio input.
+
+Project state uses JUCE APVTS XML-in-binary with root `GBA2_STATE`, schema version 1, all parameter children, patch identity and editor width. State parsing rejects malformed / oversized data and clamps known domains. The project carries all actual parameters, so external user files are not required to reopen a song. Parameter-only JSON files supply portable user patches. Factory JSON and generated C++ data are checked for reproducibility.
+
+`GbaEditor` uses JUCE sliders, buttons, keyboard, native list and viewport components. The chassis, knobs, bevels, display, D-pad and grille are vector graphics. The approved JPEG is a visual reference only and is not used as a clickable background. Advanced controls use APVTS attachments; reassigned front-panel knobs attach directly to stable destination parameters.
+
+Known boundaries: block-level parameter snapshots, discrete topology transitions, basic output limiting, two LFO routes rather than an arbitrary modulation matrix, and synthetic approximations of acoustic instruments. See NEXT_STEPS.md for measured quality/performance work before release.

@@ -1,0 +1,11 @@
+/build*/
+/out/
+/dist/
+/Dependencies/
+/.tools/
+/.vs/
+*.user
+*.suo
+*.wav
+preset-validation.csv
+.DS_Store
