@@ -142,3 +142,8 @@ Linux GCC 14.2 `-O2`, rerun with local compilation/sanitizers finished: 8,298 me
 The audio engine is unchanged from 0.10.3. Native controls, keyboard and LEDs remain live. Only the static vector housing is cached per editor; it is regenerated after skin, size or rendering-density changes. This avoids rebuilding gradients, lettering paths and moulded-plastic detail when repainting an LED or control. The cache consumes image memory proportional to editor size and DPI; it is released with the editor. If the image would exceed 16 Mi pixels, painting falls back to vectors rather than retaining a larger cache. No image filtering, frame animation or audio-thread work is introduced for skins.
 
 This GUI change does not promise another reduction in chord DSP time. Continue using the measured 0.10.3 improvements and voice/release settings above. The 0.11.0 Windows run passed: byte-identical 530-scene audio, zero observed over-budget calls at 8/32 voices, and 14.76%/8.25% less accumulated measured DSP time versus the immutable 0.10.2 engine. This measures the retained 0.10.3 optimization; skins do not change the DSP. See [0.11.0 evidence and limitations](RELEASE_0_11.md).
+
+
+## 0.12.1 synthesis-only restoration
+
+The exact tested 0.11.0 synthesis DSP is restored. The sample worker, playback/interpolation path and embedded-audio instrument authoring are removed. The 530-scene comparison is byte-identical on both platforms. Windows native 32-voice timing observed 7/10142 over-budget calls, worst ratio 1.484138; this is one shared-runner observation, not a DAW CPU or physical deadline guarantee. See [current evidence](RELEASE_0_12_1.md).

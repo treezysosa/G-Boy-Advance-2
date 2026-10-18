@@ -1,5 +1,7 @@
 > Current version: **0.12.1, synthesis only**. Sample playback was removed; [update and compatibility notes](RELEASE_0_12_1.md). Earlier build results below remain historical.
 
+Older 0.12.0 projects restore their synthesis parameters and skin, show `SYNTH ONLY:` in the display and a removal notice in START, and discard embedded audio from newly saved state. Sample sounds no longer play. Original project, audio and preset files are left unchanged; preserve the original project if its sample content is still needed. Sample-containing presets are rejected/skipped. Schema 1 synthesis `.gba2preset` import/export continues to work.
+
 # Preset format v1
 
 Factory source is `Presets/factory.json`, a JSON object containing `format: "gba2.factory"`, `schemaVersion: 1`, and a `presets` array. Every entry has a stable ID, display name, category, tag array, and a `parameters` object keyed by the stable IDs in `Source/dsp/ParameterList.inc`. Values are real-world numeric values, not normalized host values. Every generated factory entry contains every parameter.

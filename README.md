@@ -1,14 +1,14 @@
-# G Boy Advance 2 — 0.12.1
+# G BOY ADVANCE 2 — 0.12.1
 
-Sample playback has been removed. The instrument generates sound through synthesis and retains the five color skins, synthesis preset import/export, 410 factory presets and CPU improvements. See [0.12.1 update and compatibility notes](docs/RELEASE_0_12_1.md). Fresh Windows validation is pending; the records below describe the earlier synthesis-only build.
+A C++20 / JUCE 8 hybrid synthesis instrument for Windows x64 VST3 and standalone. **Sample playback has been removed at the owner's request.** All instrument audio is generated through synthesis. The update retains Purple, Glacier Blue, Black, White and Spice Orange skins; synthesis preset import/export; 410 factory patches; stable plugin/parameter identities; and the previous CPU improvements.
 
-# G BOY ADVANCE 2
+[Windows/Ubuntu run 39096250046](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39096250046) passed all ten Windows suites: 8,007 DSP/preset checks, 398 application checks (including 103 library checks), 265/266 actual-bundle synthetic-host checks, pluginval strictness 10, Steinberg 47/0 and six installer lifecycle checks. The FL-named host harness is not FL Studio.
 
-A C++20 / JUCE 8 hybrid synthesis instrument targeting Windows x64 VST3 and standalone. The purple, wide console interface uses native scalable controls. All sound is generated mathematically: there is no sampler, sample import, commercial game audio, or network dependency at runtime.
+[Download the tested Windows installer ZIP](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39096250046/artifacts/12124961435). Close FL Studio and the standalone app, extract the ZIP into a new folder, run `G-Boy-Advance-2-Setup-x64.exe` and keep the default paths. Then open FL64. SELECT changes SKIN; START imports/exports synthesis presets. [Portable/manual-install files](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39096250046/artifacts/12124154373) · [0.12.1 evidence and compatibility](docs/RELEASE_0_12_1.md).
 
-**Release candidate 0.11.0 — skins and custom synthesis presets.** SELECT includes Purple, Glacier Blue, Black, White and Spice Orange. Appearance is saved per plugin instance in DAW project state; old projects default to Purple. START includes Import and Export Sound for parameter-only `.gba2preset` patches. Static vector housing is cached at the current UI rendering density to avoid rebuilding it on ordinary repaints. The optimized 0.10.3 DSP, 64 parameter IDs, 410 factory identities, schema 1 and fixed 16-frame latency are retained.
+Older 0.12.0 projects restore their synthesis parameters and skin, show `SYNTH ONLY:` in the display and a removal notice in START, and discard embedded audio from newly saved state. Sample sounds no longer play. Original project, audio and preset files are left unchanged; preserve the original project if its sample content is still needed. Sample-containing presets are rejected/skipped. Schema 1 synthesis `.gba2preset` import/export continues to work.
 
-Windows and Ubuntu [run 39089737722](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39089737722) passed: ten Windows suites, 385 application checks (including 103 library checks), pluginval strictness 10, 47 Steinberg tests, and six installer lifecycle checks including the 0.10.3 upgrade. Download the [tested Windows installer ZIP](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39089737722/artifacts/12122736368), extract it and run `G-Boy-Advance-2-Setup-x64.exe` with FL Studio/standalone closed. In SELECT, choose SKIN; in START, use IMPORT / EXPORT SOUND. The 530-scene audio comparison was byte-identical, and both sampled 8/32-voice profiles had zero over-budget calls. These shared-runner measurements do not certify physical driver deadlines or FL CPU percentages. Earlier 0.10.3 [run 39083118131](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39083118131) passed ten suites, pluginval strictness 10, 47 Steinberg tests and five installer checks. The owner reports the plugin working in FL64 and improved CPU use with the recommended voice/release settings. This does not certify all DAWs or physical audio-device/DPI configurations. Licensing was explicitly deferred by the owner; this candidate is unsigned and has no final public release tag. See [candidate notes](docs/RELEASE_0_11.md), [performance](docs/PERFORMANCE.md) and [release checklist](docs/RELEASE_CHECKLIST.md).
+The 530-scene synthesis audio comparison is byte-identical to the prior optimized engine. Shared-runner profiling does not certify FL Studio CPU percentages or physical-driver deadlines. The owner reported earlier builds working in FL64; hands-on acceptance of this version remains pending. The licensing decision is deferred by the owner; this prepared build is unsigned and has no final public release tag.
 
 ![G Boy Advance 2 Phase 2 native JUCE editor](docs/images/phase2-main.png)
 
@@ -19,12 +19,12 @@ Actual Phase 2 Windows JUCE component render at 1280×646 from [passing CI run 3
 Install Visual Studio 2022 with **Desktop development with C++**, a Windows SDK, CMake 3.24+, and Git. In PowerShell:
 
 ```powershell
-git clone --branch release/skins-presets-0110 https://github.com/treezysosa/G-Boy-Advance-2.git
+git clone --branch release/synth-only-0121 https://github.com/treezysosa/G-Boy-Advance-2.git
 cd G-Boy-Advance-2
 powershell -ExecutionPolicy Bypass -File scripts/build-windows.ps1
 ```
 
-You can also open [Build and validate in GitHub Actions](https://github.com/treezysosa/G-Boy-Advance-2/actions/workflows/build.yml), choose **Run workflow**, and download the Windows artifact after the job succeeds. The workflow and Windows script are included in the corrected source upload. Version 0.10.1 passed all nine CTest suites, pluginval 1.0.4 strictness 10, the official Steinberg validator (47 tests), clean install/reinstall/uninstall and standalone launch checks in [run 39059534979](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39059534979). The original engine-switch CPU accumulation is fixed; measured case averages and p99 times fit the sampled budgets, with two isolated over-budget calls in the new modal/retro stress case. Factory/vocal and retro audition files remain separate test outputs and are never installed or loaded by the instrument. See PHASE_10_FINALIZATION.md for numerical audio comparison and remaining physical acceptance.
+You can also use [Build and validate in GitHub Actions](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39096250046). Factory/vocal and retro audition files are separate test outputs and are never installed or loaded by the instrument.
 
 The first local build downloads the pinned JUCE 8.0.6 source. For an offline build, supply an existing checkout:
 
