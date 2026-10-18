@@ -45,7 +45,7 @@ private:
         SVF filter,rightFilter;
         std::array<SVF,3> rightFormants;
         double samplePosition=0;
-        float rightOutput=0;
+        float rightOutput=0,rightTail=0,rightTailStep=0;
         std::array<SVF,3> formants;
         VocalEngine vocal;
         RetroEngine retro;

@@ -10,6 +10,8 @@ try {
     gba::SampleData sample;sample.rate=48000;gba::SampleData::Level data;data.left.resize(48000);data.right.resize(48000);
     for(int i=0;i<48000;++i)data.left[std::size_t(i)]=.5f*std::sin(float(2*std::numbers::pi_v<double>*261.625565*i/48000));
     sample.levels.push_back(std::move(data));sample.buildMips();
+    const auto below=sample.read(123.25,1.99999,true),above=sample.read(123.25,2.00001,true);
+    check(std::abs(below[0]-above[0])<.0001f,"Sample mip transition is discontinuous");
     auto engine=std::make_unique<gba::SynthEngine>();gba::Settings s;
     s.set(gba::Param::Reverb,0);s.set(gba::Param::Chorus,0);s.set(gba::Param::Drive,0);s.set(gba::Param::Vibrato,0);s.set(gba::Param::Lfo1Depth,0);s.set(gba::Param::FilterEnv,0);s.set(gba::Param::Cutoff,20000);s.set(gba::Param::Resonance,0);s.set(gba::Param::Attack,.001f);s.set(gba::Param::Sustain,1);s.set(gba::Param::Release,.02f);
     std::array<float,256> l{},r{};

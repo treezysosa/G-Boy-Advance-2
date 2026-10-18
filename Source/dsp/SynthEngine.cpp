@@ -71,6 +71,7 @@ float SynthEngine::wavetable(float p,float frequency,float position) const noexc
 void SynthEngine::start(Voice& v,int channel,int note,float velocity,bool preview,bool legato) noexcept {
     const bool active=v.amp.stage!=Envelope::Off;
     v.tail=active?v.last:0;v.tailStep=v.tail/64;
+    v.rightTail=active?v.rightOutput:0;v.rightTailStep=v.rightTail/64;
     v.channel=channel;v.note=note;v.held=true;v.preview=preview;v.age=++clock;v.velocity=velocity;v.targetFrequency=midiHz(float(note));
     v.velocityRoot=std::sqrt(velocity);
     const float pan=std::clamp(0.5f+0.16f*float((note%5)-2),0.0f,1.0f);
@@ -81,7 +82,7 @@ void SynthEngine::start(Voice& v,int channel,int note,float velocity,bool previe
         v.amp.start(true);v.filterEnv.start(true);v.p1=0;v.p2=0;v.fmPhase=0;v.subPhase=0;v.modalPhase={};v.modalElapsed=0;v.stringActive=false;v.modalActive=false;
         v.lfo1={};v.lfo2={};v.vibrato={};v.tremolo={};v.syllable={};v.panMod=0;
         v.filter.clear();for(auto& f:v.formants) f.clear();v.vocal.reset();v.retro.reset();v.controlCounter=0;
-    } else {v.frequency=std::max(v.frequency,1.0f);v.tail=0;}
+    } else {v.frequency=std::max(v.frequency,1.0f);v.tail=0;v.rightTail=0;}
     lastFrequency=v.targetFrequency;
 }
 void SynthEngine::release(Voice& v) noexcept {
@@ -332,6 +333,7 @@ float SynthEngine::voiceSample(Voice& v) noexcept {
     const float tremolo=s[Param::Tremolo]>0?s[Param::Tremolo]*(0.5f+0.5f*v.tremolo.value()):0;
     const float gain=env*velocity*std::max(0.0f,1+modAmp-tremolo)*syllable*0.16f;
     x*=gain;v.rightOutput=rightX*gain;
+    if(sampling&&std::abs(v.rightTail)>std::abs(v.rightTailStep)){v.rightOutput+=v.rightTail;v.rightTail-=v.rightTailStep;}else v.rightTail=0;
     if(std::abs(v.tail)>std::abs(v.tailStep)) {x+=v.tail;v.tail-=v.tailStep;} else v.tail=0;
     v.last=x;return x;
 }
