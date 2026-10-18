@@ -40,8 +40,17 @@ try {
     p.samples.configure({2,60,true});p.panic();render(p,audio);check(int(p.samples.state()["mode"])==2&&audio.getMagnitude(0,0,16384)>.01f,"Layer mode failed");
     p.presets.restoreDefault();check(p.samples.state().isVoid(),"Factory preset retained sample playback");p.panic();render(p,audio);check(audio.getMagnitude(0,0,16384)>.001f,"Clearing sample broke factory synthesis");
     // Rapid publication / cancellation while the real audio callback reads snapshots.
-    std::atomic<bool> running{true};std::atomic<int> blocks{0};std::thread audioThread([&]{juce::AudioBuffer<float> block(2,64);while(running){juce::MidiBuffer events;p.processBlock(block,events);++blocks;}});
+    std::atomic<bool> running{true},invalid{false};std::atomic<int> blocks{0};std::thread audioThread([&]{juce::AudioBuffer<float> block(2,64);int count=0;while(running){juce::MidiBuffer events;if(count%8==0)events.addEvent(juce::MidiMessage::noteOn(1,60,.8f),0);if(count%8==7)events.addEvent(juce::MidiMessage::noteOff(1,60),0);p.processBlock(block,events);for(int c=0;c<2;++c)for(int i=0;i<64;++i)if(!std::isfinite(block.getSample(c,i)))invalid=true;++count;++blocks;}});
+    bool publicationOk=true;
+    for(int i=0;i<12;++i){
+        p.samples.loadFile(aiff);if(!p.samples.waitUntilIdle(10000)){publicationOk=false;break;}
+        p.samples.configure({1+i%2,48+i,true});
+        const int target=blocks.load()+16;const auto until=juce::Time::getMillisecondCounterHiRes()+2000;
+        while(blocks<target&&juce::Time::getMillisecondCounterHiRes()<until)juce::Thread::sleep(1);
+        if(blocks<target){publicationOk=false;break;}
+    }
     for(int i=0;i<80;++i){p.samples.loadFile(aiff);if(i%3==0)p.samples.clear();else p.samples.configure({i%3,48+i%36,i%2!=0});}
-    p.samples.clear();check(p.samples.waitUntilIdle(),"Cancelled sample jobs did not settle");running=false;audioThread.join();check(blocks>0&&p.samples.state().isVoid(),"Publication/cancellation stress failed");
+    p.samples.clear();check(p.samples.waitUntilIdle(),"Cancelled sample jobs did not settle");running=false;audioThread.join();check(publicationOk&&blocks>0&&!invalid&&p.samples.state().isVoid(),"Publication/cancellation stress failed");
+    std::cout<<"PASS 12 sample publications with "<<blocks.load()<<" concurrent audio blocks and no non-finite output.\n";
     p.releaseResources();restored->releaseResources();restored.reset();processor.reset();root.deleteRecursively();std::cout<<"PASS "<<checks<<" sample playback checks.\n";return checks;
 }catch(...){root.deleteRecursively();throw;}}
