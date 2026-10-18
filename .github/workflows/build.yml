@@ -6,6 +6,7 @@ on:
   workflow_dispatch:
 permissions:
   contents: read
+  actions: read
 jobs:
   core:
     runs-on: ubuntu-24.04
@@ -56,6 +57,12 @@ jobs:
             [System.Management.Automation.Language.Parser]::ParseFile($_.FullName,[ref]$tokens,[ref]$parseErrors) | Out-Null
             if ($parseErrors) { throw ($parseErrors | Out-String) }
           }
+      - name: Test installed diagnostics in Windows PowerShell 5.1
+        shell: powershell
+        run: ./scripts/support/Test-report.ps1 -CollectorPath scripts/collect-windows-diagnostics.ps1 -CollectorRevision 3
+      - name: Test installed diagnostics in PowerShell 7
+        shell: pwsh
+        run: ./scripts/support/Test-report.ps1 -CollectorPath scripts/collect-windows-diagnostics.ps1 -CollectorRevision 3
       - name: Configure Visual Studio 2022 x64
         run: cmake -S . -B build -G "Visual Studio 17 2022" -A x64 -DGBA_JUCE_PATH="${{ github.workspace }}/Dependencies/JUCE" -DBUILD_TESTING=ON -DGBA_BUILD_BENCHMARKS=ON
       - name: Build VST3, standalone and tests
@@ -74,9 +81,15 @@ jobs:
       - name: Package portable archive and installer
         shell: pwsh
         run: ./scripts/package-windows.ps1 -Iscc 'C:\Program Files (x86)\Inno Setup 6\ISCC.exe'
-      - name: Exercise install, reinstall, standalone launch and uninstall
+      - uses: actions/download-artifact@v4
+        with:
+          name: G-Boy-Advance-2-Installer-x64
+          run-id: 39083118131
+          github-token: ${{ github.token }}
+          path: build/previous-installer
+      - name: Exercise install, upgrade, reinstall, standalone launch and uninstall
         shell: pwsh
-        run: ./scripts/test-installer-windows.ps1
+        run: ./scripts/test-installer-windows.ps1 -PreviousInstaller build/previous-installer/G-Boy-Advance-2-Setup-x64.exe
       - uses: actions/upload-artifact@v4
         with:
           name: G-Boy-Advance-2-Installer-x64

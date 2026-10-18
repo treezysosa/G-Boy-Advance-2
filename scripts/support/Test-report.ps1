@@ -1,8 +1,9 @@
+param([string]$CollectorPath="",[string]$CollectorRevision="2")
 $ErrorActionPreference='Stop'
 $root=Split-Path (Split-Path $PSScriptRoot -Parent) -Parent
 $output=Join-Path $root 'build-support'
 New-Item -ItemType Directory -Force $output | Out-Null
-$collector=Join-Path $PSScriptRoot 'Collect-report.ps1'
+$collector=if($CollectorPath){(Resolve-Path -LiteralPath $CollectorPath).Path}else{Join-Path $PSScriptRoot 'Collect-report.ps1'}
 foreach($file in Get-ChildItem -LiteralPath $PSScriptRoot -Filter '*.ps1') {
     $tokens=$null;$errors=$null
     [System.Management.Automation.Language.Parser]::ParseFile($file.FullName,[ref]$tokens,[ref]$errors) | Out-Null
@@ -49,7 +50,7 @@ try {
     $fixturePath=Join-Path $output 'fixture-report.txt'
     . $collector -OutputPath $fixturePath
     $report=Get-Content -LiteralPath $fixturePath -Raw
-    foreach($expected in @('Collector revision: 2','AppName: ilbridge.exe','ModuleName: G Boy Advance 2.vst3','ExceptionCode: c00000fd','FaultingOffset: 004e8910','AppName: FL64 (scaled).exe','ModuleName: KERNELBASE.dll','ExceptionCode: e06d7363','Unreadable event records skipped: 1','architecture x86 (32-bit)','architecture x64 (64-bit)',('Host-folder executable: '+$fl64))) {
+    foreach($expected in @(('Collector revision: '+$CollectorRevision),'AppName: ilbridge.exe','ModuleName: G Boy Advance 2.vst3','ExceptionCode: c00000fd','FaultingOffset: 004e8910','AppName: FL64 (scaled).exe','ModuleName: KERNELBASE.dll','ExceptionCode: e06d7363','Unreadable event records skipped: 1','architecture x86 (32-bit)','architecture x64 (64-bit)',('Host-folder executable: '+$fl64))) {
         if (-not $report.Contains($expected)) {Write-Host $report;throw ('Report omitted fixture field: '+$expected)}
     }
     foreach ($unexpected in @('SHOULD_NOT_APPEAR','UNRELATED_UNNAMED_EVENT','UNRELATED_MIXED_EVENT','Event query status:')) {

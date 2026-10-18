@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.24)
-project(GBoyAdvance2 VERSION 0.10.3 LANGUAGES C CXX)
+project(GBoyAdvance2 VERSION 0.11.0 LANGUAGES C CXX)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
@@ -92,7 +92,7 @@ juce_add_plugin(GBoyAdvance2
 juce_generate_juce_header(GBoyAdvance2)
 target_sources(GBoyAdvance2 PRIVATE
     Source/PluginProcessor.cpp Source/PluginEditor.cpp Source/PresetManager.cpp
-    Source/PluginProcessor.h Source/PluginEditor.h Source/PixelText.h Source/PresetManager.h)
+    Source/PluginProcessor.h Source/PluginEditor.h Source/UiSkins.h Source/PixelText.h Source/PresetManager.h)
 target_compile_definitions(GBoyAdvance2 PUBLIC
     GBA_WINDOWS_SOFTWARE_EDITOR=$<BOOL:${GBA_WINDOWS_SOFTWARE_EDITOR}>
     JUCE_WEB_BROWSER=0 JUCE_USE_CURL=0 JUCE_VST3_CAN_REPLACE_VST2=0

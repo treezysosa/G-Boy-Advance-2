@@ -1,4 +1,4 @@
-param([string]$Installer='', [string]$BuildDirectory='')
+param([string]$Installer='', [string]$BuildDirectory='', [string]$PreviousInstaller='')
 $ErrorActionPreference='Stop'
 $root=Split-Path $PSScriptRoot -Parent
 if (-not $Installer) { $Installer=Join-Path $root 'dist/G-Boy-Advance-2-Setup-x64.exe' }
@@ -40,8 +40,20 @@ function Check-Installed {
 }
 $installed=$false
 try {
+    if($PreviousInstaller) {
+        $previous=(Resolve-Path -LiteralPath $PreviousInstaller).Path
+        Run-Setup $previous @('/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART','/SP-',"/DIR=`"$app`"","/LOG=`"$(Join-Path $logs 'install-previous.txt')`"")
+        $installed=$true
+        if(-not (Test-Path -LiteralPath (Join-Path $vst 'Contents/x86_64-win/G Boy Advance 2.vst3'))) {throw 'Previous-version VST3 was not installed.'}
+        if((Get-ItemProperty $key).DisplayVersion -ne '0.10.3') {throw 'Upgrade test requires the pinned 0.10.3 installer.'}
+        if ((Get-FileHash -LiteralPath $sentinel).Hash -ne $sentinelHash) {throw 'Previous installer changed user data.'}
+        $report.Add('PASS pinned 0.10.3 installation before upgrade, default VST3 path and user-data preservation')
+    }
     Run-Setup $Installer @('/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART','/SP-',"/DIR=`"$app`"","/LOG=`"$(Join-Path $logs 'install.txt')`"")
-    $installed=$true;Check-Installed;$report.Add('PASS clean silent install: default common VST3 path, standalone, manual, factory bank, binary hashes')
+    $installed=$true;Check-Installed
+    if((Get-ItemProperty $key).DisplayVersion -ne '0.11.0') {throw 'Installed registry version does not match the release candidate.'}
+    $kind=if($PreviousInstaller){'0.10.3-to-0.11.0 upgrade'}else{'clean install'}
+    $report.Add('PASS silent '+$kind+': default common VST3 path, standalone, manual, factory bank, binary hashes')
     $diagnostics=Join-Path $logs 'diagnostics-smoke.txt'
     & (Join-Path $app 'collect-windows-diagnostics.ps1') -OutputPath $diagnostics
     $diagnosticText=Get-Content -LiteralPath $diagnostics -Raw

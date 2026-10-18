@@ -60,8 +60,8 @@ std::vector<juce::String> PresetManager::filtered(const Filter& filter) const {
     if(filter.recent)std::stable_sort(result.begin(),result.end(),[this](const auto& a,const auto& b){return recent.indexOf(a)<recent.indexOf(b);});
     return result;
 }
-juce::Result PresetManager::read(const juce::File& file,GbaPreset& p) const {
-    if(file.getParentDirectory()!=folder||file.isSymbolicLink()||!file.existsAsFile()||file.getSize()>maxBytes)return juce::Result::fail("Missing, linked or oversized preset: "+file.getFileName());
+juce::Result PresetManager::read(const juce::File& file,GbaPreset& p,bool external) const {
+    if((!external&&file.getParentDirectory()!=folder)||file.isSymbolicLink()||!file.existsAsFile()||file.getSize()>maxBytes)return juce::Result::fail("Missing, linked or oversized preset: "+file.getFileName());
     juce::var data;auto parsed=boundedJson(file,data);if(parsed.failed()||!data.isObject())return juce::Result::fail("Invalid JSON preset: "+file.getFileName());
     if(data["format"].toString()!="gba2.preset"||!version(data["schemaVersion"]))return juce::Result::fail("Unsupported preset: "+file.getFileName());
     if(!data["id"].isString()||!userId(data["id"].toString())||!data["name"].isString()||!validName(data["name"].toString()))return juce::Result::fail("Invalid preset identity/name: "+file.getFileName());
@@ -99,8 +99,8 @@ bool PresetManager::load(juce::String id){if(auto* p=find(id)){auto copy=*p;proc
 void PresetManager::step(int direction){if(presets.empty())return;int selected=0;for(std::size_t i=0;i<presets.size();++i)if(presets[i].id==processor.presetId()){selected=int(i);break;}const int count=int(presets.size());selected=((selected+direction)%count+count)%count;load(presets[std::size_t(selected)].id);}
 void PresetManager::stepCategory(int direction){auto list=categories();if(list.isEmpty())return;int selected=std::max(0,list.indexOf(processor.presetCategory()));selected=((selected+direction)%list.size()+list.size())%list.size();for(const auto& p:presets)if(p.category==list[selected]){load(p.id);return;}}
 bool PresetManager::nameExists(const juce::String& name,const juce::String& except) const {for(const auto& p:presets)if(!p.factory&&p.id!=except&&p.name.equalsIgnoreCase(name.trim()))return true;return false;}
-juce::Result PresetManager::write(const GbaPreset& p){
-    if(p.file.getParentDirectory()!=folder||!userId(p.id))return juce::Result::fail("Invalid user preset destination.");
+juce::Result PresetManager::write(const GbaPreset& p,bool external){
+    if((!external&&p.file.getParentDirectory()!=folder)||!userId(p.id))return juce::Result::fail("Invalid user preset destination.");
     auto* object=new juce::DynamicObject();juce::var data(object);object->setProperty("format","gba2.preset");object->setProperty("schemaVersion",schemaVersion);object->setProperty("id",p.id);object->setProperty("name",p.name);object->setProperty("category","User");object->setProperty("tags",p.tags);
     auto* parameters=new juce::DynamicObject();object->setProperty("parameters",juce::var(parameters));for(std::size_t i=0;i<gba::parameterCount;++i)parameters->setProperty(juce::Identifier(juce::String(gba::specs[i].id.data())),p.settings.values[i]);return atomicJson(p.file,data);
 }
@@ -111,6 +111,29 @@ juce::Result PresetManager::saveAs(juce::String name,juce::String tags){
     refresh();if(nameExists(name))return finish(juce::Result::fail("A user preset with this name already exists."));
     GbaPreset p;p.name=name.trim();p.tags=tags.trim().isEmpty()?"user synthesis":tags.trim();p.id="user."+juce::Uuid().toString();p.factory=false;p.category="User";p.settings=processor.snapshot();p.file=folder.getChildFile(p.id+".gba2preset");auto result=write(p);if(result.failed())return finish(result);
     presets.push_back(p);sortUsers();++generation;load(p.id);return juce::Result::ok();
+}
+juce::Result PresetManager::importPreset(const juce::File& source){
+    const juce::ScopedLock lock(libraryIo);
+    if(source.hasFileExtension("mse"))return finish(juce::Result::fail("Maize .mse instruments contain samples. This synthesizer imports .gba2preset synthesis patches only."));
+    if(source.hasFileExtension("chl"))return finish(juce::Result::fail("This .chl instrument format is not supported. Export a G Boy Advance 2 .gba2preset synthesis patch instead."));
+    if(!source.hasFileExtension("gba2preset"))return finish(juce::Result::fail("Choose a .gba2preset synthesis patch."));
+    GbaPreset p;auto result=read(source,p,true);if(result.failed())return finish(result);
+    refresh();
+    // Imported patches are independent copies; never overwrite an existing identity or name.
+    const auto original=p.name;
+    for(int n=2;nameExists(p.name);++n){const auto suffix=" ("+juce::String(n)+")";p.name=original.substring(0,100-suffix.length())+suffix;}
+    p.id="user."+juce::Uuid().toString();p.file=folder.getChildFile(p.id+".gba2preset");
+    result=write(p);if(result.failed())return finish(result);
+    presets.push_back(p);sortUsers();++generation;load(p.id);return juce::Result::ok();
+}
+juce::Result PresetManager::exportCurrent(const juce::File& destination,juce::String name,juce::String tags){
+    const juce::ScopedLock lock(libraryIo);
+    if(!destination.hasFileExtension("gba2preset"))return finish(juce::Result::fail("Use the .gba2preset extension."));
+    if(destination.getParentDirectory()==folder)return finish(juce::Result::fail("Use Save As to store sounds in your preset library. Export to another folder."));
+    if(name.trim().isEmpty())name=processor.presetName();
+    if(!validName(name)||tags.length()>512)return finish(juce::Result::fail("Use a name of 1 to 100 characters and tags of at most 512 characters."));
+    GbaPreset p;p.id="user."+juce::Uuid().toString();p.name=name.trim();p.tags=tags.trim();p.settings=processor.snapshot();p.file=destination;
+    return finish(write(p,true));
 }
 juce::Result PresetManager::renameUser(juce::String id,juce::String name){
     const juce::ScopedLock lock(libraryIo);if(!validName(name))return finish(juce::Result::fail("Enter 1 to 100 characters without control characters."));

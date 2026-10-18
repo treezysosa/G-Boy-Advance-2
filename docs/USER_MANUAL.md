@@ -22,7 +22,7 @@ Search matches names, category labels, and tags. Select a category, optionally f
 
 FAVORITE toggles the current patch. Recently used patches are ordered newest first. Enter a name in the bottom field, then SAVE AS to save the current parameter values as a new user patch. RENAME and DELETE work only on user patches. Deleting asks for confirmation. RESTORE DREAM PAD loads the original default factory patch; it does not erase user patches.
 
-User files live in `%APPDATA%\Treezy Audio\G Boy Advance 2\Presets`. Copy `.gba2preset` files into that directory, then create a new plugin instance to rescan them. Favorites and recent IDs are stored in the adjacent `library.json`. Write failures appear in the browser status line. Factory patches are embedded and always available offline.
+User files live in `%APPDATA%\Treezy Audio\G Boy Advance 2\Presets`. Use IMPORT in the browser, or copy `.gba2preset` files into that directory and press REFRESH. Favorites and recent IDs are stored in the adjacent `library.json`. Write failures appear in the browser status line. Factory patches are embedded and always available offline.
 
 ## Advanced synthesis
 
@@ -87,3 +87,16 @@ These unsigned development builds still require manual host, audio-device, high-
 Engine changes crossfade for 5 ms. If automation requests another engine during a fade, the current fade finishes and then the latest request begins; intermediate requests are coalesced. After the next audio block observes it, a held engine selection settles within about 10 ms (two fades rounded to sample frames). This bounds processing to two engines and avoids the accumulating CPU cost of rapidly retargeted blends. All 32 voices remain available. Existing waveform/filter/LFO fade behavior is unchanged.
 
 Third-party notice files are included with portable and installed builds. The owner must choose applicable licensing terms before distribution. Optional code signing requires an owner certificate.
+
+
+## Skins and custom instruments (0.11.0)
+
+Press SELECT and choose SKIN in the header: Purple, Glacier Blue, Black, White or Spice Orange. Each plugin instance keeps its own colour. Save the DAW project to retain it. Standalone state also retains the choice on normal shutdown. Preset changes keep the chosen skin. Old projects open in Purple. The sound and automation parameters are independent of appearance.
+
+To design a custom instrument, select an engine and adjust oscillators, filters, envelopes, modulation and effects in SELECT. Use START → SAVE AS to add it to the User library. All custom instruments are synthesis patches; there is no sample mapping or audio import.
+
+START → IMPORT opens a `.gba2preset` file chooser. The plugin validates the JSON/schema, parameter types, identity and file size (1 MiB maximum), then copies the patch into the user library with a new ID. Duplicate display names gain a numerical suffix, leaving existing files intact. The imported patch becomes the current sound. Your active browser filters can hide it; select User / All categories and clear search to find it.
+
+EXPORT SOUND saves the currently loaded sound, including unsaved edits and the name/tags fields, to another folder. It does not change the loaded patch or library. Load a highlighted browser row before exporting it. Share the exported `.gba2preset` file; no external audio bank is required. Presets store synthesis parameters only; skins are kept in project state.
+
+Maize Sampler `.mse` instruments bundle samples and need their compatible sample player. They are not playable or converted in this synthesis-only plugin. `.chl` is not an identified synthesis format here and is unsupported. Changing an extension does not convert an instrument.

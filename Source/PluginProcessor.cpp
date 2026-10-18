@@ -1,4 +1,5 @@
 #include "PluginProcessor.h"
+#include "UiSkins.h"
 #include "PluginEditor.h"
 #include "FactoryData.h"
 
@@ -121,6 +122,7 @@ void GbaProcessor::renameCurrentPreset(const juce::String& name) {const juce::Sc
 void GbaProcessor::getStateInformation(juce::MemoryBlock& destination) {
     const juce::ScopedLock lock(metadataLock);
     auto copy=state.copyState();copy.setProperty("presetId",activePresetId,nullptr);copy.setProperty("presetName",activePresetName,nullptr);copy.setProperty("presetCategory",activePresetCategory,nullptr);copy.setProperty("schemaVersion",1,nullptr);copy.setProperty("editorWidth",editorWidth.load(),nullptr);
+    copy.setProperty("editorSkin",juce::String(gba_ui::skins[std::size_t(gba_ui::validSkin(editorSkin.load()))].id.data()),nullptr);
     if(auto xml=copy.createXml())copyXmlToBinary(*xml,destination);
 }
 void GbaProcessor::setStateInformation(const void* data,int bytes) {
@@ -140,6 +142,7 @@ void GbaProcessor::setStateInformation(const void* data,int bytes) {
     pendingProgram.store(-1);state.replaceState(restored);
     activePresetId=restored.getProperty("presetId").toString();activePresetName=restored.getProperty("presetName","Custom patch").toString();activePresetCategory=restored.getProperty("presetCategory","User").toString();
     editorWidth.store(juce::jlimit(960,1920,int(restored.getProperty("editorWidth",1280))));
+    editorSkin.store(gba_ui::skinIndex(restored.getProperty("editorSkin","purple").toString().toStdString()));
     currentProgram.store(0);
     for(std::size_t i=0;i<gba::factoryPatches.size();++i)if(restored.getProperty("presetId").toString()==gba::factoryPatches[i].id){currentProgram.store(int(i));break;}
     panicRequested.store(true);

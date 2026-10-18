@@ -14,11 +14,11 @@ This is an unsigned development build, not a certified production release. Recor
 
 Actual per-build results are recorded in PHASE_10.md and VALIDATION.md. Automation cannot fill the manual entries below.
 
-## Manual gates (all pending)
+## Manual gates (individual results below)
 
 | Host | Load/scan | MIDI + sustain/pitch/glide | Automation + program/UI | Save/reopen + user bank | Bypass/latency/bounce/tail | Multi-instance stress |
 |---|---|---|---|---|---|---|
-| FL Studio | 0.10.1: owner reports lost connection opening editor in FL Studio 20; 0.10.2 candidate pending | Pending | Pending | Pending | Pending | Pending |
+| FL Studio | Owner reports working in FL64 (scaled), FL Studio 20.8.3; 0.11.0 candidate pending | Pending | Pending | Pending | Pending | Pending |
 | Ableton Live | Pending | Pending | Pending | Pending | Pending | Pending |
 | REAPER | Pending | Pending | Pending | Pending | Pending | Pending |
 | Cubase | Pending | Pending | Pending | Pending | Pending | Pending |
@@ -29,11 +29,15 @@ For latency compare a dry note rendered live and offline with host compensation 
 - Windows standalone: choose real audio/MIDI devices; audible stereo, channel routing, shutdown/relaunch.
 - Install as admin, use as a separate non-admin account, scan both hosts and standalone; reinstall/old-version upgrade; uninstall preserves that account's presets and unrelated files.
 - Interactive installer cancel/error paths and Windows security reputation; no signing claim without verification.
+- Five skins: per-instance isolation, project save/reopen, dark-panel readability on White/Black, selector and native dialogs.
+- Custom synthesis patch import/export, duplicate-name handling, export edited sounds, malformed files, backups and old projects.
 - UI vs approved purple reference at minimum/maximum sizes, 100/125/150/200% and mixed-monitor DPI; pointer/keyboard focus, every control, screen reader and contrast.
 - Listen to all 410 factory sounds over low/mid/high registers and velocities; distinctness, levels, clicks, aliasing, vocal vowels, guitar/sax/flute articulation. Synthesized approximations are not acoustic/voice replicas.
 - Review performance/aliasing under effects and interrupted engine transitions. Profile fixes must retain calibrated factory levels or trigger recalibration and full validation.
 - Review synchronous library I/O on slow storage and cross-process metadata races; explicit Refresh discovers external file changes.
 
 ## Owner release decisions (pending)
+
+For 0.11.0 the owner explicitly requested preparing the build and deciding licensing later. Do not publish a final release until applicable source/JUCE distribution terms are selected and satisfied. No signing certificate has been supplied.
 
 Choose a source/distribution license and applicable JUCE terms; satisfy obligations and review retained third-party notices. Eighteen exact upstream texts are now included and hash-checked. Audit branding. For signed distribution, supply an owner code-signing certificate and use scripts/sign-release-windows.ps1 to sign/verify executable, VST3 binary and installer in the correct order, then run acceptance on those signed packages. Signing is optional for using the functional Windows build; no signature is claimed for unsigned packages. Only after evidence is complete, create a release tag and publish binaries. Do not infer licensing compliance from source availability.

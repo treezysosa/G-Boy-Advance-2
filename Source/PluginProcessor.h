@@ -41,6 +41,7 @@ public:
     int voiceCount() const noexcept {return active.load();}
     float outputLevel() const noexcept {return level.load();}
     std::atomic<int> editorWidth {1280};
+    std::atomic<int> editorSkin {0}; // Non-automatable, per-instance project preference.
     juce::AudioProcessorValueTreeState state;
     juce::MidiKeyboardState keyboard;
     PresetManager presets;

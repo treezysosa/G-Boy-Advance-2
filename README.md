@@ -2,7 +2,9 @@
 
 A C++20 / JUCE 8 hybrid synthesis instrument targeting Windows x64 VST3 and standalone. The purple, wide console interface uses native scalable controls. All sound is generated mathematically: there is no sampler, sample import, commercial game audio, or network dependency at runtime.
 
-**Development build 0.10.3 — chord CPU optimization.** Per-note and shared DSP values are cached when their inputs are unchanged, and settled parameters stop running redundant smoothing operations. Stable parameter/program IDs, the 410 factory patches, state schema, UI and fixed latency remain unchanged. The local old/new render comparison is bit-identical across 530 scenes (8,970,240 float samples), including all factory patches and automation. Windows and Ubuntu [run 39083118131](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39083118131) passed: ten Windows suites, pluginval strictness 10, 47 Steinberg tests and five installer checks. The matched Windows profile measured 12.69% less accumulated DSP time at 8 voices and 7.45% less at 32 voices; 8,970,240 comparison samples were byte-identical. These are shared-runner DSP timings, not promised FL Studio CPU percentages. The owner has confirmed 0.10.2 working through the 64-bit FL Studio launcher; a diagnostic report identified the other `FL.exe` launcher as 32-bit. That is owner-reported use, not a complete manual DAW certification. See [CPU settings and measurements](docs/PERFORMANCE.md), [FL Studio investigation](docs/FL_STUDIO.md) and [release checklist](docs/RELEASE_CHECKLIST.md).
+**Release candidate 0.11.0 — skins and custom synthesis presets.** SELECT includes Purple, Glacier Blue, Black, White and Spice Orange. Appearance is saved per plugin instance in DAW project state; old projects default to Purple. START includes Import and Export Sound for parameter-only `.gba2preset` patches. Static vector housing is cached at the current UI rendering density to avoid rebuilding it on ordinary repaints. The optimized 0.10.3 DSP, 64 parameter IDs, 410 factory identities, schema 1 and fixed 16-frame latency are retained.
+
+Windows validation for this candidate is pending. Earlier 0.10.3 [run 39083118131](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39083118131) passed ten suites, pluginval strictness 10, 47 Steinberg tests and five installer checks. The owner reports the plugin working in FL64 and improved CPU use with the recommended voice/release settings. This does not certify all DAWs or physical audio-device/DPI configurations. Licensing was explicitly deferred by the owner; this candidate is unsigned and has no final public release tag. See [candidate notes](docs/RELEASE_0_11.md), [performance](docs/PERFORMANCE.md) and [release checklist](docs/RELEASE_CHECKLIST.md).
 
 ![G Boy Advance 2 Phase 2 native JUCE editor](docs/images/phase2-main.png)
 
@@ -13,7 +15,7 @@ Actual Phase 2 Windows JUCE component render at 1280×646 from [passing CI run 3
 Install Visual Studio 2022 with **Desktop development with C++**, a Windows SDK, CMake 3.24+, and Git. In PowerShell:
 
 ```powershell
-git clone --branch fix/fl-studio-20-editor-0102 https://github.com/treezysosa/G-Boy-Advance-2.git
+git clone --branch release/skins-presets-0110 https://github.com/treezysosa/G-Boy-Advance-2.git
 cd G-Boy-Advance-2
 powershell -ExecutionPolicy Bypass -File scripts/build-windows.ps1
 ```
@@ -60,14 +62,14 @@ Close your DAW, copy the entire `.vst3` directory into `C:\Program Files\Common 
 - Reverb, delay, chorus, phaser, flanger, saturation, distortion, bitcrusher, tape wow / flutter, low / high shelves, and stereo width.
 - 410 original factory patches across 17 categories, explicit named-instrument, vocal and retro profiles, calibrated levels and stable program identities. Vocal patches are synthesized vowel-like timbres and contain no recorded voices or speech.
 - Reference-based vector UI, playable keyboard, spring-return pitch wheel, functional D-pad, preview A / stop B, START browser, SELECT advanced editor, assignable A–D controls.
-- Host-visible parameters, project state, user preset Save As / rename / delete, favorites / recent patches, category search, tags, keyboard navigation.
+- Five per-instance colour skins; host-visible parameters, project state, user preset Save As / import / export / rename / delete, favorites / recent patches, category search, tags, keyboard navigation.
 - Windows CI, portable packaging and Inno Setup installer script, DSP and JUCE integration tests.
 
 ## Factory and user presets
 
 Canonical library: [`Presets/factory.json`](Presets/factory.json). The compiled plugin embeds the same parameter values in `Source/FactoryData.h`; users do not need to install an external bank. Regenerate both with `python scripts/generate_presets.py`. Recipe changes require the offline calibration workflow in the preset-format document; no authoring files or audio renders are needed at runtime.
 
-User patches: `%APPDATA%\Treezy Audio\G Boy Advance 2\Presets\*.gba2preset`. Favorites and recents: `library.json` in the parent directory. Every patch contains parameters and metadata only. See [preset schema](docs/PRESET_FORMAT.md).
+User patches: `%APPDATA%\Treezy Audio\G Boy Advance 2\Presets\*.gba2preset`. Favorites and recents: `library.json` in the parent directory. Every patch contains parameters and metadata only. Use START → IMPORT to add external `.gba2preset` patches and EXPORT SOUND to share the current edited sound. Maize `.mse` banks contain samples and cannot be played by this synthesis-only instrument; `.chl` support needs an identified source format and is not implemented. See [preset schema](docs/PRESET_FORMAT.md).
 
 ## Tests without JUCE
 

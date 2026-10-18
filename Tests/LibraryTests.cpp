@@ -57,6 +57,32 @@ try{
         auto legacy=invalidRoot.getChildFile("library.json");auto* o=new juce::DynamicObject();juce::var prefs(o);juce::Array<juce::var> favorites;favorites.add(goodId);favorites.add("factory.unknown");favorites.add(42);o->setProperty("favorites",favorites);juce::Array<juce::var> recents;recents.add(goodId);recents.add(goodId);o->setProperty("recent",recents);json(legacy,prefs);p->presets.refresh();check(p->presets.isFavorite(goodId)&&p->presets.recentIds().size()==1,"Legacy preference validation/migration failed");check(p->presets.toggleFavorite(goodId).wasOk()&&juce::JSON::parse(legacy)["format"].toString()=="gba2.library","Legacy metadata was not versioned after update");
     }
     {
+        auto p=std::make_unique<GbaProcessor>(root.getChildFile("ImportExport"));auto& m=p->presets;
+        auto exports=root.getChildFile("Shared");auto file=exports.getChildFile("Shared Keys.gba2preset");
+        set(*p,"engine",1);set(*p,"fm.index",3.7f);set(*p,"filter.cutoff",3271);set(*p,"voice.count",8);
+        const auto settings=p->snapshot();const auto id=p->presetId();const auto count=m.all().size();
+        check(m.exportCurrent(file,"Shared Keys","custom fm keys").wasOk(),"Could not export synthesis preset");
+        check(m.all().size()==count&&p->presetId()==id&&p->snapshot().values==settings.values,"Export changed library or active sound");
+        const auto data=juce::JSON::parse(file);check(data["format"].toString()=="gba2.preset"&&data["parameters"].getDynamicObject()->getProperties().size()==int(gba::parameterCount),"Export did not include all stable synthesis parameters");
+        check(m.importPreset(file).wasOk(),"Could not import exported synthesis preset");const auto imported=p->presetId();
+        check(imported!=data["id"].toString()&&m.all().size()==count+1,"Import reused an external identity or omitted the patch");
+        check(p->snapshot().values==settings.values&&m.find(imported)->tags=="custom fm keys","Import changed synthesis parameters or tags");
+        check(m.find(imported)->file.getParentDirectory()==m.userFolder()&&file.existsAsFile(),"Import moved the external source or escaped the library");
+        check(m.importPreset(file).wasOk()&&p->presetName()=="Shared Keys (2)"&&p->presetId()!=imported,"Repeated import overwrote a preset identity/name");
+        auto reloaded=std::make_unique<GbaProcessor>(root.getChildFile("ImportExport"));check(reloaded->presets.load(imported)&&reloaded->snapshot().values==settings.values,"Imported patch failed to reload from disk");
+        const auto stableId=p->presetId();const auto stableSize=m.all().size();
+        check(m.importPreset(exports.getChildFile("Instrument.mse")).failed()&&m.lastError.containsIgnoreCase("samples"),"MSE was falsely accepted as synthesis");
+        check(m.importPreset(exports.getChildFile("Instrument.chl")).failed(),"Unknown CHL format was falsely accepted");
+        check(m.importPreset(exports.getChildFile("Instrument.wav")).failed(),"Sample import was allowed");
+        auto broken=exports.getChildFile("broken.gba2preset");check(broken.replaceWithText("{broken")&&m.importPreset(broken).failed(),"Malformed external JSON was imported");
+        auto invalid=patch("user."+juce::Uuid().toString(),"Invalid");invalid["parameters"].getDynamicObject()->setProperty("volume","bad");json(broken,invalid);check(m.importPreset(broken).failed(),"Invalid parameter type was imported");
+        check(broken.replaceWithText(juce::String::repeatedString("x",1024*1024+1))&&m.importPreset(broken).failed(),"Oversized external file was imported");
+        check(m.exportCurrent(exports.getChildFile("wrong.mse")).failed(),"Export mislabeled a synthesis file as MSE");
+        const auto existing=m.find(imported)->file;const auto bytes=existing.loadFileAsString();check(m.exportCurrent(existing,"Overwrite").failed()&&existing.loadFileAsString()==bytes,"Export overwrote a library preset");
+        auto blocked=exports.getChildFile("blocked.gba2preset");check(blocked.createDirectory().wasOk()&&m.exportCurrent(blocked).failed(),"Export overwrote a directory");
+        check(p->presetId()==stableId&&p->snapshot().values==settings.values&&m.all().size()==stableSize,"Failed import/export changed the current sound or library");
+    }
+    {
         auto blocked=root.getChildFile("Blocked");check(blocked.createDirectory().wasOk()&&blocked.getChildFile("Presets").replaceWithText("occupied"),"Could not block preset folder");auto p=std::make_unique<GbaProcessor>(blocked);auto before=p->snapshot();auto id=p->presetId();check(p->presets.saveAs("No Write").failed()&&p->presets.all().size()==410,"Failed Save As changed library");check(p->snapshot().values==before.values&&p->presetId()==id,"Failed Save As changed active sound");
     }
     root.deleteRecursively();std::cout<<"All "<<checks<<" Phase 9 library checks passed.\n";return checks;

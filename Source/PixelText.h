@@ -31,9 +31,9 @@ inline std::array<unsigned,7> glyph(juce::juce_wchar c) {
         default:return {14,17,1,2,4,0,4};
     }
 }
-inline void pixelText(juce::Graphics& g,juce::String value,juce::Rectangle<float> bounds,float maximumCell=1000) {
+inline void pixelText(juce::Graphics& g,juce::String value,juce::Rectangle<float> bounds,float maximumCell=1000,bool ellipsize=true) {
     value=value.toUpperCase();
-    int maximum=std::max(1,int(bounds.getWidth()/10.8f));if(value.length()>maximum)value=value.substring(0,std::max(1,maximum-3))+"...";
+    int maximum=std::max(1,int(bounds.getWidth()/10.8f));if(ellipsize&&value.length()>maximum)value=value.substring(0,std::max(1,maximum-3))+"...";
     float cell=std::min({bounds.getHeight()/9,float(bounds.getWidth())/float(std::max(1,value.length()*6-1)),maximumCell});
     auto origin=juce::Point<float>(bounds.getCentreX()-float(value.length()*6-1)*cell*.5f,bounds.getCentreY()-3.5f*cell);
     for(auto c:value) {auto rows=glyph(c);for(int y=0;y<7;++y)for(int x=0;x<5;++x)if(rows[std::size_t(y)]&(1u<<unsigned(4-x)))g.fillRect(origin.x+float(x)*cell,origin.y+float(y)*cell,cell*.9f,cell*.9f);origin.x+=6*cell;}

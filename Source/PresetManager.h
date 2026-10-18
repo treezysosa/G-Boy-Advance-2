@@ -25,6 +25,8 @@ public:
     void step(int direction);
     void stepCategory(int direction);
     juce::Result saveAs(juce::String name,juce::String tags={});
+    juce::Result importPreset(const juce::File&);
+    juce::Result exportCurrent(const juce::File&,juce::String name={},juce::String tags={});
     juce::Result renameUser(juce::String id,juce::String name);
     juce::Result deleteUser(juce::String id);
     void restoreDefault(bool remember=true);
@@ -42,8 +44,8 @@ private:
     std::set<juce::String> favorites;
     juce::StringArray recent;
     std::uint64_t generation=0;
-    juce::Result write(const GbaPreset&);
-    juce::Result read(const juce::File&,GbaPreset&) const;
+    juce::Result write(const GbaPreset&,bool external=false);
+    juce::Result read(const juce::File&,GbaPreset&,bool external=false) const;
     juce::Result readPreferences(std::set<juce::String>&,juce::StringArray&,bool merging) const;
     juce::Result writePreferences(const std::set<juce::String>&,const juce::StringArray&);
     juce::Result remember(const juce::String& id);

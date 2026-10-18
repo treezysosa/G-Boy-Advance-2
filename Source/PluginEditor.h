@@ -1,13 +1,20 @@
 #pragma once
 #include "PluginProcessor.h"
+#include "UiSkins.h"
 
 class ConsoleLook final : public juce::LookAndFeel_V4 {
 public:
     ConsoleLook();
+    void setSkin(int);
+    int skin() const noexcept {return currentSkin;}
+    juce::Colour colour(juce::Colour) const;
+    juce::Colour shell(juce::Colour,bool body=false) const;
     void drawRotarySlider(juce::Graphics&,int,int,int,int,float,float,float,juce::Slider&) override;
     void drawButtonBackground(juce::Graphics&,juce::Button&,const juce::Colour&,bool,bool) override;
     void drawButtonText(juce::Graphics&,juce::TextButton&,bool,bool) override;
     void drawLinearSlider(juce::Graphics&,int,int,int,int,float,float,float,juce::Slider::SliderStyle,juce::Slider&) override;
+private:
+    int currentSkin=0;
 };
 class DirectionPad final : public juce::Component {
 public:
@@ -60,6 +67,10 @@ private:
     std::array<int,4> mapping {{-1,-1,-1,-1}};
     std::unique_ptr<juce::Component> overlay;
     bool signalLed=false;
+    juce::Image housingCache;
+    float housingScale=0;
+    int housingSkin=-1;
+    void paintHousing(juce::Graphics&);
     void timerCallback() override;
     void updateMacros();
     void showBrowser();
@@ -67,5 +78,6 @@ private:
     void closeOverlay();
     void setMainControlsEnabled(bool);
     void configureRenderer();
+    void applySkin();
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(GbaEditor)
 };
