@@ -30,6 +30,10 @@ private:
         bool held=false,preview=false;
         std::uint64_t age=0;
         float velocity=1,frequency=440,targetFrequency=440,p1=0,p2=0,fmPhase=0,subPhase=0;
+        float velocityRoot=1,panLeft=0,panRight=0;
+        float filterCutoff=0,filterResonance=0,formantVowel=0,formantShift=0;
+        float vocalVowel=0,vocalShift=0,vocalBrightness=0;
+        bool filterReady=false,formantsReady=false,vocalReady=false;
         double modalElapsed=0;
         bool stringActive=false,modalActive=false;
         LfoPhase lfo1,lfo2,vibrato,tremolo,syllable;
@@ -50,12 +54,19 @@ private:
     int previewSamples=0,lastMode=0,lastVoiceCount=16;
     std::uint64_t clock=0;
     Settings target,current;
+    // Only parameters still changing need a per-sample smoothing operation.
+    std::array<std::size_t,parameterCount> movingParameters{};
+    std::array<bool,parameterCount> parameterMoving{};
+    std::size_t movingCount=0;
     float smoothing=0;
     int choiceFadeSamples=240;
     ChoiceFade<6> wave1Fade,wave2Fade,lfo1Route,lfo2Route;
     ChoiceFade<5> filterFade;
     EngineFade engineFade;
     float glideStep=1,oscillator2Ratio=1;
+    float cachedGlide=-1,cachedOscillatorInterval=1000,cachedBrightness=-1;
+    Envelope::Rates ampRates,filterRates;
+    double lfo1Increment=0,lfo2Increment=0,vibratoIncrement=0,tremoloIncrement=0,syllableIncrement=0;
     std::array<Voice,maxVoices> voices{};
     std::array<float,16> bend{},wheel{};
     std::array<bool,16> sustain{};

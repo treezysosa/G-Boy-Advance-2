@@ -4,6 +4,12 @@
 
 The owner reports that the Windows standalone works, but FL Studio 20.8.3 loses the connection when opening the VST3 editor. The supplied support report confirms Windows build 10.0.18362, FL version 20.8.3.2304 and the exact tested 0.10.2 VST3 hash (`e19be5afec664daa7587bef95b0acbcc9efd214660f6c699fd4721a9f3b1e0e8`). Initial download/install discovery problems were resolved before this report. The running host was named `FL.exe` with a 64-bit `ilbridge.exe`; executable names alone do not establish host architecture. The owner also tried `FL64.exe` in a blank project and reports the same failure. The first report's event reader failed on XML data, so its absence of fault details is not evidence of an empty Windows event log. No default-location FL text crash log was found. The crash module/exception and cause remain unknown. This is an open compatibility failure, not a passed FL Studio acceptance test.
 
+## Latest owner result and CPU revision
+
+A revision-2 report confirmed that the running `FL.exe` is x86 (32-bit), the installed 0.10.2 VST3 is x64 and matches the tested hash, and `FL64 (scaled).exe` beside the host is x64. The corrected reader completed without a parsing error and found no matching recent Windows crash event or default-location text crash log. The owner subsequently confirmed the plugin working in the 64-bit launcher, including a successful retry after another failed launch report. Use that working x64 launcher/shortcut. This does not establish the underlying cause of the bridged failure or a full MIDI/state/device/DAW acceptance pass.
+
+The current 0.10.3 development revision targets CPU cost while playing notes/chords. It retains the Windows editor compatibility behavior and changes DSP calculations only where unchanged values can be reused; no parameter IDs, factory arrays, state schema, synthesis engines or UI are removed. Validate the replacement in a blank project before production use. See PERFORMANCE.md for measured comparisons and practical voice/buffer settings.
+
 ## 0.10.2 compatibility candidate
 
 This branch selects JUCE's Software Renderer for the Windows editor whenever its native peer becomes available or changes, including VST3 attachment and reparenting. It also tolerates temporary zero-sized editor bounds without passing a zero key width to the piano or saving that size. The peer is looked up each time; no native window pointer is retained after detachment.

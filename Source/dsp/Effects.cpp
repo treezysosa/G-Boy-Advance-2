@@ -10,13 +10,14 @@ float Effects::Line::read(float d) const noexcept {
     // to the buffer length can round to length and read one element past the end.
     return std::lerp(data[std::size_t(a)],data[std::size_t(b)],distance-float(whole));
 }
-void Effects::Line::push(float x) noexcept {data[pos]=x;pos=(pos+1)%data.size();}
+void Effects::Line::push(float x) noexcept {data[pos]=x;if(++pos==data.size())pos=0;}
 float Effects::Fir::next(float x,const std::array<float,33>& coefficients) noexcept {
-    history[std::size_t(pos)]=x;
-    float y=history[std::size_t((pos+33-16)%33)]*coefficients[16];
+    history[std::size_t(pos)]=history[std::size_t(pos+33)]=x;
+    float y=history[std::size_t(pos+17)]*coefficients[16];
     // A half-band FIR has zero even taps except for its center.
-    for(int i=1;i<33;i+=2)y+=history[std::size_t((pos+33-i)%33)]*coefficients[std::size_t(i)];
-    pos=(pos+1)%33;return y;
+    for(int i=1;i<33;i+=2)y+=history[std::size_t(pos+33-i)]*coefficients[std::size_t(i)];
+    if(++pos==33)pos=0;
+    return y;
 }
 void Effects::Shelf::coefficients(float hz,float db,float rate,bool high) noexcept {
     const float a=std::pow(10.0f,db/40),w=tau*std::min(hz,rate*.4f)/rate,c=std::cos(w);
@@ -57,13 +58,16 @@ void Effects::reset() noexcept {
     allpass={};up={};down={};dry={};held={};lowShelf={};highShelf={};
     chorusPhase={};flangePhase={};phaserPhase={};wowPhase={};flutterPhase={};
     crusherCounter=controlCounter=delayFade=dryPos=0;coefficientsReady=false;delayA=delayB=0;
+    eqReady=false;
 }
 void Effects::update(const Settings& s) noexcept {
     driveGain=1+10*s[Param::Drive]+22*s[Param::Distortion];
     driveNorm=1+.2f*(driveGain-1);driveMix=std::clamp((s[Param::Drive]+s[Param::Distortion])*2,0.0f,1.0f);
     hardness=s[Param::Distortion]*.75f;quantSteps=std::exp2(s[Param::CrusherBits]-1);
     roomFeedback=.5f+.46f*s[Param::ReverbSize];
-    for(int c=0;c<2;++c){lowShelf[c].coefficients(180,s[Param::EqLow],sr,false);highShelf[c].coefficients(3800,s[Param::EqHigh],sr,true);}
+    if(!eqReady||cachedEqLow!=s[Param::EqLow])for(auto& shelf:lowShelf)shelf.coefficients(180,s[Param::EqLow],sr,false);
+    if(!eqReady||cachedEqHigh!=s[Param::EqHigh])for(auto& shelf:highShelf)shelf.coefficients(3800,s[Param::EqHigh],sr,true);
+    cachedEqLow=s[Param::EqLow];cachedEqHigh=s[Param::EqHigh];eqReady=true;
 }
 float Effects::nonlinear(float x,int c) noexcept {
     const float delayed=dry[c][std::size_t(dryPos)];dry[c][std::size_t(dryPos)]=x;

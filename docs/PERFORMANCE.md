@@ -1,6 +1,27 @@
 # Development performance measurements
 
-## Latest — 0.10.1 finalization
+## 0.10.3 — active-note CPU work
+
+The owner reports high CPU while playing notes/chords in the working x64 FL Studio setup. This revision removes redundant work while preserving the existing synthesis/effects algorithms:
+
+- Only moving continuous parameters run the per-sample smoother. A parameter leaves that list at the exact float fixed point of the original recurrence, with no epsilon or snap; automation reactivates it.
+- Envelope increments and LFO phase increments shared by voices are calculated once rather than dividing separately for every voice. Continuously changing envelope/rate controls retain their original update cadence.
+- Per-note velocity square root and the unmodulated stereo gains are computed at note onset. Pan modulation retains the original per-sample gains.
+- The filter normalization factor is updated with its tuning instead of dividing on every sample. Mirrored FIR history preserves tap order while removing per-tap wrap calculations; effect delay writes use a conditional wrap instead of division.
+- Filter/formant/vocal configurations and EQ coefficients are reused only while their effective inputs match. Prepare/reset invalidates rate-dependent caches.
+- Glide, oscillator detune ratio and additive harmonic weights are reused when their continuously smoothed inputs are unchanged. Nonzero pitch modulation still follows the existing per-sample path.
+
+The local GCC 14.2 `-O2` old/new render comparison is byte-identical across 530 scenes and 8,970,240 finite float samples: all eight engines, all five filter types, three sample rates, automation/selector changes, sustain/release/stealing and chords for all 410 factory patches. The offline driver is `Tests/PerformanceProbe.cpp`; its raw float files are temporary test output, never plugin assets. The unchanged source baseline is commit `901538f3158d7925da8d5bc5dc6983c11e1cd2f5` (0.10.2 instrument code plus diagnostic tool).
+
+Matched CPU measurements and the Windows build/validators are pending for this revision. `scripts/compare-cpu-windows.ps1` builds the immutable previous DSP with the same drivers as the new engine, compares the render grid and measures 66 cases each at 8 and 32 voices. It retains CSV and `cpu-comparison.json` evidence. These are observational native DSP timings on a shared runner, not FL Studio CPU percentages, listening certification or real-driver deadline guarantees.
+
+### Settings for an existing installation
+
+Start with SELECT → Voice count = 8 (or 4 for simple parts), 44.1/48 kHz rather than 96 kHz, and a 256–512-sample FL Studio audio buffer. Fewer voices and a shorter amplitude Release reduce overlapping active tails; they can change the playing response. For additive patches, fewer harmonics reduce partial synthesis work. Save these choices as a user preset if needed; loading a factory patch restores that patch's settings. A larger buffer eases deadline pressure and increases latency; it does not remove the per-sample synthesis cost. Rendering completed instrument parts to audio in the DAW can free their live plugin processing.
+
+Effects paths intentionally retain history and constant latency even at zero wet mix; turning a mix to zero does not necessarily eliminate that effect's CPU cost. Drive/distortion at zero skips nonlinear shaping, but the FIR history remains warm. No automatic silence suspension or reduced-quality rendering mode is introduced here.
+
+## Historical — 0.10.1 finalization
 
 [Windows run 39059534979](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39059534979), VS2022 Release, native DSP on a shared VM: 66 cases, 10,142 callbacks, all finite. Rates 44.1/48/96 kHz; 64/256-frame blocks; 32 voices; effects plus cutoff/delay automation. Each case measures about 0.25 rendered seconds after 16 warm-up blocks. Initialization, initial note bursts, output validation, real driver/host/GUI load and CSV writes are outside the timed region.
 

@@ -68,11 +68,9 @@ jobs:
       - name: Run separate official Steinberg validator
         shell: pwsh
         run: ./scripts/validate-steinberg-windows.ps1
-      - name: Profile 66 callback workloads
+      - name: Compare CPU and audio against the previous engine
         shell: pwsh
-        run: |
-          ./build/Release/gba2-benchmark.exe build/validation-logs/callback-profile.csv
-          if ($LASTEXITCODE -ne 0) { throw "Benchmark produced invalid audio." }
+        run: ./scripts/compare-cpu-windows.ps1
       - name: Package portable archive and installer
         shell: pwsh
         run: ./scripts/package-windows.ps1 -Iscc 'C:\Program Files (x86)\Inno Setup 6\ISCC.exe'

@@ -21,7 +21,8 @@ private:
         void push(float value) noexcept;
     };
     struct Fir {
-        std::array<float,33> history{};
+        // Mirrored history makes the same 33-tap window contiguous across wraps.
+        std::array<float,66> history{};
         int pos=0;
         float next(float,const std::array<float,33>&) noexcept;
     };
@@ -35,6 +36,8 @@ private:
     float delayA=0,delayB=0;
     int crusherCounter=0,controlCounter=0,delayFade=0,delayFadeLength=960,dryPos=0;
     bool ready=false,coefficientsReady=false;
+    bool eqReady=false;
+    float cachedEqLow=0,cachedEqHigh=0;
     LfoPhase chorusPhase,flangePhase,phaserPhase,wowPhase,flutterPhase;
     std::array<float,2> held{};
     std::array<float,33> halfband{};

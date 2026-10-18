@@ -22,8 +22,7 @@ struct VocalEngine {
         const float scale=std::exp2(shift/12);
         for(std::size_t i=0;i<bands.size();++i){
             const float f=std::clamp(hz[i],25.0f,rate*.42f);
-            bands[i].g=std::tan(pi*f/rate);
-            bands[i].k=std::clamp(bandwidth[i]*scale/f,.055f,.65f);
+            bands[i].tuning(std::tan(pi*f/rate),std::clamp(bandwidth[i]*scale/f,.055f,.65f));
         }
         // Spectral tilt is linear and follows the existing brightness control.
         tiltCoefficient=1-std::exp(-tau*(900+brightness*8500)/rate);

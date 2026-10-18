@@ -37,15 +37,29 @@ struct Random {
     float next() noexcept { state^=state<<13; state^=state>>17; state^=state<<5; return float(state>>8)*(2.0f/16777216.0f)-1; }
 };
 struct Envelope {
+    struct Rates {
+        double attackStep=0,decayStep=0;
+        float attack=-1,decay=-1,sustain=-1,sampleRate=-1;
+        void configure(float a,float d,float s,float sr) noexcept {
+            if(a==attack&&d==decay&&s==sustain&&sr==sampleRate)return;
+            attackStep=1/std::max(1.0,double(a)*sr);
+            decayStep=(1-double(s))/std::max(1.0,double(d)*sr);
+            attack=a;decay=d;sustain=s;sampleRate=sr;
+        }
+    };
     enum Stage { Off, Attack, Decay, Sustain, Release } stage = Off;
     double value = 0, releaseStep = 0;
     void start(bool retrigger) noexcept { if (retrigger) value=0; stage=Attack; }
     void stop(float seconds, float sr) noexcept { if (stage!=Off&&stage!=Release) { stage=Release; releaseStep=value/std::max(1.0,double(seconds)*sr); } }
     float next(float a, float d, float s, float sr) noexcept {
+        return nextSteps(stage==Attack?1/std::max(1.0,double(a)*sr):0,
+                         stage==Decay?(1-double(s))/std::max(1.0,double(d)*sr):0,s);
+    }
+    float nextSteps(double attackStep,double decayStep,float s) noexcept {
         switch(stage) {
             case Off: value=0; break;
-            case Attack: value+=1/std::max(1.0,double(a)*sr); if(value>=1) {value=1;stage=Decay;} break;
-            case Decay: value-=(1-double(s))/std::max(1.0,double(d)*sr); if(value<=s) {value=s;stage=Sustain;} break;
+            case Attack: value+=attackStep; if(value>=1) {value=1;stage=Decay;} break;
+            case Decay: value-=decayStep; if(value<=s) {value=s;stage=Sustain;} break;
             case Sustain: value=s; break;
             case Release: value-=releaseStep; if(value<=0) {value=0;stage=Off;} break;
         }
@@ -56,7 +70,8 @@ struct Envelope {
 // advancing on a held note. The rates used by the engine are below sample rate.
 struct LfoPhase {
     double phase=0;
-    void advance(double hz,double sr) noexcept {phase+=hz/sr;if(phase>=1)phase-=std::floor(phase);}
+    void advanceIncrement(double step) noexcept {phase+=step;if(phase>=1)phase-=std::floor(phase);}
+    void advance(double hz,double sr) noexcept {advanceIncrement(hz/sr);}
     float value() const noexcept {return float(std::sin(2*std::numbers::pi_v<double>*phase));}
 };
 // Fixed-size, interruptible linear crossfade. Retargeting starts at the current
@@ -93,11 +108,15 @@ struct SVF {
         float select(int type) const noexcept {switch(type){case 1:return high;case 2:return band;case 3:return notch;default:return low;}}
     };
     float s1=0,s2=0,g=0.1f,k=1;
+    float normalization=1/(1+g*(g+k));
+    void tuning(float newG,float newK) noexcept {
+        g=newG;k=newK;normalization=1/(1+g*(g+k));
+    }
     void coefficients(float hz,float resonance,float sr) noexcept {
-        g=std::tan(pi*std::clamp(hz, 15.0f, sr*0.44f)/sr); k=2-1.95f*std::clamp(resonance,0.0f,0.95f);
+        tuning(std::tan(pi*std::clamp(hz, 15.0f, sr*0.44f)/sr),2-1.95f*std::clamp(resonance,0.0f,0.95f));
     }
     Outputs process(float x) noexcept {
-        const float a=1/(1+g*(g+k)), v1=a*(s1+g*(x-s2)), v2=s2+g*v1;
+        const float v1=normalization*(s1+g*(x-s2)), v2=s2+g*v1;
         s1=2*v1-s1; s2=2*v2-s2;
         return {v2,x-k*v1-v2,v1,x-k*v1};
     }
