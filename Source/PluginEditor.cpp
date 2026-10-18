@@ -75,56 +75,20 @@ public:
     void resized() override {viewport.setBounds(getLocalBounds());grid.setSize(std::max(100,getWidth()-16),grid.requiredHeight());}
 private:ParameterGrid grid;juce::Viewport viewport;
 };
-class SamplePage final : public juce::Component,private juce::Timer {
-public:
-    explicit SamplePage(GbaProcessor& p):processor(p) {
-        setName("Sample playback");
-        for(auto* c:std::initializer_list<juce::Component*>{&load,&clear,&mode,&root,&loop,&status,&help,&rootLabel})addAndMakeVisible(c);
-        load.setName("Load audio sample");clear.setName("Clear audio sample");mode.setName("Sample playback mode");root.setName("Sample root note");loop.setName("Loop audio sample");
-        mode.addItemList({"Synthesis only","Sample only","Sample + synthesis"},1);mode.setSelectedId(1,juce::dontSendNotification);
-        root.setRange(0,127,1);root.setValue(60,juce::dontSendNotification);root.setSliderStyle(juce::Slider::LinearHorizontal);root.setTextBoxStyle(juce::Slider::TextBoxRight,false,80,25);
-        rootLabel.setText("Root note: MIDI 60 = C4",juce::dontSendNotification);
-        help.setText("Load mono/stereo WAV or AIFF (up to 8 MiB). Choose the original note of the recording. Play the piano or MIDI. Existing envelopes, filter, glide, sustain, pitch bend and effects apply. Loop repeats the whole file with a short crossfade. START > Save As / Export Sound embeds the sample in your instrument; projects also retain it.",juce::dontSendNotification);help.setJustificationType(juce::Justification::topLeft);help.setFont(font(14));
-        mode.onChange=[this]{configure();};root.onValueChange=[this]{configure();};loop.onClick=[this]{configure();};
-        clear.onClick=[this]{processor.samples.clear();timerCallback();};
-        load.onClick=[this]{
-            chooser=std::make_unique<juce::FileChooser>("Load audio sample",juce::File::getSpecialLocation(juce::File::userDocumentsDirectory),"*.wav;*.aif;*.aiff",true);
-            juce::Component::SafePointer<SamplePage> safe(this);
-            chooser->launchAsync(juce::FileBrowserComponent::openMode|juce::FileBrowserComponent::canSelectFiles,[safe](const juce::FileChooser& selected){if(safe!=nullptr&&selected.getResult()!=juce::File())safe->processor.samples.loadFile(selected.getResult());});
-        };
-        timerCallback();startTimerHz(8);
-    }
-    ~SamplePage() override {stopTimer();}
-    void resized() override {
-        auto b=getLocalBounds().reduced(16);auto top=b.removeFromTop(34);load.setBounds(top.removeFromLeft(190));top.removeFromLeft(10);clear.setBounds(top.removeFromLeft(150));top.removeFromLeft(10);mode.setBounds(top);
-        b.removeFromTop(12);rootLabel.setBounds(b.removeFromTop(24));root.setBounds(b.removeFromTop(32));loop.setBounds(b.removeFromTop(30));b.removeFromTop(8);status.setBounds(b.removeFromTop(42));help.setBounds(b);
-    }
-private:
-    GbaProcessor& processor;juce::TextButton load {"LOAD WAV / AIFF"},clear {"CLEAR SAMPLE"};juce::ComboBox mode;juce::Slider root;juce::ToggleButton loop {"Loop whole sample"};juce::Label rootLabel,status,help;std::unique_ptr<juce::FileChooser> chooser;
-    void configure(){processor.samples.configure({mode.getSelectedId()-1,int(root.getValue()),loop.getToggleState()});}
-    void timerCallback() override {
-        const auto data=processor.samples.state();const bool available=data.isObject()&&!processor.samples.busy();
-        mode.setEnabled(available);root.setEnabled(available);loop.setEnabled(available);
-        mode.setSelectedId(data.isObject()?int(data["mode"])+1:1,juce::dontSendNotification);root.setValue(data.isObject()?int(data["rootNote"]):60,juce::dontSendNotification);loop.setToggleState(bool(data["loop"]),juce::dontSendNotification);
-        status.setText(processor.samples.status(),juce::dontSendNotification);status.setTooltip(processor.samples.status());
-    }
-};
 class AdvancedPanel final : public juce::Component {
 public:
     AdvancedPanel(GbaProcessor& p,std::function<void()> close,std::function<void()> skinChanged):processor(p),tabs(juce::TabbedButtonBar::TabsAtTop) {
-        tabs.setName("Advanced tabs");
         using P=gba::Param;
         skinLabel.setText("SKIN",juce::dontSendNotification);skinLabel.setFont(font(13));
         skin.setName("UI skin");skin.setTooltip("Console colour. Saved with this plugin instance in your project.");
         for(std::size_t i=0;i<gba_ui::skins.size();++i)skin.addItem(gba_ui::skins[i].name.data(),int(i)+1);
         syncSkin();skin.onChange=[this,skinChanged]{processor.setEditorSkin(skin.getSelectedId()-1);skinChanged();};
         addAndMakeVisible(skinLabel);addAndMakeVisible(skin);
-        addAndMakeVisible(tabs);addAndMakeVisible(back);back.onClick=[this,close]{asyncClose(this,close);};
+        tabs.setName("Advanced tabs");addAndMakeVisible(tabs);addAndMakeVisible(back);back.onClick=[this,close]{asyncClose(this,close);};
         tabs.addTab("OSCILLATORS",uiColour(*this,0xff131c61),new ParameterPage(p,{P::Engine,P::Wave1,P::Wave2,P::OscMix,P::Detune,P::Coarse,P::PulseWidth,P::Brightness,P::FmRatio,P::FmIndex,P::Harmonics,P::Wavetable,P::StringDamping,P::Vowel,P::FormantShift,P::Breath,P::Choir,P::Syllable}),true);
         tabs.addTab("FILTER & ENVELOPES",uiColour(*this,0xff131c61),new ParameterPage(p,{P::Cutoff,P::Resonance,P::FilterType,P::FilterEnv,P::FilterAttack,P::FilterDecay,P::FilterSustain,P::FilterRelease,P::Attack,P::Decay,P::Sustain,P::Release}),true);
         tabs.addTab("MODULATION & VOICES",uiColour(*this,0xff131c61),new ParameterPage(p,{P::Lfo1Rate,P::Lfo1Depth,P::Lfo1Dest,P::Lfo2Rate,P::Lfo2Depth,P::Lfo2Dest,P::Vibrato,P::Tremolo,P::Glide,P::Voices,P::Mode,P::BendRange,P::Velocity}),true);
         tabs.addTab("EFFECTS & MACROS",uiColour(*this,0xff131c61),new ParameterPage(p,{P::Reverb,P::ReverbSize,P::Delay,P::DelayTime,P::DelayFeedback,P::Chorus,P::Phaser,P::Flanger,P::Drive,P::Distortion,P::CrusherBits,P::CrusherRate,P::Wow,P::EqLow,P::EqHigh,P::Width,P::MacroA,P::MacroB,P::MacroC,P::MacroD}),true);
-        tabs.addTab("SAMPLES",uiColour(*this,0xff131c61),new SamplePage(p),true);
         setWantsKeyboardFocus(true);
     }
     void paint(juce::Graphics& g) override {panel(*this,g,getLocalBounds().toFloat(),14);caption(g,"ADVANCED SYNTHESIS",{20,12,float(getWidth()-570),28},22);}
@@ -152,7 +116,7 @@ public:
         restore.onClick=[this]{processor.presets.restoreDefault();message="Dream Pad restored.";refresh(true);};
         importSound.onClick=[this]{choosePreset(false);};exportSound.onClick=[this]{choosePreset(true);};
         importSound.setTooltip("Add a .gba2preset synthesis patch to your user library. Imports are copies; existing patches are kept.");
-        exportSound.setTooltip("Export the currently loaded sound, including sample data and unsaved synthesis edits, to share or back up.");
+        exportSound.setTooltip("Export the currently loaded sound, including unsaved synthesis edits, to share or back up.");
         rescan.onClick=[this]{result(processor.presets.refresh(),"Library refreshed.");};
         name.setTextToShowWhenEmpty("Name for Save As / Rename",text.withAlpha(.55f));name.setInputRestrictions(100);tags.setInputRestrictions(512);tags.setTextToShowWhenEmpty("Tags for Save As",text.withAlpha(.55f));
         search.setTooltip("All words must match. Use quotes for a phrase. Ctrl+F focuses search; Down browses results.");tags.setTooltip("Space-separated tags saved with Save As.");list.setTooltip("Arrows browse; click loads; Enter or Space loads and previews; Delete asks before deleting a user preset.");rescan.setTooltip("Reload user files, favorites and recent history from disk. F5.");
@@ -175,14 +139,14 @@ private:
     juce::Label status;std::vector<juce::String> visible;juce::String activeSeen,shownId,message;std::uint64_t revisionSeen=0;bool updating=false;
     void choosePreset(bool exporting) {
         const auto initial=exporting?juce::File::getSpecialLocation(juce::File::userDocumentsDirectory).getChildFile(juce::File::createLegalFileName(processor.presetName())+".gba2preset"):juce::File::getSpecialLocation(juce::File::userDocumentsDirectory);
-        chooser=std::make_unique<juce::FileChooser>(exporting?"Export current synthesis sound":"Import preset / sample instrument",initial,"*.gba2preset",true);
+        chooser=std::make_unique<juce::FileChooser>(exporting?"Export current synthesis sound":"Import synthesis preset",initial,"*.gba2preset",true);
         const int flags=exporting?(juce::FileBrowserComponent::saveMode|juce::FileBrowserComponent::canSelectFiles|juce::FileBrowserComponent::warnAboutOverwriting)
                                  :(juce::FileBrowserComponent::openMode|juce::FileBrowserComponent::canSelectFiles);
         juce::Component::SafePointer<BrowserPanel> safe(this);
         chooser->launchAsync(flags,[safe,exporting](const juce::FileChooser& dialog){
             if(safe==nullptr)return;auto file=dialog.getResult();if(file==juce::File())return;
             if(exporting){safe->result(safe->processor.presets.exportCurrent(file,safe->name.getText(),safe->tags.getText()),"Sound exported.");}
-            else safe->result(safe->processor.presets.importPreset(file),"Instrument imported; embedded samples load in the background.",true);
+            else safe->result(safe->processor.presets.importPreset(file),"Synthesis preset imported.",true);
         });
     }
     juce::String selectedId() const {int row=list.getSelectedRow();return row>=0&&row<int(visible.size())?visible[std::size_t(row)]:juce::String();}
@@ -196,7 +160,7 @@ private:
     void updateButtons(bool forceFields=false){
         auto id=selectedId();auto* p=processor.presets.find(id);const bool loaded=p&&id==processor.presetId();rename.setEnabled(p&&!p->factory);remove.setEnabled(p&&!p->factory);preview.setEnabled(p!=nullptr);favorite.setEnabled(p!=nullptr);save.setEnabled(!p||loaded);exportSound.setEnabled(!p||loaded);favorite.setButtonText(p&&processor.presets.isFavorite(id)?"UNFAVORITE":"FAVORITE");
         auto fieldId=p?id:processor.presetId();if(forceFields||fieldId!=shownId){shownId=fieldId;if(forceFields||!name.hasKeyboardFocus(false))name.setText(p?p->name:processor.presetName(),false);if(forceFields||!tags.hasKeyboardFocus(false))tags.setText(p?p->tags:juce::String(),false);}
-        juce::String detail=message.isNotEmpty()?message:processor.presets.lastError;if(detail.isEmpty()&&p&&!loaded)detail="Click or Enter to load the selected preset.";if(detail.isEmpty()&&!p)detail="No selected result. Save As stores the currently loaded sound.";
+        juce::String detail=message.isNotEmpty()?message:processor.presets.lastError;if(detail.isEmpty())detail=processor.stateNotice();if(detail.isEmpty()&&p&&!loaded)detail="Click or Enter to load the selected preset.";if(detail.isEmpty()&&!p)detail="No selected result. Save As stores the currently loaded sound.";
         auto value=juce::String(int(visible.size()))+(visible.size()==1?" result":" results")+(detail.isEmpty()?juce::String():" / "+detail);status.setText(value,juce::dontSendNotification);status.setTooltip(value);
     }
     void activate(bool audition){auto id=selectedId();if(id.isEmpty())return;if(id!=processor.presetId()&&!processor.presets.load(id)){message=processor.presets.lastError;updateButtons();return;}if(audition)processor.preview();message=processor.presets.lastError;refresh();}

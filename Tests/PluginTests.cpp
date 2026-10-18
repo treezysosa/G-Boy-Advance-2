@@ -4,7 +4,6 @@
 #include <stdexcept>
 
 int runLibraryTests();
-int runSampleTests();
 namespace {
 int checks=0;
 struct StateListener final : juce::AudioProcessorListener {
@@ -34,7 +33,7 @@ int main() {
     juce::ScopedJuceInitialiser_GUI gui;
     auto root=juce::File::getSpecialLocation(juce::File::tempDirectory).getChildFile("gba2-tests-"+juce::Uuid().toString());
     try {
-        checks+=runLibraryTests();checks+=runSampleTests();
+        checks+=runLibraryTests();
         auto processor=std::make_unique<GbaProcessor>(root);auto& p=*processor;
         p.setRateAndBufferSizeDetails(48000,256);p.prepareToPlay(48000,256);
         check(p.getLatencySamples()==16,"Host latency does not match the oversampled effects path");
@@ -94,6 +93,27 @@ int main() {
         restored->setStateInformation(legacyBytes.getData(),int(legacyBytes.getSize()));check(restored->editorSkin==0,"Old projects did not default to Purple");
         legacy.setProperty("editorSkin","future-unknown-skin",nullptr);juce::AudioProcessor::copyXmlToBinary(*legacy.createXml(),legacyBytes);
         restored->editorSkin=3;restored->setStateInformation(legacyBytes.getData(),int(legacyBytes.getSize()));check(restored->editorSkin==0,"Unknown skin ID did not fall back safely");
+        // 0.12.0 projects may contain large embedded audio. Restore synthesis
+        // settings without decoding, retaining, or silently claiming that audio.
+        for(int payloadBytes:{8,5*1024*1024}) {
+            auto oldSample=p.state.copyState();oldSample.setProperty("schemaVersion",1,nullptr);
+            oldSample.setProperty("presetName","Old Sample Patch",nullptr);oldSample.setProperty("editorSkin","black",nullptr);
+            oldSample.setProperty("sampleData",juce::String::repeatedString("x",payloadBytes),nullptr);
+            juce::MemoryBlock oldBytes;juce::AudioProcessor::copyXmlToBinary(*oldSample.createXml(),oldBytes);
+            restored->setStateInformation(oldBytes.getData(),int(oldBytes.getSize()));
+            check(restored->snapshot().values==p.snapshot().values&&restored->editorSkin==2,"Removing old embedded audio lost synthesis parameters or skin");
+            check(restored->stateNotice().contains("Sample playback was removed")&&restored->presetName()=="SYNTH ONLY: Old Sample Patch","Old sample project did not disclose synthesis-only restoration");
+            juce::MemoryBlock rewritten;restored->getStateInformation(rewritten);
+            auto rewrittenTree=juce::ValueTree::fromXml(*juce::AudioProcessor::getXmlFromBinary(rewritten.getData(),int(rewritten.getSize())));
+            check(!rewrittenTree.hasProperty("sampleData")&&rewritten.getSize()<32768,"Re-saved project retained embedded audio");
+            restored->setStateInformation(rewritten.getData(),int(rewritten.getSize()));
+            check(restored->stateNotice().isNotEmpty()&&restored->presetName()=="SYNTH ONLY: Old Sample Patch","Migration notice was lost or duplicated after project reload");
+        }
+        restored->presets.restoreDefault();check(restored->stateNotice().isEmpty(),"New synthesis preset retained the old sample-removal notice");
+        auto samplePreset=root.getChildFile("old-sample.gba2preset");const juce::String sampleJson="{\"format\":\"gba2.preset\",\"schemaVersion\":2,\"sample\":{}}";
+        check(samplePreset.replaceWithText(sampleJson),"Could not write old sample preset fixture");
+        check(p.presets.importPreset(samplePreset).failed()&&p.presets.lastError.contains("Sample playback was removed"),"Removed sample preset was silently imported");
+        check(samplePreset.loadFileAsString()==sampleJson,"Rejected sample preset file was modified");
         p.editorSkin=0;
         auto before=restored->snapshot();const char invalid[]{0,1,2,3,4};restored->setStateInformation(invalid,5);check(before.values==restored->snapshot().values,"Invalid state altered patch");
         restored->setCurrentProgram(0);restored->servicePendingProgram();check(restored->presetName()==restored->getProgramName(0),"Host program selection failed");
@@ -157,6 +177,8 @@ int main() {
             editor->setSize(960,485);snapshot(*editor,"ui-snapshots/Browser-960.png");
             editor->keyPressed(juce::KeyPress(juce::KeyPress::F1Key));check(button(*editor,"SAVE AS")==nullptr&&master->isEnabled(),"F1 did not return from browser to main controls");
             auto* select=button(*editor,"SELECT");select->onClick();check(button(*editor,"BACK / SELECT")!=nullptr,"SELECT did not open advanced editor");
+            auto* synthTabs=dynamic_cast<juce::TabbedComponent*>(named(*editor,"Advanced tabs"));
+            check(synthTabs&&synthTabs->getNumTabs()==4&&!synthTabs->getTabNames().contains("SAMPLES"),"Sample playback controls remain in the editor");
             auto* skin=dynamic_cast<juce::ComboBox*>(named(*editor,"UI skin"));check(skin&&skin->getNumItems()==5,"Five-skin selector missing");
             const auto sound=p.snapshot();const auto presetId=p.presetId();
             StateListener listener;p.addListener(&listener);
@@ -175,8 +197,6 @@ int main() {
             check(listener.appearanceChanges==4,"Skin changes did not notify the host about unsaved state");p.removeListener(&listener);
             other.reset();isolated.reset();
             skin->setSelectedId(1,juce::sendNotificationSync);
-            auto* advancedTabs=dynamic_cast<juce::TabbedComponent*>(named(*editor,"Advanced tabs"));check(advancedTabs&&advancedTabs->getNumTabs()==5,"Sample settings tab missing");
-            advancedTabs->setCurrentTabIndex(4);check(named(*editor,"Load audio sample")!=nullptr,"Sample loader UI missing");snapshot(*editor,"ui-snapshots/Samples-960.png");advancedTabs->setCurrentTabIndex(0);
             snapshot(*editor,"ui-snapshots/Advanced-960.png");
             editor->keyPressed(juce::KeyPress(juce::KeyPress::F2Key));check(button(*editor,"BACK / SELECT")==nullptr&&master->isEnabled(),"F2 did not return from advanced editor");
             select->onClick();

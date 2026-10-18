@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.24)
-project(GBoyAdvance2 VERSION 0.12.0 LANGUAGES C CXX)
+project(GBoyAdvance2 VERSION 0.12.1 LANGUAGES C CXX)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
@@ -46,9 +46,6 @@ if(BUILD_TESTING)
     target_link_libraries(gba2-retro-tests PRIVATE gba_dsp)
     add_test(NAME retro-synthesis COMMAND gba2-retro-tests)
     set_tests_properties(retro-synthesis PROPERTIES TIMEOUT 180)
-    add_executable(gba2-sample-tests Tests/SampleDspTests.cpp Tests/AllocationTracker.cpp)
-    target_link_libraries(gba2-sample-tests PRIVATE gba_dsp)
-    add_test(NAME sample-playback COMMAND gba2-sample-tests)
     add_executable(gba2-preset-tests Tests/PresetTests.cpp)
     target_link_libraries(gba2-preset-tests PRIVATE gba_dsp)
     add_test(NAME factory-presets COMMAND gba2-preset-tests --auditions)
@@ -83,7 +80,7 @@ juce_add_plugin(GBoyAdvance2
     PLUGIN_MANUFACTURER_CODE Trzy
     PLUGIN_CODE GbA2
     PRODUCT_NAME "G Boy Advance 2"
-    DESCRIPTION "Hybrid synthesis and sample playback instrument"
+    DESCRIPTION "Original hybrid synthesis instrument"
     IS_SYNTH TRUE
     NEEDS_MIDI_INPUT TRUE
     NEEDS_MIDI_OUTPUT FALSE
@@ -94,7 +91,7 @@ juce_add_plugin(GBoyAdvance2
     FORMATS VST3 Standalone)
 juce_generate_juce_header(GBoyAdvance2)
 target_sources(GBoyAdvance2 PRIVATE
-    Source/PluginProcessor.cpp Source/PluginEditor.cpp Source/PresetManager.cpp Source/SampleManager.cpp
+    Source/PluginProcessor.cpp Source/PluginEditor.cpp Source/PresetManager.cpp
     Source/PluginProcessor.h Source/PluginEditor.h Source/UiSkins.h Source/PixelText.h Source/PresetManager.h)
 target_compile_definitions(GBoyAdvance2 PUBLIC
     GBA_WINDOWS_SOFTWARE_EDITOR=$<BOOL:${GBA_WINDOWS_SOFTWARE_EDITOR}>
@@ -105,8 +102,8 @@ target_link_libraries(GBoyAdvance2 PRIVATE gba_dsp juce::juce_audio_utils juce::
 if(BUILD_TESTING)
     juce_add_console_app(gba2-integration PRODUCT_NAME "GBA2 integration tests")
     juce_generate_juce_header(gba2-integration)
-    target_sources(gba2-integration PRIVATE Tests/PluginTests.cpp Tests/LibraryTests.cpp Tests/SampleTests.cpp
-        Source/PluginProcessor.cpp Source/PluginEditor.cpp Source/PresetManager.cpp Source/SampleManager.cpp)
+    target_sources(gba2-integration PRIVATE Tests/PluginTests.cpp Tests/LibraryTests.cpp
+        Source/PluginProcessor.cpp Source/PluginEditor.cpp Source/PresetManager.cpp)
     target_compile_definitions(gba2-integration PRIVATE JucePlugin_Name="G Boy Advance 2"
         GBA_WINDOWS_SOFTWARE_EDITOR=$<BOOL:${GBA_WINDOWS_SOFTWARE_EDITOR}>
         JucePlugin_IsSynth=1 JucePlugin_WantsMidiInput=1 JucePlugin_ProducesMidiOutput=0

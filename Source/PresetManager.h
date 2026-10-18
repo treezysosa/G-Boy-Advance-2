@@ -6,7 +6,6 @@ class GbaProcessor;
 struct GbaPreset {
     juce::String id,name,category,tags;
     gba::Settings settings;
-    juce::var sample; // Optional self-contained sample document; schema 2 only.
     juce::File file;
     bool factory=true;
 };

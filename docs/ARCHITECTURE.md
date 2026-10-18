@@ -1,3 +1,5 @@
+> Current version: **0.12.1, synthesis only**. Sample playback was removed; [update and compatibility notes](RELEASE_0_12_1.md). Earlier build results below remain historical.
+
 # Architecture and real-time contract
 
 `Source/dsp` is standard C++20 with no GUI, JUCE, filesystem, sample player, or network dependency. It is independently compiled and tested. `ParameterList.inc` defines all 64 stable parameter IDs, names, ranges, defaults, and choices. `Settings` is a fixed-size value object. Do not reorder enum values without regenerating `FactoryData.h`; do not rename stable IDs after release.
@@ -34,17 +36,8 @@ Known boundaries: block-level parameter snapshots, temporary extra CPU during bo
 
 `PresetManager::filtered` combines model predicates and tokenized AND/quoted-phrase matching. Browser cursor selection is independent of the processor patch until click/Enter/preview; this avoids MRU reordering during arrow browsing. Visible IDs drive selection actions; source/category filters survive library changes. A non-audio browser timer observes active identity/model revisions. Explicit refresh rebuilds user entries without applying their parameters.
 
-A process-wide recursive critical section serializes library mutations, including latest-file metadata merges. It is absent from the audio callback. User reads validate types/UUIDs and are stream-bounded (16 MiB for presets in 0.12.0, 1 MiB for library metadata). A flushed same-directory temporary file replaces its destination using MoveFileExW on Windows or rename on POSIX; no copy/delete fallback or retry sleeps. Rename re-reads the user payload, and deletion validates identity again. Metadata persistence failures leave favorite state uncommitted and report warnings when sound/preset operations already succeeded. Separate-process simultaneous metadata edits and slow-storage UI stalls remain boundaries. Processor construction applies Dream Pad without writing history.
+A process-wide recursive critical section serializes library mutations, including latest-file metadata merges. It is absent from the audio callback. User reads validate types/UUIDs and are stream-bounded to 1 MiB. A flushed same-directory temporary file replaces its destination using MoveFileExW on Windows or rename on POSIX; no copy/delete fallback or retry sleeps. Rename re-reads the user payload, and deletion validates identity again. Metadata persistence failures leave favorite state uncommitted and report warnings when sound/preset operations already succeeded. Separate-process simultaneous metadata edits and slow-storage UI stalls remain boundaries. Processor construction applies Dream Pad without writing history.
 
 ## 0.10.1 hot paths
 
 Glide and oscillator-2 detune coefficients are shared across voices per sample. Zero-depth LFOs retain their clocks and skip sine evaluation. Modal partial decay uses one exponential and double-precision successive powers, preserving the direct elapsed-time formula under automation. Band-limited subtractive/retro triangles use an odd-harmonic trigonometric recurrence, retaining their eight-partial maximum, Nyquist bound and gain. Direct-sum reference tests measure over 140 dB signal-to-error on the tested register/rate grid. Floating-point differences at retro quantizer thresholds need not be bit-identical to earlier builds.
-
-
-## Optional sample playback (0.12.0)
-
-The owner's explicit sample-playback request supersedes the original synthesis-only restriction. `SampleManager` decodes bounded WAV/AIFF audio on a loader thread and prepares immutable stereo `SampleData` mip levels. File loads and user-preset selection publish asynchronously. Embedded project restoration waits for preparation in the non-real-time state operation, so first/offline MIDI sees the restored sample; decoding never runs in processBlock.
-
-The callback protects one immutable published descriptor with a sequentially consistent hazard pointer/load/recheck. Only non-audio threads own/reclaim descriptors and shared PCM buffers. The renderer stores raw borrowed pointers and performs no ownership changes, locks or file work. Retired assets survive until no audio hazard/current request references them. Generation checks cancel stale jobs. Bank/config changes clear held voices with a 128-frame stereo transition tail.
-
-Sample/combined playback uses the same 32 voices, ADSRs, MIDI control and shared effects as synthesis. Right-channel filters and steal tails preserve stereo. Cubic reads blend low-pass mip levels and optionally crossfade full-file loop endpoints. The 64 audio IDs and synthesis choices remain fixed; mode/root/loop are non-automatable state. Project state adds a sampleData JSON property within schema 1. Sample-bearing user patches use schema 2 and embed base64 source bytes, with no arbitrary external paths. Limits and memory/browser-I/O boundaries are documented in RELEASE_0_12.md.

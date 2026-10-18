@@ -1,3 +1,5 @@
+> Historical 0.12.0 record. Sample playback was removed in 0.12.1 at the owner's request; see [RELEASE_0_12_1.md](RELEASE_0_12_1.md).
+
 # 0.12.0 sample playback candidate
 
 The owner explicitly authorized adding sample playback to the existing synthesizer, superseding the original synthesis-only restriction. Eight synthesis engines, five skins, the 410 factory identities, all 64 automation IDs, schema-1 synthesis presets and plugin identity are retained.

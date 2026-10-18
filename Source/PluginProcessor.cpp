@@ -35,7 +35,7 @@ double GbaProcessor::getTailLengthSeconds() const {
     const double room=s[gba::Param::Reverb]>0?.045*(1+repeats(.5+.46*s[gba::Param::ReverbSize])):0;
     return s[gba::Param::Release]+echo+room+.1;
 }
-void GbaProcessor::prepareToPlay(double sr,int) {samples.synchronize(*engine);engine->setSettings(snapshot());engine->prepare(sr);}
+void GbaProcessor::prepareToPlay(double sr,int) {engine->setSettings(snapshot());engine->prepare(sr);}
 void GbaProcessor::releaseResources() {engine->reset();active=0;level=0;}
 void GbaProcessor::reset() {engine->reset();active=0;level=0;}
 bool GbaProcessor::isBusesLayoutSupported(const BusesLayout& layout) const {
@@ -81,7 +81,7 @@ void GbaProcessor::midi(const juce::MidiMessage& m) noexcept {
 void GbaProcessor::processBlock(juce::AudioBuffer<float>& buffer,juce::MidiBuffer& messages) {
     juce::ScopedNoDenormals noDenormals;
     buffer.clear();if(buffer.getNumChannels()<2)return;
-    samples.synchronize(*engine);engine->setSettings(snapshot());drainCommands();
+    engine->setSettings(snapshot());drainCommands();
     int offset=0,total=buffer.getNumSamples();
     auto* left=buffer.getWritePointer(0);auto* right=buffer.getWritePointer(1);
     for(const auto metadata:messages) {
@@ -105,12 +105,12 @@ const juce::String GbaProcessor::getProgramName(int i) {return i>=0&&i<getNumPro
 void GbaProcessor::servicePendingProgram() {int i=pendingProgram.exchange(-1);if(i>=0)presets.load(gba::factoryPatches[std::size_t(i)].id);}
 void GbaProcessor::applyPreset(const GbaPreset& p) {
     const juce::ScopedLock lock(metadataLock);
+    removedSamplePlayback=false;
     // All changes use host-visible parameter notifications; the audio thread reads atomics only.
     for(std::size_t i=0;i<gba::parameterCount;++i) {
         auto* parameter=state.getParameter(juce::String(gba::specs[i].id.data()));
         parameter->beginChangeGesture();parameter->setValueNotifyingHost(parameter->convertTo0to1(p.settings.values[i]));parameter->endChangeGesture();
     }
-    samples.restore(p.sample);
     activePresetId=p.id;activePresetName=p.name;activePresetCategory=p.category;
     currentProgram.store(0);
     for(std::size_t i=0;i<gba::factoryPatches.size();++i)if(p.id==gba::factoryPatches[i].id) {currentProgram.store(int(i));break;}
@@ -119,6 +119,10 @@ void GbaProcessor::applyPreset(const GbaPreset& p) {
 juce::String GbaProcessor::presetId() const {const juce::ScopedLock lock(metadataLock);return activePresetId;}
 juce::String GbaProcessor::presetName() const {const juce::ScopedLock lock(metadataLock);return activePresetName;}
 juce::String GbaProcessor::presetCategory() const {const juce::ScopedLock lock(metadataLock);return activePresetCategory;}
+juce::String GbaProcessor::stateNotice() const {
+    const juce::ScopedLock lock(metadataLock);
+    return removedSamplePlayback?"Sample playback was removed. Only synthesis settings were restored; the original project file is unchanged.":juce::String();
+}
 void GbaProcessor::setEditorSkin(int index) {
     const int selected=gba_ui::validSkin(index);
     if(editorSkin.exchange(selected)!=selected)
@@ -129,14 +133,19 @@ void GbaProcessor::getStateInformation(juce::MemoryBlock& destination) {
     const juce::ScopedLock lock(metadataLock);
     auto copy=state.copyState();copy.setProperty("presetId",activePresetId,nullptr);copy.setProperty("presetName",activePresetName,nullptr);copy.setProperty("presetCategory",activePresetCategory,nullptr);copy.setProperty("schemaVersion",1,nullptr);copy.setProperty("editorWidth",editorWidth.load(),nullptr);
     copy.setProperty("editorSkin",juce::String(gba_ui::skins[std::size_t(gba_ui::validSkin(editorSkin.load()))].id.data()),nullptr);
-    const auto sample=samples.state();if(!sample.isVoid())copy.setProperty("sampleData",juce::JSON::toString(sample),nullptr);else copy.removeProperty("sampleData",nullptr);
+    copy.removeProperty("sampleData",nullptr);
+    if(removedSamplePlayback)copy.setProperty("samplePlaybackRemoved",true,nullptr);else copy.removeProperty("samplePlaybackRemoved",nullptr);
     if(auto xml=copy.createXml())copyXmlToBinary(*xml,destination);
 }
 void GbaProcessor::setStateInformation(const void* data,int bytes) {
-    if(bytes<=0||bytes>SampleManager::maxStateBytes)return;
+    // Accept the old 0.12.0 project size limit solely to discard embedded audio.
+    // No audio decoder, sample allocation or sample playback path remains.
+    if(bytes<=0||bytes>16*1024*1024)return;
     auto xml=getXmlFromBinary(data,bytes);if(!xml)return;
     auto restored=juce::ValueTree::fromXml(*xml);
     if(!restored.hasType("GBA2_STATE")||int(restored.getProperty("schemaVersion",1))!=1)return;
+    const bool removed=restored.hasProperty("sampleData")||bool(restored.getProperty("samplePlaybackRemoved",false));
+    restored.removeProperty("sampleData",nullptr);
     // Validate parameter domains before replacing host state. Malformed projects keep the current patch.
     for(auto child:restored) {
         auto id=child.getProperty("id").toString();
@@ -145,17 +154,11 @@ void GbaProcessor::setStateInformation(const void* data,int bytes) {
             child.setProperty("value",juce::jlimit(spec.min,spec.max,value),nullptr);
         }
     }
-    juce::var sample;
-    if(restored.hasProperty("sampleData")) {
-        if(juce::JSON::parse(restored.getProperty("sampleData").toString(),sample).failed()||SampleManager::validateDocument(sample).failed())return;
-    }
     const juce::ScopedLock lock(metadataLock);
-    samples.restore(sample);
-    // Host state restoration is a non-real-time operation. Finish preparing the
-    // embedded sample here so an immediate/offline first MIDI note is correct.
-    if(!sample.isVoid()&&!samples.waitUntilIdle(30000)){samples.clear();return;}
+    removedSamplePlayback=removed;
     pendingProgram.store(-1);state.replaceState(restored);
     activePresetId=restored.getProperty("presetId").toString();activePresetName=restored.getProperty("presetName","Custom patch").toString();activePresetCategory=restored.getProperty("presetCategory","User").toString();
+    if(removed&&!activePresetName.startsWith("SYNTH ONLY: "))activePresetName="SYNTH ONLY: "+activePresetName;
     editorWidth.store(juce::jlimit(960,1920,int(restored.getProperty("editorWidth",1280))));
     editorSkin.store(gba_ui::skinIndex(restored.getProperty("editorSkin","purple").toString().toStdString()));
     currentProgram.store(0);

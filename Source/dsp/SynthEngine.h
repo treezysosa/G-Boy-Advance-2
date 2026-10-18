@@ -4,7 +4,6 @@
 #include "Effects.h"
 #include "VocalEngine.h"
 #include "RetroEngine.h"
-#include "SampleData.h"
 #include <array>
 #include <vector>
 
@@ -14,7 +13,6 @@ public:
     static constexpr int latencySamples=Effects::latencySamples;
     void prepare(double sampleRate);
     void reset() noexcept;
-    void setSample(const SampleData*,SampleOptions) noexcept;
     void setSettings(const Settings& settings) noexcept;
     void noteOn(int channel,int note,float velocity,bool preview=false) noexcept;
     void noteOff(int channel,int note) noexcept;
@@ -42,10 +40,7 @@ private:
         std::array<float,6> modalPhase{};
         float tail=0,tailStep=0,last=0,stringLow=0,stringDelay=100,panMod=0;
         Envelope amp,filterEnv;
-        SVF filter,rightFilter;
-        std::array<SVF,3> rightFormants;
-        double samplePosition=0;
-        float rightOutput=0,rightTail=0,rightTailStep=0;
+        SVF filter;
         std::array<SVF,3> formants;
         VocalEngine vocal;
         RetroEngine retro;
@@ -77,10 +72,6 @@ private:
     std::array<bool,16> sustain{};
     std::array<std::array<Key,128>,16> keys{};
     Effects effects;
-    const SampleData* sample=nullptr;
-    SampleOptions sampleOptions;
-    float sampleRootHz=261.625565f,lastDryLeft=0,lastDryRight=0,swapLeft=0,swapRight=0;
-    int swapRemaining=0;
     std::array<float,24> harmonicInverseRoot{},harmonicWeight{},harmonicScale{};
     // Eight mip levels, generated once; no samples or external assets.
     std::array<std::array<std::array<float,1024>,8>,4> tables{};
