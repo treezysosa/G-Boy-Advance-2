@@ -140,3 +140,12 @@ Linux GCC 14.2 `-O2`, rerun with local compilation/sanitizers finished: 8,298 me
 The audio engine is unchanged from 0.10.3. Native controls, keyboard and LEDs remain live. Only the static vector housing is cached per editor; it is regenerated after skin, size or rendering-density changes. This avoids rebuilding gradients, lettering paths and moulded-plastic detail when repainting an LED or control. The cache consumes image memory proportional to editor size and DPI; it is released with the editor. If the image would exceed 16 Mi pixels, painting falls back to vectors rather than retaining a larger cache. No image filtering, frame animation or audio-thread work is introduced for skins.
 
 This GUI change does not promise another reduction in chord DSP time. Continue using the measured 0.10.3 improvements and voice/release settings above. The 0.11.0 Windows run passed: byte-identical 530-scene audio, zero observed over-budget calls at 8/32 voices, and 14.76%/8.25% less accumulated measured DSP time versus the immutable 0.10.2 engine. This measures the retained 0.10.3 optimization; skins do not change the DSP. See [0.11.0 evidence and limitations](RELEASE_0_11.md).
+
+
+## 0.12.0 sample playback
+
+Prepared immutable stereo PCM/mips are read without file work, blocking locks, allocation or ownership destruction in the audio callback. Sample/combined modes share the original 32-voice budget and effects. Sample resampling uses cubic reads with crossfaded low-pass mip levels. Loader/config publication uses a hazard-protected descriptor; cancellation rejects stale generations. Project restoration prepares embedded data in the non-real-time state operation before immediate/offline MIDI. User file/preset loads remain asynchronous.
+
+Native sample tests verify finite output at 44.1/48/96 kHz and zero allocations in render/MIDI/sample switching. Concurrent Windows publication tests processed 1,206 blocks across twelve replacements; local own-source ASan/UBSan also passed. These are correctness/memory checks, not sample-mode timing guarantees. Larger files require loader CPU/memory and embedded preset scans use more browser memory/I/O.
+
+The existing synthesis-only profile versus 0.10.2 still measured 12.25%/6.67% less accumulated callback time at 8/32 voices, with zero sampled deadline overruns; its 530-scene audio is byte-identical. Do not apply those percentages to sample mode or FL Studio's CPU display. [0.12.0 evidence](RELEASE_0_12.md) records the exact limitations.

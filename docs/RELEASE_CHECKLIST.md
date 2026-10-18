@@ -9,7 +9,7 @@ This is an unsigned development build, not a certified production release. Recor
 - Actual-bundle host acceptance: prepared latency, MIDI, bypass, state and instances.
 - pluginval strictness 10; separate pinned official Steinberg validator.
 - 66-workload native DSP timing CSV (including bounded engine switching and two expensive engine pairs), reviewed for over-budget calls.
-- Clean baseline install, pinned 0.10.3-to-0.11.0 upgrade/reinstall/uninstall, installed hashes, user-data preservation, standalone liveness.
+- Clean baseline install, pinned 0.10.3-to-0.12.0 upgrade/reinstall/uninstall, installed hashes, user-data preservation, standalone liveness.
 - Artifact integrity, AMD64 binaries, no runtime audio assets, complete source inventory.
 
 Actual per-build results are recorded in PHASE_10.md and VALIDATION.md. Automation cannot fill the manual entries below.
@@ -27,9 +27,10 @@ Actual per-build results are recorded in PHASE_10.md and VALIDATION.md. Automati
 For latency compare a dry note rendered live and offline with host compensation enabled/disabled; confirm the reported 16-frame delay is compensated. Export a high-feedback 1.5-second delay / long-release patch with the declared tail, checking no truncation. Test note-off and pedal changes while bypassed. Exercise rapid program requests while automating, transport stops, editor resize/reopen, concurrent state save and multiple instances. Test low driver buffers under GUI load and record actual underruns/deadlines.
 
 - Windows standalone: choose real audio/MIDI devices; audible stereo, channel routing, shutdown/relaunch.
-- Install as admin, use as a separate non-admin account, scan both hosts and standalone; fresh 0.11.0 install and interactive reinstall/old-version upgrade; uninstall preserves that account's presets and unrelated files.
+- Install as admin, use as a separate non-admin account, scan both hosts and standalone; fresh 0.12.0 install and interactive reinstall/old-version upgrade; uninstall preserves that account's presets and unrelated files.
 - Interactive installer cancel/error paths and Windows security reputation; no signing claim without verification.
 - Five skins: per-instance isolation, project save/reopen, dark-panel readability on White/Black, selector and native dialogs.
+- Sample playback: native WAV/AIFF dialog/cancel, root/loop/combined modes, source deletion after save, immediate/offline project reload, real driver buffers and multiple sample instruments.
 - Custom synthesis patch import/export, duplicate-name handling, export edited sounds, malformed files, backups and old projects.
 - UI vs approved purple reference at minimum/maximum sizes, 100/125/150/200% and mixed-monitor DPI; pointer/keyboard focus, every control, screen reader and contrast.
 - Listen to all 410 factory sounds over low/mid/high registers and velocities; distinctness, levels, clicks, aliasing, vocal vowels, guitar/sax/flute articulation. Synthesized approximations are not acoustic/voice replicas.

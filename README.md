@@ -6,7 +6,7 @@ A C++20 / JUCE 8 instrument targeting Windows x64 VST3 and standalone, with eigh
 
 The owner explicitly requested sample playback after the earlier synthesis-only specification. Maize `.mse` decoding is a separate unsupported bank format; no public compatible SDK/format was found in this session. `.chl` remains unidentified. WAV/AIFF loading does not imply either bank format is readable.
 
-Local validation is in progress; Windows candidate validation and packages are pending. See [0.12.0 scope, limits and validation](docs/RELEASE_0_12.md). Licensing remains deferred by the owner and this is an unsigned candidate. The preceding [0.11.0 evidence](docs/RELEASE_0_11.md) is historical, not validation of this build.
+[Windows/Ubuntu run 39093321395](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39093321395) passed all 11 Windows suites, pluginval strictness 10, Steinberg 47/0 and six installer checks. The 428 application checks include 36 sample checks and 12 publications during 1,206 concurrent audio blocks; native sample DSP has 307,221 checks with zero render/MIDI/switch allocations. [Download the tested installer ZIP](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39093321395/artifacts/12124365360), close FL Studio/standalone, extract it and run `G-Boy-Advance-2-Setup-x64.exe`. Use FL64, then SELECT → SAMPLES → LOAD WAV / AIFF. The synthesis-only 530-scene audio comparison is byte-identical. See [0.12.0 scope, limits and validation](docs/RELEASE_0_12.md). Licensing remains deferred by the owner and this is an unsigned candidate. The preceding [0.11.0 evidence](docs/RELEASE_0_11.md) is historical, not validation of this build.
 
 ![G Boy Advance 2 Phase 2 native JUCE editor](docs/images/phase2-main.png)
 
@@ -71,7 +71,7 @@ Close your DAW, copy the entire `.vst3` directory into `C:\Program Files\Common 
 
 Canonical library: [`Presets/factory.json`](Presets/factory.json). The compiled plugin embeds the same parameter values in `Source/FactoryData.h`; users do not need to install an external bank. Regenerate both with `python scripts/generate_presets.py`. Recipe changes require the offline calibration workflow in the preset-format document; no authoring files or audio renders are needed at runtime.
 
-User patches: `%APPDATA%\Treezy Audio\G Boy Advance 2\Presets\*.gba2preset`. Favorites and recents: `library.json` in the parent directory. Every patch contains parameters and metadata only. Use START → IMPORT to add external `.gba2preset` patches and EXPORT SOUND to share the current edited sound. WAV/AIFF samples are loaded in SELECT → SAMPLES. Maize `.mse` and unidentified `.chl` bank decoding are not implemented. See [preset schema](docs/PRESET_FORMAT.md).
+User patches: `%APPDATA%\Treezy Audio\G Boy Advance 2\Presets\*.gba2preset`. Favorites and recents: `library.json` in the parent directory. Factory/schema-1 patches contain parameters and metadata only. Schema-2 user instruments can embed sample audio. Use START → IMPORT to add external `.gba2preset` patches and EXPORT SOUND to share the current edited sound. WAV/AIFF samples are loaded in SELECT → SAMPLES. Maize `.mse` and unidentified `.chl` bank decoding are not implemented. See [preset schema](docs/PRESET_FORMAT.md).
 
 ## Tests without JUCE
 

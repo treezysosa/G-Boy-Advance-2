@@ -95,7 +95,7 @@ Press SELECT and choose SKIN in the header: Purple, Glacier Blue, Black, White o
 
 To design a custom instrument, select an engine and adjust oscillators, filters, envelopes, modulation and effects in SELECT. Use START → SAVE AS to add it to the User library. Custom instruments can use synthesis, a WAV/AIFF sample, or both in version 0.12.0.
 
-START → IMPORT opens a `.gba2preset` file chooser. The plugin validates the JSON/schema, parameter types, identity and file size (1 MiB maximum), then copies the patch into the user library with a new ID. Duplicate display names gain a numerical suffix, leaving existing files intact. The imported patch becomes the current sound. Your active browser filters can hide it; select User / All categories and clear search to find it.
+START → IMPORT opens a `.gba2preset` file chooser. The plugin validates the JSON/schema, parameter types, identity and file size (16 MiB maximum in 0.12.0; earlier builds used 1 MiB), then copies the patch into the user library with a new ID. Duplicate display names gain a numerical suffix, leaving existing files intact. The imported patch becomes the current sound. Your active browser filters can hide it; select User / All categories and clear search to find it.
 
 EXPORT SOUND saves the currently loaded sound, including unsaved edits and the name/tags fields, to another folder. It does not change the loaded patch or library. Load a highlighted browser row before exporting it. Share the exported `.gba2preset` file; no external audio bank is required. Synthesis patches use schema 1; sample instruments embed audio using schema 2. Skins are kept in project state.
 
