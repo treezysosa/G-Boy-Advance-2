@@ -151,6 +151,9 @@ void GbaProcessor::setStateInformation(const void* data,int bytes) {
     }
     const juce::ScopedLock lock(metadataLock);
     samples.restore(sample);
+    // Host state restoration is a non-real-time operation. Finish preparing the
+    // embedded sample here so an immediate/offline first MIDI note is correct.
+    if(!sample.isVoid()&&!samples.waitUntilIdle(30000)){samples.clear();return;}
     pendingProgram.store(-1);state.replaceState(restored);
     activePresetId=restored.getProperty("presetId").toString();activePresetName=restored.getProperty("presetName","Custom patch").toString();activePresetCategory=restored.getProperty("presetCategory","User").toString();
     editorWidth.store(juce::jlimit(960,1920,int(restored.getProperty("editorWidth",1280))));
