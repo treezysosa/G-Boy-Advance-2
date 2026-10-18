@@ -63,3 +63,14 @@ User IDs support the compact 32-hex UUIDs written by earlier builds and dashed U
 Use START → IMPORT / EXPORT SOUND for external `.gba2preset` files using the user schema above. Export includes all 64 stable parameter IDs and an independent user UUID. Import validates the same schema as the library, assigns a fresh UUID and resolves name collisions with ` (2)`, ` (3)`, etc. It never replaces an existing preset. Missing known parameters retain their documented defaults; numeric values are bounded/snapped by the existing parameter definitions. Files are limited to 1 MiB. Writes use same-directory atomic replacement outside the audio callback.
 
 The exported sound includes current parameter edits. External files remain independent of the installed library. Factory program slots and IDs are unchanged. Neither `.mse` sample banks nor an unspecified `.chl` format are supported. Reference: [Maize Sampler's documented sample-based instrument format](https://www.maizesoft.com/download/msp/document.pdf), sections Introduction and Export/FAQ.
+
+
+## Optional sample instruments — schema 2 (0.12.0)
+
+The same `gba2.preset` identity, metadata and 64 stable parameters are retained. `schemaVersion: 1` remains the synthesis-only format. `schemaVersion: 2` adds a `sample` object:
+
+```json
+{"format":"gba2.sample","schemaVersion":1,"name":"My recording.wav","mode":1,"rootNote":60,"loop":false,"audio":"<base64 source WAV or AIFF bytes>"}
+```
+
+Modes: 0 synthesis only, 1 sample only, 2 equal-blend sample and synthesis. The original file's name is display metadata, not a path. Audio is embedded, never resolved by an arbitrary filename or URL. Input is bounded to 8 MiB source audio, 4M frames and two channels; the outer preset/project limit is 16 MiB. Preset metadata and embedded configuration are checked before loading; the background decoder verifies codec/rate/frames/channels and finite PCM. Library metadata retains its 1 MiB limit. Save/export waits until decoding settles. A pure synthesis patch still exports schema 1 for compatibility. No new automation parameters were added; sample configuration is non-audio project/preset state and changes notify the host.

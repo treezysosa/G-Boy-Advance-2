@@ -4,6 +4,7 @@
 #include <stdexcept>
 
 int runLibraryTests();
+int runSampleTests();
 namespace {
 int checks=0;
 struct StateListener final : juce::AudioProcessorListener {
@@ -33,7 +34,7 @@ int main() {
     juce::ScopedJuceInitialiser_GUI gui;
     auto root=juce::File::getSpecialLocation(juce::File::tempDirectory).getChildFile("gba2-tests-"+juce::Uuid().toString());
     try {
-        checks+=runLibraryTests();
+        checks+=runLibraryTests();checks+=runSampleTests();
         auto processor=std::make_unique<GbaProcessor>(root);auto& p=*processor;
         p.setRateAndBufferSizeDetails(48000,256);p.prepareToPlay(48000,256);
         check(p.getLatencySamples()==16,"Host latency does not match the oversampled effects path");
@@ -174,6 +175,8 @@ int main() {
             check(listener.appearanceChanges==4,"Skin changes did not notify the host about unsaved state");p.removeListener(&listener);
             other.reset();isolated.reset();
             skin->setSelectedId(1,juce::sendNotificationSync);
+            auto* advancedTabs=dynamic_cast<juce::TabbedComponent*>(named(*editor,"Advanced tabs"));check(advancedTabs&&advancedTabs->getNumTabs()==5,"Sample settings tab missing");
+            advancedTabs->setCurrentTabIndex(4);check(named(*editor,"Load audio sample")!=nullptr,"Sample loader UI missing");snapshot(*editor,"ui-snapshots/Samples-960.png");advancedTabs->setCurrentTabIndex(0);
             snapshot(*editor,"ui-snapshots/Advanced-960.png");
             editor->keyPressed(juce::KeyPress(juce::KeyPress::F2Key));check(button(*editor,"BACK / SELECT")==nullptr&&master->isEnabled(),"F2 did not return from advanced editor");
             select->onClick();

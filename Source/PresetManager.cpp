@@ -30,9 +30,9 @@ juce::Result atomicJson(const juce::File& destination,const juce::var& value){
 #endif
     return ok?juce::Result::ok():juce::Result::fail("Could not replace the file; the previous file was retained.");
 }
-juce::Result boundedJson(const juce::File& file,juce::var& result){
+juce::Result boundedJson(const juce::File& file,juce::var& result,juce::int64 limit=maxBytes){
     juce::FileInputStream stream(file);if(!stream.openedOk())return stream.getStatus();juce::MemoryBlock bytes;
-    stream.readIntoMemoryBlock(bytes,std::size_t(maxBytes+1));if(stream.getStatus().failed())return stream.getStatus();if(bytes.getSize()>std::size_t(maxBytes))return juce::Result::fail("JSON file exceeds 1 MiB.");
+    stream.readIntoMemoryBlock(bytes,std::size_t(limit+1));if(stream.getStatus().failed())return stream.getStatus();if(bytes.getSize()>std::size_t(limit))return juce::Result::fail("JSON file exceeds its size limit.");
     return juce::JSON::parse(juce::String::createStringFromData(bytes.getData(),int(bytes.getSize())),result);
 }
 
@@ -61,11 +61,15 @@ std::vector<juce::String> PresetManager::filtered(const Filter& filter) const {
     return result;
 }
 juce::Result PresetManager::read(const juce::File& file,GbaPreset& p,bool external) const {
-    if((!external&&file.getParentDirectory()!=folder)||file.isSymbolicLink()||!file.existsAsFile()||file.getSize()>maxBytes)return juce::Result::fail("Missing, linked or oversized preset: "+file.getFileName());
-    juce::var data;auto parsed=boundedJson(file,data);if(parsed.failed()||!data.isObject())return juce::Result::fail("Invalid JSON preset: "+file.getFileName());
-    if(data["format"].toString()!="gba2.preset"||!version(data["schemaVersion"]))return juce::Result::fail("Unsupported preset: "+file.getFileName());
+    if((!external&&file.getParentDirectory()!=folder)||file.isSymbolicLink()||!file.existsAsFile()||file.getSize()>SampleManager::maxStateBytes)return juce::Result::fail("Missing, linked or oversized preset: "+file.getFileName());
+    juce::var data;auto parsed=boundedJson(file,data,SampleManager::maxStateBytes);if(parsed.failed()||!data.isObject())return juce::Result::fail("Invalid JSON preset: "+file.getFileName());
+    if(data["format"].toString()!="gba2.preset"||!(version(data["schemaVersion"])||(data["schemaVersion"].isInt()&&int(data["schemaVersion"])==2)))return juce::Result::fail("Unsupported preset: "+file.getFileName());
     if(!data["id"].isString()||!userId(data["id"].toString())||!data["name"].isString()||!validName(data["name"].toString()))return juce::Result::fail("Invalid preset identity/name: "+file.getFileName());
     p={};p.id=data["id"].toString();p.name=data["name"].toString().trim();p.category="User";p.file=file;p.factory=false;
+    if(!data["sample"].isVoid()) {
+        if(int(data["schemaVersion"])!=2||!data["sample"].isObject()||SampleManager::validateDocument(data["sample"]).failed())return juce::Result::fail("Invalid embedded sample document.");
+        p.sample=data["sample"];
+    }
     auto tags=data["tags"];if(tags.isString())p.tags=tags.toString();else if(auto* array=tags.getArray()){for(const auto& tag:*array){if(!tag.isString())return juce::Result::fail("Invalid preset tags.");p.tags+=tag.toString()+" ";}p.tags=p.tags.trim();}else if(!tags.isVoid())return juce::Result::fail("Invalid preset tags.");
     if(p.tags.length()>512)return juce::Result::fail("Preset tags exceed 512 characters.");
     auto* parameters=data["parameters"].getDynamicObject();if(!parameters)return juce::Result::fail("Missing synthesis parameters: "+file.getFileName());
@@ -101,20 +105,21 @@ void PresetManager::stepCategory(int direction){auto list=categories();if(list.i
 bool PresetManager::nameExists(const juce::String& name,const juce::String& except) const {for(const auto& p:presets)if(!p.factory&&p.id!=except&&p.name.equalsIgnoreCase(name.trim()))return true;return false;}
 juce::Result PresetManager::write(const GbaPreset& p,bool external){
     if((!external&&p.file.getParentDirectory()!=folder)||!userId(p.id))return juce::Result::fail("Invalid user preset destination.");
-    auto* object=new juce::DynamicObject();juce::var data(object);object->setProperty("format","gba2.preset");object->setProperty("schemaVersion",schemaVersion);object->setProperty("id",p.id);object->setProperty("name",p.name);object->setProperty("category","User");object->setProperty("tags",p.tags);
+    auto* object=new juce::DynamicObject();juce::var data(object);object->setProperty("format","gba2.preset");object->setProperty("schemaVersion",p.sample.isVoid()?1:2);if(!p.sample.isVoid())object->setProperty("sample",p.sample);object->setProperty("id",p.id);object->setProperty("name",p.name);object->setProperty("category","User");object->setProperty("tags",p.tags);
     auto* parameters=new juce::DynamicObject();object->setProperty("parameters",juce::var(parameters));for(std::size_t i=0;i<gba::parameterCount;++i)parameters->setProperty(juce::Identifier(juce::String(gba::specs[i].id.data())),p.settings.values[i]);return atomicJson(p.file,data);
 }
 juce::Result PresetManager::writePreferences(const std::set<juce::String>& f,const juce::StringArray& r){auto* object=new juce::DynamicObject();juce::var data(object);juce::Array<juce::var> fa,ra;for(const auto& id:f)fa.add(id);for(const auto& id:r)ra.add(id);object->setProperty("format","gba2.library");object->setProperty("schemaVersion",1);object->setProperty("favorites",fa);object->setProperty("recent",ra);return atomicJson(preferences,data);}
 juce::Result PresetManager::saveAs(juce::String name,juce::String tags){
     const juce::ScopedLock lock(libraryIo);if(!validName(name))return finish(juce::Result::fail("Enter 1 to 100 characters without control characters."));if(tags.length()>512)return finish(juce::Result::fail("Tags must contain at most 512 characters."));
+    if(processor.samples.busy())return finish(juce::Result::fail("Wait for sample loading to finish before saving."));
     // Refresh user files before authoring so another instance's names are respected.
     refresh();if(nameExists(name))return finish(juce::Result::fail("A user preset with this name already exists."));
-    GbaPreset p;p.name=name.trim();p.tags=tags.trim().isEmpty()?"user synthesis":tags.trim();p.id="user."+juce::Uuid().toString();p.factory=false;p.category="User";p.settings=processor.snapshot();p.file=folder.getChildFile(p.id+".gba2preset");auto result=write(p);if(result.failed())return finish(result);
+    GbaPreset p;p.name=name.trim();p.tags=tags.trim().isEmpty()?"user synthesis":tags.trim();p.id="user."+juce::Uuid().toString();p.factory=false;p.category="User";p.settings=processor.snapshot();p.sample=processor.samples.state();p.file=folder.getChildFile(p.id+".gba2preset");auto result=write(p);if(result.failed())return finish(result);
     presets.push_back(p);sortUsers();++generation;load(p.id);return juce::Result::ok();
 }
 juce::Result PresetManager::importPreset(const juce::File& source){
     const juce::ScopedLock lock(libraryIo);
-    if(source.hasFileExtension("mse"))return finish(juce::Result::fail("Maize .mse instruments contain samples. This synthesizer imports .gba2preset synthesis patches only."));
+    if(source.hasFileExtension("mse"))return finish(juce::Result::fail("Maize .mse instruments contain samples. Use WAV/AIFF audio or .gba2preset instruments; Maize .mse decoding is not implemented."));
     if(source.hasFileExtension("chl"))return finish(juce::Result::fail("This .chl instrument format is not supported. Export a G Boy Advance 2 .gba2preset synthesis patch instead."));
     if(!source.hasFileExtension("gba2preset"))return finish(juce::Result::fail("Choose a .gba2preset synthesis patch."));
     GbaPreset p;auto result=read(source,p,true);if(result.failed())return finish(result);
@@ -128,11 +133,12 @@ juce::Result PresetManager::importPreset(const juce::File& source){
 }
 juce::Result PresetManager::exportCurrent(const juce::File& destination,juce::String name,juce::String tags){
     const juce::ScopedLock lock(libraryIo);
+    if(processor.samples.busy())return finish(juce::Result::fail("Wait for sample loading to finish before exporting."));
     if(!destination.hasFileExtension("gba2preset"))return finish(juce::Result::fail("Use the .gba2preset extension."));
     if(destination.getParentDirectory()==folder)return finish(juce::Result::fail("Use Save As to store sounds in your preset library. Export to another folder."));
     if(name.trim().isEmpty())name=processor.presetName();
     if(!validName(name)||tags.length()>512)return finish(juce::Result::fail("Use a name of 1 to 100 characters and tags of at most 512 characters."));
-    GbaPreset p;p.id="user."+juce::Uuid().toString();p.name=name.trim();p.tags=tags.trim();p.settings=processor.snapshot();p.file=destination;
+    GbaPreset p;p.id="user."+juce::Uuid().toString();p.name=name.trim();p.tags=tags.trim();p.settings=processor.snapshot();p.sample=processor.samples.state();p.file=destination;
     return finish(write(p,true));
 }
 juce::Result PresetManager::renameUser(juce::String id,juce::String name){

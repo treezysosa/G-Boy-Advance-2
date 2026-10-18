@@ -2,6 +2,7 @@
 #include <juce_audio_utils/juce_audio_utils.h>
 #include "dsp/SynthEngine.h"
 #include "PresetManager.h"
+#include "SampleManager.h"
 
 class GbaProcessor final : public juce::AudioProcessor, private juce::MidiKeyboardStateListener, private juce::Timer {
 public:
@@ -43,6 +44,7 @@ public:
     float outputLevel() const noexcept {return level.load();}
     std::atomic<int> editorWidth {1280};
     std::atomic<int> editorSkin {0}; // Non-automatable, per-instance project preference.
+    SampleManager samples;
     juce::AudioProcessorValueTreeState state;
     juce::MidiKeyboardState keyboard;
     PresetManager presets;
@@ -65,6 +67,6 @@ private:
     void midi(const juce::MidiMessage&) noexcept;
     void handleNoteOn(juce::MidiKeyboardState*,int,int,float) override;
     void handleNoteOff(juce::MidiKeyboardState*,int,int,float) override;
-    void timerCallback() override {servicePendingProgram();}
+    void timerCallback() override {servicePendingProgram();if(samples.consumeChange())updateHostDisplay(juce::AudioProcessorListener::ChangeDetails{}.withNonParameterStateChanged(true));}
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(GbaProcessor)
 };
