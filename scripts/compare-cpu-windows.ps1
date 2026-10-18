@@ -17,10 +17,23 @@ if ($LASTEXITCODE -ne 0) {throw 'Could not extract the comparison baseline.'}
 # Use identical drivers with both DSP versions: only the engine under test differs.
 Copy-Item (Join-Path $root 'Tests/PerformanceProbe.cpp'),(Join-Path $root 'Tests/Benchmark.cpp') (Join-Path $baseline 'Tests')
 @'
+cmake_minimum_required(VERSION 3.24)
+project(GBA2PreviousDsp LANGUAGES CXX)
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+add_library(gba_dsp STATIC Source/dsp/SynthEngine.cpp Source/dsp/Effects.cpp)
+target_include_directories(gba_dsp PUBLIC Source)
+target_compile_options(gba_dsp PRIVATE /W4 /permissive-)
+add_executable(gba2-benchmark Tests/Benchmark.cpp)
+target_link_libraries(gba2-benchmark PRIVATE gba_dsp)
 add_executable(gba2-performance-probe Tests/PerformanceProbe.cpp)
 target_link_libraries(gba2-performance-probe PRIVATE gba_dsp)
-'@ | Add-Content -LiteralPath (Join-Path $baseline 'CMakeLists.txt')
-cmake -S $baseline -B $baselineBuild -G 'Visual Studio 17 2022' -A x64 -DGBA_BUILD_PLUGIN=OFF -DBUILD_TESTING=OFF -DGBA_BUILD_BENCHMARKS=ON
+'@ | Set-Content -LiteralPath (Join-Path $baseline 'CMakeLists.txt')
+# The old full project returns early with plugin builds disabled. A small driver
+# project uses the same Release compiler/runtime flags and the untouched old DSP.
+cmake -S $baseline -B $baselineBuild -G 'Visual Studio 17 2022' -A x64
 if ($LASTEXITCODE -ne 0) {throw 'Baseline configure failed.'}
 cmake --build $baselineBuild --config $Configuration --parallel 2 --target gba2-benchmark gba2-performance-probe
 if ($LASTEXITCODE -ne 0) {throw 'Baseline build failed.'}
