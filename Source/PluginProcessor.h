@@ -29,6 +29,7 @@ public:
     void setStateInformation(const void*,int) override;
     gba::Settings snapshot() const noexcept;
     void applyPreset(const GbaPreset&);
+    void setEditorSkin(int);
     void renameCurrentPreset(const juce::String&);
     juce::String presetId() const;
     juce::String presetName() const;

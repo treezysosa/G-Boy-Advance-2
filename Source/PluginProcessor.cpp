@@ -118,6 +118,11 @@ void GbaProcessor::applyPreset(const GbaPreset& p) {
 juce::String GbaProcessor::presetId() const {const juce::ScopedLock lock(metadataLock);return activePresetId;}
 juce::String GbaProcessor::presetName() const {const juce::ScopedLock lock(metadataLock);return activePresetName;}
 juce::String GbaProcessor::presetCategory() const {const juce::ScopedLock lock(metadataLock);return activePresetCategory;}
+void GbaProcessor::setEditorSkin(int index) {
+    const int selected=gba_ui::validSkin(index);
+    if(editorSkin.exchange(selected)!=selected)
+        updateHostDisplay(juce::AudioProcessorListener::ChangeDetails{}.withNonParameterStateChanged(true));
+}
 void GbaProcessor::renameCurrentPreset(const juce::String& name) {const juce::ScopedLock lock(metadataLock);activePresetName=name;}
 void GbaProcessor::getStateInformation(juce::MemoryBlock& destination) {
     const juce::ScopedLock lock(metadataLock);

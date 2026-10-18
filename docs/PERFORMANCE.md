@@ -137,6 +137,6 @@ Linux GCC 14.2 `-O2`, rerun with local compilation/sanitizers finished: 8,298 me
 
 ## 0.11.0 UI work
 
-The audio engine is unchanged from 0.10.3. Native controls, keyboard and LEDs remain live. Only the static vector housing is cached per editor; it is regenerated after skin, size or rendering-density changes. This avoids rebuilding gradients, lettering paths and moulded-plastic detail when repainting an LED or control. The cache consumes image memory proportional to editor size and DPI; it is released with the editor. No image filtering, frame animation or audio-thread work is introduced for skins.
+The audio engine is unchanged from 0.10.3. Native controls, keyboard and LEDs remain live. Only the static vector housing is cached per editor; it is regenerated after skin, size or rendering-density changes. This avoids rebuilding gradients, lettering paths and moulded-plastic detail when repainting an LED or control. The cache consumes image memory proportional to editor size and DPI; it is released with the editor. If the image would exceed 16 Mi pixels, painting falls back to vectors rather than retaining a larger cache. No image filtering, frame animation or audio-thread work is introduced for skins.
 
 This GUI change does not promise another reduction in chord DSP time. Continue using the measured 0.10.3 improvements and voice/release settings above. New Windows/profile results will be recorded in RELEASE_0_11.md after the candidate completes validation.

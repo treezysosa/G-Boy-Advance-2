@@ -82,7 +82,7 @@ public:
         skinLabel.setText("SKIN",juce::dontSendNotification);skinLabel.setFont(font(13));
         skin.setName("UI skin");skin.setTooltip("Console colour. Saved with this plugin instance in your project.");
         for(std::size_t i=0;i<gba_ui::skins.size();++i)skin.addItem(gba_ui::skins[i].name.data(),int(i)+1);
-        syncSkin();skin.onChange=[this,skinChanged]{processor.editorSkin.store(skin.getSelectedId()-1);skinChanged();};
+        syncSkin();skin.onChange=[this,skinChanged]{processor.setEditorSkin(skin.getSelectedId()-1);skinChanged();};
         addAndMakeVisible(skinLabel);addAndMakeVisible(skin);
         addAndMakeVisible(tabs);addAndMakeVisible(back);back.onClick=[this,close]{asyncClose(this,close);};
         tabs.addTab("OSCILLATORS",uiColour(*this,0xff131c61),new ParameterPage(p,{P::Engine,P::Wave1,P::Wave2,P::OscMix,P::Detune,P::Coarse,P::PulseWidth,P::Brightness,P::FmRatio,P::FmIndex,P::Harmonics,P::Wavetable,P::StringDamping,P::Vowel,P::FormantShift,P::Breath,P::Choir,P::Syllable}),true);
@@ -487,12 +487,18 @@ void GbaEditor::paint(juce::Graphics& g) {
     // Rebuild at the actual rendering density so DAW DPI scaling stays sharp.
     const float density=juce::jlimit(1.0f,4.0f,g.getInternalContext().getPhysicalPixelScaleFactor());
     const int w=int(std::ceil(float(getWidth())*density)),h=int(std::ceil(float(getHeight())*density));
+    // Very large/high-DPI windows fall back to the original vector path rather
+    // than retaining an oversized image in every open plugin instance.
+    if(juce::int64(w)*h>16*1024*1024) {
+        housingCache={};paintHousing(g);
+    } else {
     if(housingCache.getWidth()!=w||housingCache.getHeight()!=h||housingScale!=density||housingSkin!=look.skin()) {
         housingCache=juce::Image(juce::Image::RGB,w,h,false);
         juce::Graphics cached(housingCache);cached.addTransform(juce::AffineTransform::scale(density));paintHousing(cached);
         housingScale=density;housingSkin=look.skin();
     }
     g.drawImage(housingCache,getLocalBounds().toFloat());
+    }
     g.addTransform(juce::AffineTransform::scale(float(getWidth())/1280.0f,float(getHeight())/646.0f));
     const auto led=[&](float x,juce::Colour colour,bool active) {
         g.setColour(uiColour(*this,0xff080c25));g.fillEllipse(x-14,43,28,28);g.setColour(colour.withAlpha(active?.35f:.08f));g.fillEllipse(x-12,45,24,24);
@@ -501,6 +507,7 @@ void GbaEditor::paint(juce::Graphics& g) {
     led(300,juce::Colour(0xff64ff36),signalLed);led(979,juce::Colour(0xffffb733),true);
 }
 void GbaEditor::paintHousing(juce::Graphics& g) {
+    juce::Graphics::ScopedSaveState saved(g);
     if(getLocalBounds().isEmpty())return;
     g.addTransform(juce::AffineTransform::scale(float(getWidth())/1280.0f,float(getHeight())/646.0f));
     g.fillAll(look.shell(juce::Colour(0xff11143d),true));

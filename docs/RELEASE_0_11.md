@@ -3,9 +3,9 @@
 ## Scope
 
 - Purple, Glacier Blue, Black, White and Spice Orange via SELECT → SKIN.
-- Stable string skin IDs in non-audio project state; safe Purple default for older/unknown IDs; independent editor palettes.
+- Stable string skin IDs in non-audio project state; safe Purple default for older/unknown IDs; independent editor palettes and host notification of unsaved skin edits.
 - START → IMPORT / EXPORT SOUND for `.gba2preset` synthesis instruments. Validated, size-bounded JSON, independent imported IDs/names, atomic saves; no factory overwrite or new runtime bank dependency.
-- Static native vector housing cached at rendering density, with independent live controls and LEDs.
+- Static native vector housing cached at rendering density, with independent live controls and LEDs. Very large images use vector painting to bound retained cache memory.
 - Unchanged optimized DSP, 410 factory programs, 64 parameter IDs, schema 1, manufacturer/product identity and 16-sample latency.
 
 ## File compatibility
@@ -14,7 +14,7 @@ The owner confirmed synthesis only. Maizesoft documents `.mse` instruments as sa
 
 ## Validation
 
-Pending the new clean Windows build. Tests cover skin selection, project persistence, unknown/legacy fallback, independent plugin instances, snapshots, unchanged synthesis on skin changes, preset import/export roundtrips, collisions, persistence and rejected malformed/oversized/unsupported input. Existing DSP, actual-bundle host, pluginval, Steinberg, performance and installer acceptance remain required.
+Local JUCE integration: 378 checks passed (including 101 library checks). Clean Windows validation is pending. Tests cover skin selection, project persistence, unknown/legacy fallback, independent plugin instances, snapshots, unchanged synthesis on skin changes, preset import/export roundtrips, collisions, persistence and rejected malformed/oversized/unsupported input. Existing DSP, actual-bundle host, pluginval, Steinberg, performance and installer acceptance remain required.
 
 ## Release status
 

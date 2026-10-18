@@ -6,6 +6,11 @@
 int runLibraryTests();
 namespace {
 int checks=0;
+struct StateListener final : juce::AudioProcessorListener {
+    int appearanceChanges=0;
+    void audioProcessorParameterChanged(juce::AudioProcessor*,int,float) override {}
+    void audioProcessorChanged(juce::AudioProcessor*,const ChangeDetails& details) override {if(details.nonParameterStateChanged)++appearanceChanges;}
+};
 void check(bool ok,const char* message) {++checks;if(!ok)throw std::runtime_error(message);}
 void set(GbaProcessor& p,const char* id,float value) {auto* v=p.state.getParameter(id);v->setValueNotifyingHost(v->convertTo0to1(value));}
 juce::Component* named(juce::Component& root,const juce::String& name) {if(root.getName()==name)return &root;for(auto* c:root.getChildren())if(auto* match=named(*c,name))return match;return nullptr;}
@@ -153,6 +158,7 @@ int main() {
             auto* select=button(*editor,"SELECT");select->onClick();check(button(*editor,"BACK / SELECT")!=nullptr,"SELECT did not open advanced editor");
             auto* skin=dynamic_cast<juce::ComboBox*>(named(*editor,"UI skin"));check(skin&&skin->getNumItems()==5,"Five-skin selector missing");
             const auto sound=p.snapshot();const auto presetId=p.presetId();
+            StateListener listener;p.addListener(&listener);
             auto isolated=std::make_unique<GbaProcessor>(root.getChildFile("IsolatedSkin"));std::unique_ptr<juce::AudioProcessorEditor> other(isolated->createEditor());
             for(std::size_t i=0;i<gba_ui::skins.size();++i){
                 skin->setSelectedId(int(i)+1,juce::sendNotificationSync);
@@ -165,6 +171,7 @@ int main() {
                 editor->keyPressed(juce::KeyPress(juce::KeyPress::F2Key));snapshot(*editor,"ui-snapshots/Skin-"+juce::String(gba_ui::skins[i].id.data())+".png");
                 editor->keyPressed(juce::KeyPress(juce::KeyPress::F2Key));skin=dynamic_cast<juce::ComboBox*>(named(*editor,"UI skin"));
             }
+            check(listener.appearanceChanges==4,"Skin changes did not notify the host about unsaved state");p.removeListener(&listener);
             other.reset();isolated.reset();
             skin->setSelectedId(1,juce::sendNotificationSync);
             snapshot(*editor,"ui-snapshots/Advanced-960.png");
