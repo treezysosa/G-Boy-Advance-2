@@ -1,5 +1,6 @@
-> Current version: **0.13.0, synthesis plus optional ROM Hacks SF2 instruments**. [SoundFont behavior, project paths and limitations](RELEASE_0_13.md). Earlier release records below remain historical.
+> Current version: **0.13.1, synthesis plus optional ROM Hacks SF2 instruments**. [SoundFont behavior, project paths and limitations](RELEASE_0_13.md). Earlier release records below remain historical.
 
+0.13.1 relocates ROM Hacks beside master volume. [Windows/Ubuntu run 39191191366](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39191191366) passed eight Ubuntu DSP suites and eleven Windows CTest suites, including 453 application checks, actual-bundle host/editor checks, pluginval strictness 10, Steinberg validation and six installer lifecycle checks. The installer upgrade test uses 0.13.0 as its baseline. The FL-named test host is not FL Studio. [Current release evidence](RELEASE_0_13.md).
 
 # 0.10.2 FL Studio editor compatibility candidate
 

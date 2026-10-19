@@ -1,3 +1,17 @@
+# 0.13.1 — ROM Hacks beside master volume
+
+The native cartridge button moved from above the D-pad to immediately left of the master volume knob, above macros A and B. Its responsive bounds remain separate from the volume and macro controls at 960, 1280 and 1920 pixel widths; the five skin software snapshots retain this placement. SoundFont playback, parameter IDs and synthesis DSP are unchanged.
+
+[Windows/Ubuntu run 39191191366](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39191191366) passed eight Ubuntu DSP suites and eleven Windows CTest suites, including 453 application checks, actual-bundle host/editor checks, pluginval strictness 10, Steinberg validation and six installer lifecycle checks. The installer upgrade test uses 0.13.0 as its baseline. The FL-named test host is not FL Studio.
+
+Validated application/build commit: `32c316560590e067478bb7fa2958ac0bb2bcf7ce`. Final source updates after that build contain documentation only. Local native integration: 446 checks including 55 SoundFont checks; the button still opens the browser and F3 still toggles it. Current Windows screenshots are in the run's validation artifact. Software snapshot checks do not establish real hardware DPI behavior. Actual FL Studio/audio-device and third-party bank acceptance remain manual.
+
+[0.13.1 Windows installer ZIP](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39191191366/artifacts/12160153564) · [portable files](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39191191366/artifacts/12160084002). Close FL Studio and standalone, extract into a new folder and run Setup, then reopen FL64. Upgrade/reinstall and cache preservation passed on the disposable Windows runner. Setup EXE SHA256: `3623ac06c5886ce58741413163d430ef77bb9cf34759383876525daa23311636`.
+
+The SoundFont behavior, cache paths and compatibility limits below also apply to 0.13.1. Evidence and downloads under the 0.13.0 heading describe that earlier build.
+
+---
+
 # 0.13.0 — ROM Hacks SoundFont instruments
 
 The ROM Hacks cartridge on the main console opens a native SoundFont browser. LOAD SF2 imports a user-provided SoundFont 2 bank. Select its bank/program instrument and play MIDI or the piano keyboard; A previews, B releases preview notes. USE SOUNDFONT enables the bank; RETURN TO SYNTH or loading a normal preset returns to synthesis. F3 toggles ROM Hacks. Main arrows/D-pad left/right browse SoundFont instruments when enabled; D-pad up/down browses banks.
