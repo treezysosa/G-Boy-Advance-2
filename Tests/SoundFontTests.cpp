@@ -38,7 +38,7 @@ int runSoundFontTests(){
             buttonSf(*editor,"RETURN TO SYNTH")->onClick();ensure(!p->romHacks.enabled(),"ROM Hacks return-to-synth is inert");buttonSf(*editor,"USE SOUNDFONT")->onClick();ensure(p->romHacks.enabled(),"ROM Hacks re-enable is inert");
             editor->keyPressed(juce::KeyPress(juce::KeyPress::F3Key));ensure(namedSf(*editor,"ROM Hacks browser")==nullptr&&cart->isEnabled(),"F3 did not close ROM Hacks");
             auto* drop=dynamic_cast<juce::FileDragAndDropTarget*>(editor.get());ensure(drop!=nullptr,"Plugin window is not a native file-drop target");
-            const auto upper=root.getChildFile("Dropped Bank \xc3\xa9.SF2");ensure(upper.replaceWithData(data.data(),data.size()),"Drop fixture write failed");
+            const auto upper=root.getChildFile(juce::String::fromUTF8("Dropped Bank \xc3\xa9.SF2"));ensure(upper.getFileName().containsChar(0x00e9),"Drop fixture did not retain its Unicode filename");ensure(upper.replaceWithData(data.data(),data.size()),"Drop fixture write failed");
             const juce::StringArray valid{upper.getFullPathName()};
             ensure(drop->isInterestedInFileDrag(valid),"Uppercase SF2 drop with Unicode/spaces was rejected");
             const auto beforeDrop=p->romHacks.saveState();
