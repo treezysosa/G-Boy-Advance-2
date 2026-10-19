@@ -77,7 +77,7 @@ int main(int argc,char** argv){try{
         }
         if(++rendered%64==0)std::cout<<"Audited "<<rendered<<" factory patches\n"<<std::flush;
     }
-    check(gba::factoryPatches.size()==530&&categories.size()==20,"Factory coverage is incomplete");
+    check(gba::factoryPatches.size()==650&&categories.size()==24,"Factory coverage is incomplete");
     if(!levelsOnly){std::ofstream pairs("factory-similarity.csv");pairs<<"id,nearestId,dryAudioDistance\n";int close=0;
         for(std::size_t i=0;i<signatures.size();++i){double best=100;std::size_t nearest=i;for(std::size_t j=0;j<signatures.size();++j)if(i!=j&&signatures[i].note==signatures[j].note){const double d=distance(signatures[i],signatures[j]);if(d<best){best=d;nearest=j;}}pairs<<signatures[i].id<<","<<signatures[nearest].id<<","<<best<<"\n";if(best<.025)++close;}
         std::vector<int> parent(signatures.size());std::iota(parent.begin(),parent.end(),0);
@@ -86,7 +86,7 @@ int main(int argc,char** argv){try{
         std::set<int> groups;for(std::size_t i=0;i<parent.size();++i)groups.insert(root(int(i)));
         check(groups.size()==signatures.size(),"Factory dry spectral/envelope near-duplicates found; inspect factory-similarity.csv");
         std::set<int> regionalGroups;
-        for(std::size_t i=410;i<signatures.size();++i) {
+        for(std::size_t i=410;i<530;++i) {
             regionalGroups.insert(root(int(i)));
             double nearest=100;
             for(std::size_t j=0;j<i;++j)if(signatures[i].note==signatures[j].note)nearest=std::min(nearest,distance(signatures[i],signatures[j]));
@@ -94,7 +94,7 @@ int main(int argc,char** argv){try{
         }
         check(regionalGroups.size()==120,"Regional bank has fewer than 120 dry spectral/envelope groups");
         std::cout<<"Regional dry spectral/envelope groups: "<<regionalGroups.size()<<" of 120 presets\n";
-        for(std::size_t i=0;i+1<signatures.size();i+=2)check(distance(signatures[i],signatures[i+1])>.025,"Afterglow differs only weakly in dry excitation/envelope: "+signatures[i].name);
+        for(std::size_t i=0;i+1<signatures.size();i+=2)check(distance(signatures[i],signatures[i+1])>.025,"Adjacent factory voicing differs only weakly in dry excitation/envelope: "+signatures[i].name);
         std::cout<<"Dry spectral/envelope groups at 0.025 threshold: "<<groups.size()<<"\n";
         std::cout<<"Dry-spectrum/envelope near-neighbor flags (<0.025): "<<close<<" (listening review, not a perceptual certificate)\n";
     }
@@ -113,6 +113,12 @@ int main(int argc,char** argv){try{
         for(const auto& p:gba::factoryPatches)if(std::string_view(p.category)=="Retro Games"&&std::string_view(p.name).find(" - Afterglow")==std::string_view::npos)excerpt(p,"retro-auditions",++number,retroIndex);
         std::filesystem::create_directories("hiphop-auditions");std::ofstream hiphopIndex("hiphop-auditions/README.txt");hiphopIndex<<"Original Detroit, West Coast and Florida synthesis examples. Not samples for the instrument. Human listening acceptance pending.\n";number=0;
         for(const auto& p:gba::factoryPatches)if(std::string_view(p.category).starts_with("Hip-Hop - ")&&std::string_view(p.name).find(" - Afterglow")==std::string_view::npos)excerpt(p,"hiphop-auditions",++number,hiphopIndex);
+        for(const auto& category:{"Hip-Hop - Detroit","Hip-Hop - Chicago Drill","Funk","Japan Inspired","80s Pop"}) {
+            const auto directory=std::filesystem::path("groove-auditions")/category;
+            std::filesystem::create_directories(directory);std::ofstream grooveIndex(directory/"README.txt");number=0;
+            grooveIndex<<"Original synthesis test renders for the 0.16.0 additions. Not installed or read by the plugin. Human listening acceptance pending.\n";
+            for(std::size_t i=530;i<gba::factoryPatches.size();++i)if(std::string_view(gba::factoryPatches[i].category)==category)excerpt(gba::factoryPatches[i],directory,++number,grooveIndex);
+        }
 
     }
     std::cout<<"Central-note max-100ms stereo RMS range: "<<quietest<<" to "<<loudest<<" ("<<20*std::log10(loudest/quietest)<<" dB); peak "<<largestPeak<<"\n";

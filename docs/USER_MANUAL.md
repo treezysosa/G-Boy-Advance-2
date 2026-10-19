@@ -1,4 +1,4 @@
-> Current version: **0.15.0: twenty skins, an expanded 530-preset diversity audit and further DSP optimizations**, retaining ROM Hacks SF2 drag/drop, default folder and last-bank recall. [Current changes and evidence](RELEASE_0_15.md) · [SoundFont workflow](RELEASE_0_14_1.md).
+> Current version: **0.16.0: 650 presets, with more Detroit pianos plus Chicago Drill, Funk, Japan-inspired and 80s Pop banks**, retaining ROM Hacks SF2 drag/drop, default folder and last-bank recall. [Current changes and evidence](RELEASE_0_16.md) · [SoundFont workflow](RELEASE_0_14_1.md).
 
 
 Older 0.12.0 projects restore their synthesis parameters and skin, show `SYNTH ONLY:` in the display and a removal notice in START, and discard embedded audio from newly saved state. Sample sounds no longer play. Original project, audio and preset files are left unchanged; preserve the original project if its sample content is still needed. Sample-containing presets are rejected/skipped. Schema 1 synthesis `.gba2preset` import/export continues to work.
@@ -57,7 +57,7 @@ This development version passes Windows compilation, automated tests and pluginv
 
 ## Factory bank revision 0.6
 
-The bank retains all 410 previous factory names/IDs and program positions, with 120 regional hip-hop entries appended (530 total across 20 categories). Named instruments have explicit synthesis profiles and Afterglow variants change active excitation/envelope controls. Factory levels are calibrated using a 100 ms stereo RMS metric; quieter articulations remain quieter when the master knob reaches its gain ceiling. This is not perceptual loudness normalization.
+The bank retains all 530 previous factory sounds, names/IDs and program positions, with 120 new designs appended (650 total across 24 categories). Named instruments have explicit synthesis profiles and Afterglow variants change active excitation/envelope controls. Factory levels are calibrated using a 100 ms stereo RMS metric; quieter articulations remain quieter when the master knob reaches its gain ceiling. This is not perceptual loudness normalization.
 
 Saved projects restore their actual parameter values, even when their factory ID also exists in the revised bank. Loading the factory preset again selects its new voicing. User presets remain independent. Optional category audition WAVs are original test renders for listening review; they are never loaded by the instrument.
 
@@ -130,7 +130,7 @@ Shared master volume, filter, minimum attack, glide, vibrato, bend/sustain and e
 
 ## Regional hip-hop bank (0.14.0)
 
-Press START and select Hip-Hop - Detroit, Hip-Hop - West Coast or Hip-Hop - Florida. Each contains 40 built-in synthesis presets. Search combines region and instrument tags: try Detroit piano, West Coast bass, Florida bell or vox. A previews the selected sound; the piano and MIDI play it normally. Each base design has an Afterglow alternate that changes its active synthesis/envelope configuration. No SoundFont import or external sound bank is required.
+Press START and select Hip-Hop - Detroit, Hip-Hop - West Coast or Hip-Hop - Florida. Detroit contains 60 built-in synthesis presets, including 30 piano-tagged sounds; West Coast and Florida each contain 40. Search combines region and instrument tags: try Detroit piano, West Coast bass, Florida bell or vox. A previews the selected sound; the piano and MIDI play it normally. The original regional designs have Afterglow alternates that change active synthesis/envelope controls; the twenty additional Detroit pianos are individual designs. No SoundFont import or external sound bank is required.
 
 Detroit emphasizes offbeat keys, icy bells, short plucks, dark layers and vowel stabs. West Coast adds warm electric-style keys, elastic bass and whistle-like leads. Florida adds club plucks, dark chimes, sustained oscillator bass and airy formants. These are original broad production-inspired patches; vox are synthesized melodic vowels, without recorded artists or phrases.
 
@@ -139,3 +139,9 @@ New polyphonic patches default to eight voices with restrained effects; mono bas
 ## Factory voicing revisions (0.15.0)
 
 An all-pair dry/wet audit compares every factory preset at the same three notes and two velocities. Eighteen closely related patches receive stronger original excitation, filter-body or envelope distinctions; their names, IDs and positions remain unchanged. Loading one of those factory patches selects its revised sound. Existing projects and user presets restore their own actual parameter values, including the previous voicing. The audit reports numerical similarity and audibility, not a human listening certificate. See [factory audit](FACTORY_LIBRARY.md).
+
+## Chicago Drill, Funk, Japan Inspired and 80s Pop (0.16.0)
+
+Open START, select Factory and choose Hip-Hop - Chicago Drill (24 sounds), Funk (24), Japan Inspired (24) or 80s Pop (28). Search combines category, name and tags: try bass, piano, brass, bell, pad, lead or vox. The Japan-inspired bank focuses on city pop, anime-style textures and original retro-game timbres. Twenty new Detroit piano-style keys are also available in the existing Hip-Hop - Detroit category.
+
+These are original synthesis patches, without recorded instruments, artist voices or commercial game audio. New polyphonic patches default to eight voices; basses and solo leads use one voice where appropriate. Increase SELECT → voice count only when a passage needs it; long releases and many layered instances add CPU work. Existing presets keep their prior voice settings and sound.

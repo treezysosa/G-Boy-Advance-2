@@ -77,6 +77,12 @@ The project root schema remains 1. Optional `romHacks` is a JSON string with `{ 
 
 ## Regional recipes and preserving released gains
 
-Presets/hiphop-designs.json supplies 60 authored base designs, their alternate overrides, regional categories, family tags and design notes. The generator appends their 120 identities to the existing registry. All 410 previous factory dictionaries remain unchanged. The current factory contains 530 presets in 20 categories.
+Presets/hiphop-designs.json supplies 60 authored base designs, their alternate overrides, regional categories, family tags and design notes. The generator appends their 120 identities to the existing registry. All 410 previous factory dictionaries remain unchanged. That 0.14.0 bank contained 530 presets in 20 categories.
 
 For an appended bank, scripts/calibrate_presets.py measurements.csv --preserve-existing path/to/previous/factory-levels.json preserves the previous IDs' exact master gains while calibrating added patches. presetTargets stores per-patch targets for mixed regional families. Regenerate uncalibrated data, render measurements using the native audit, calibrate, regenerate the final JSON/header, then run the full audit. Audio is test output only and is never embedded in preset files.
+
+## Individually authored groove pack (0.16.0)
+
+`Presets/groove-designs.json` adds 120 independent designs with category, family, tags, notes and a complete 64-symbol parameter dictionary. The generator validates every value and stepped domain and emits one patch per design, without an automatic alternate. The factory index appends them after the prior 530 entries. Existing patch dictionaries and calibrated levels are retained exactly. The complete bank contains 650 patches in 24 categories.
+
+After an authorized recipe change, run `python scripts/generate_presets.py --uncalibrated`, render `gba2-preset-tests --measure-only`, run `python scripts/calibrate_presets.py factory-audit.csv --preserve-existing path/to/previous/factory-levels.json`, then regenerate without the flag. Preserve only levels for patches whose sound is unchanged. Both generated outputs must be committed together. Run the full central and multi-register audits; a changed recipe fingerprint prevents accidentally publishing stale calibration.

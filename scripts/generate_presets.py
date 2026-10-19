@@ -283,9 +283,31 @@ def diversity_refinements():
 
 def recipe_digest():
     digest=hashlib.sha256()
-    for name in ['scripts/generate_presets.py','Presets/instrument-designs.json','Presets/vocal-designs.json','Presets/retro-designs.json','Presets/hiphop-designs.json','Presets/diversity-refinements.json','Source/dsp/RetroEngine.h','Source/dsp/ParameterList.inc','Source/dsp/VocalEngine.h','Source/dsp/SynthEngine.cpp','Source/dsp/SynthEngine.h','Source/dsp/Effects.cpp','Source/dsp/Effects.h','Source/dsp/DspMath.h']:
+    for name in ['scripts/generate_presets.py','Presets/instrument-designs.json','Presets/vocal-designs.json','Presets/retro-designs.json','Presets/hiphop-designs.json','Presets/diversity-refinements.json','Presets/groove-designs.json','Source/dsp/RetroEngine.h','Source/dsp/ParameterList.inc','Source/dsp/VocalEngine.h','Source/dsp/SynthEngine.cpp','Source/dsp/SynthEngine.h','Source/dsp/Effects.cpp','Source/dsp/Effects.h','Source/dsp/DspMath.h']:
         digest.update(name.encode()+b'\0'+(ROOT/name).read_bytes().replace(b'\r\n',b'\n'))
     return digest.hexdigest()
+
+def groove_patches(specs):
+    """Individually authored complete patches; no automatic paired variations."""
+    data=json.loads((ROOT/'Presets/groove-designs.json').read_text())
+    assert data['format']=='gba2.groove-designs' and data['schemaVersion']==1
+    counts={'Hip-Hop - Detroit':20,'Hip-Hop - Chicago Drill':24,'Funk':24,'Japan Inspired':24,'80s Pop':28}
+    actual=dict.fromkeys(counts,0);patches=[]
+    for name,profile in data['designs'].items():
+        assert profile['category'] in counts and profile['designNotes'] and profile['tags']
+        actual[profile['category']]+=1
+        assert set(profile['parameters'])=={row[0] for row in specs},name
+        values={}
+        for symbol,key,lo,hi,_,step in specs:
+            value=profile['parameters'][symbol]
+            assert type(value) in (int,float) and lo<=value<=hi,(name,symbol,value)
+            assert not step or abs((value-lo)/step-round((value-lo)/step))<1e-4,(name,symbol,value)
+            values[key]=round(value,6)
+        tags=list(dict.fromkeys(['synthesis','original','groove pack',profile['family'],ENGINE_NAMES[int(values['engine'])],*profile['tags']]))
+        patches.append(dict(id='factory.'+hashlib.sha256(name.encode()).hexdigest()[:16],name=name,
+                            category=profile['category'],tags=tags,parameters=values))
+    assert actual==counts,actual
+    return patches
 
 def generate(uncalibrated=False):
     specs=schema()
@@ -293,6 +315,7 @@ def generate(uncalibrated=False):
              for name in names.split('|') for variation in range(2)]
     patches += [make_patch(profile['category'],name,variation,specs)
                 for name,profile in hiphop_designs().items() for variation in range(2)]
+    patches += groove_patches(specs)
     index=json.loads((ROOT/'Presets/factory-index.json').read_text())
     assert index['format']=='gba2.factory-index' and index['schemaVersion']==1
     by_id={p['id']:p for p in patches}

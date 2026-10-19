@@ -17,7 +17,9 @@ int main(int argc,char** argv) {
     for(std::string_view name:{"FM Piano","Dream Pad","Smooth R&B Vocal Pad",
         "Detroit Concrete Upright","Detroit Ice Glass Bell","Detroit Short Ah Vox",
         "West Coast Sunset Tine Keys","West Coast Freeway String Pad","West Coast High Whistle Lead",
-        "Florida Bright Club Piano","Florida Heat Wave Pluck","Florida Airy Ooh Texture"}) {
+        "Florida Bright Club Piano","Florida Heat Wave Pluck","Florida Airy Ooh Texture",
+        "Detroit Brick Hammer Piano","Drill Vacant Block Strings","Funk Wah Clav Snap",
+        "Japan Opening Theme Lead","80s Digital Aurora Pad"}) {
         const auto patch=std::find_if(gba::factoryPatches.begin(),gba::factoryPatches.end(),[&](const auto& p){return name==p.name;});
         if(patch==gba::factoryPatches.end())return 1;
         for(double rate:{44100.,48000.,96000.})for(int block:{64,256})for(int voices:{1,4,8})for(bool retrigger:{false,true}) {

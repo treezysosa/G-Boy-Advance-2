@@ -1,20 +1,12 @@
-# G BOY ADVANCE 2 — 0.15.0
+# G BOY ADVANCE 2 — 0.16.0
 
-**Twenty UI skins:** the ten new colours are Arctic Cyan, Atomic Violet, Graphite Grey, Ice Mint, Cobalt Blue, Sunset Copper, Pearl Lavender, Candy Coral, Forest Green and Lemon Yellow. Choose SELECT → SKIN, or keep NEW COLOUR ON LOAD enabled for a different colour at each launch. Existing skin IDs and fixed project colours remain compatible.
+**120 additional factory presets, 650 total:** twenty Detroit piano-style keys, twenty-four Chicago Drill sounds, twenty-four Funk sounds, twenty-four Japan-inspired sounds focused on city pop/anime/retro games, and twenty-eight ’80s Pop sounds. Open START → Factory and choose the category. Detroit now contains sixty presets, including thirty piano-tagged sounds.
 
-**530 factory presets, audited across the full bank.** The new gain-independent comparison uses three identical MIDI notes, two velocities, dry and wet synthesis, two spectral windows and held/release envelopes for every preset: 6,360 renders and 140,185 pairs. Eighteen closely related patches receive original synthesis/envelope revisions, recorded in `Presets/diversity-refinements.json`. Factory IDs, names and host ordering are unchanged. Saved projects and user presets keep their explicit sound settings. The Detroit, West Coast and Florida categories each contain forty presets.
+The original 530 patches, their IDs and host program order are preserved exactly. Each new sound has its own complete synthesis recipe; no recorded instruments or audio assets are bundled. Eight-voice polyphonic patches and one-voice basses/solos retain the existing efficient DSP. See [0.16.0 release details](docs/RELEASE_0_16.md) and [factory audit](docs/FACTORY_LIBRARY.md).
 
-**Further CPU work:** polyphase oversampling avoids known-zero interpolation taps and discarded decimator outputs, retaining nonlinear processing, warm histories and 16-frame latency. Wavetable mip tuning, plucked-string delay compensation, shared chord pitch exponentials and choir normalization are reused only while their exact inputs match. Bypassed bitcrusher quantization and coincident delay-head reads also avoid redundant work; enabling effects retains the original history and response. Voice limits, modulation rates and audio quality settings remain unchanged. Numerical audio and matched CPU comparisons use the immutable 0.14.1 DSP with identical current factory arrays. See [0.15.0 evidence](docs/RELEASE_0_15.md), [performance](docs/PERFORMANCE.md) and [factory audit](docs/FACTORY_LIBRARY.md) for measured results and limits.
+All twenty skins, nonrepeating launch colours, optional fixed project skin, ROM Hacks SF2 loading, drag/drop, default/custom SoundFont folder and last-bank recall remain available. Saved projects take precedence over startup bank recall.
 
-ROM Hacks remains beside master volume, with single-file SF2 drag and drop, default/custom SoundFont folder, bank/instrument lists and last-bank recall. Saved projects take precedence over the startup bank. No SoundFonts or recorded audio are bundled.
-
-[Download the 0.15.0 Windows installer ZIP](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39254648988/artifacts/12187219055) · [Portable/manual archive](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39254648988/artifacts/12187453979) · [Source](https://github.com/treezysosa/G-Boy-Advance-2/tree/feature/skins-diversity-cpu-0150). Close FL Studio and standalone, extract the installer ZIP into a new folder, run `G-Boy-Advance-2-Setup-x64.exe`, then reopen FL64. User presets, banks and SoundFont preferences are retained by the installer.
-
-[Windows/Ubuntu run 39254648988](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39254648988) passed nine Ubuntu DSP suites and twelve Windows CTest suites: 629,294 native DSP/preset checks, 1,225 Windows application checks (122 library / 164 SoundFont), twenty skin/state snapshots, two actual-bundle hosts, pluginval strictness 10, Steinberg 47 passed / 0 failed and six installer lifecycle checks. The synthetic FL-named host is not FL Studio.
-
-Matched Windows note/chord/retrigger profiles measured 9.09%–13.85% less accumulated DSP time across one-, four- and eight-voice groups versus 0.14.1. Native shared-runner measurements vary by patch and do not predict the FL Studio CPU meter.
-
-These prepared builds are unsigned; the owner has deferred the licensing decision. Automated native-host validation does not substitute for actual FL Studio, physical audio-device, DPI or human listening acceptance.
+The new Windows installer and validation are being prepared. The prior validated [0.15.0 release](docs/RELEASE_0_15.md) remains documented separately. Build and test results for this update will be recorded after the new checks complete.
 
 ![G Boy Advance 2 Phase 2 native JUCE editor](docs/images/phase2-main.png)
 
@@ -25,12 +17,12 @@ Actual Phase 2 Windows JUCE component render at 1280×646 from [passing CI run 3
 Install Visual Studio 2022 with **Desktop development with C++**, a Windows SDK, CMake 3.24+, and Git. In PowerShell:
 
 ```powershell
-git clone --branch feature/skins-diversity-cpu-0150 https://github.com/treezysosa/G-Boy-Advance-2.git
+git clone --branch feature/groove-presets-0160 https://github.com/treezysosa/G-Boy-Advance-2.git
 cd G-Boy-Advance-2
 powershell -ExecutionPolicy Bypass -File scripts/build-windows.ps1
 ```
 
-You can also use [Build and validate in GitHub Actions](https://github.com/treezysosa/G-Boy-Advance-2/actions?query=branch%3Afeature%2Fskins-diversity-cpu-0150). Factory/vocal and retro audition files are separate test outputs and are never installed or loaded by the instrument.
+You can also use [Build and validate in GitHub Actions](https://github.com/treezysosa/G-Boy-Advance-2/actions?query=branch%3Afeature%2Fgroove-presets-0160). Factory/vocal and retro audition files are separate test outputs and are never installed or loaded by the instrument.
 
 The first local build downloads the pinned JUCE 8.0.6 source. For an offline build, supply an existing checkout:
 
@@ -70,7 +62,7 @@ Close your DAW, copy the entire `.vst3` directory into `C:\Program Files\Common 
 - Sine, harmonic-limited triangle, PolyBLEP saw / square / pulse, and noise; resonant low-pass, high-pass, band-pass, notch, and formant filters.
 - Two ADSRs, two routable LFOs, vibrato, tremolo, velocity, 16-channel MIDI pitch bend / modulation / sustain, 1–32 voices, stealing, mono / legato, glide.
 - Reverb, delay, chorus, phaser, flanger, saturation, distortion, bitcrusher, tape wow / flutter, low / high shelves, and stereo width.
-- 530 original factory patches across 20 categories, explicit named-instrument, vocal and retro profiles, calibrated levels and stable program identities. Vocal patches are synthesized vowel-like timbres and contain no recorded voices or speech.
+- 650 original factory patches across 24 categories, explicit named-instrument, vocal and retro profiles, calibrated levels and stable program identities. Vocal patches are synthesized vowel-like timbres and contain no recorded voices or speech.
 - Reference-based vector UI, playable keyboard, spring-return pitch wheel, functional D-pad, preview A / stop B, START browser, SELECT advanced editor, assignable A–D controls.
 - Twenty colour skins with nonrepeating launch colours or a fixed project choice; SoundFont drag and drop; host-visible parameters, project state, user preset Save As / import / export / rename / delete, favorites / recent patches, category search, tags, keyboard navigation.
 - Windows CI, portable packaging and Inno Setup installer script, DSP and JUCE integration tests.

@@ -86,7 +86,7 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           name: G-Boy-Advance-2-Installer-x64
-          run-id: 39246825673
+          run-id: 39254648988
           github-token: ${{ github.token }}
           path: build/previous-installer
       - name: Exercise install, upgrade, reinstall, standalone launch and uninstall
@@ -133,3 +133,28 @@ jobs:
         with:
           name: Retro-preset-auditions-Windows
           path: build/retro-auditions/**
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: Detroit-piano-auditions-Windows
+          path: build/groove-auditions/Hip-Hop - Detroit/**
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: Chicago-Drill-auditions-Windows
+          path: build/groove-auditions/Hip-Hop - Chicago Drill/**
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: Funk-auditions-Windows
+          path: build/groove-auditions/Funk/**
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: Japan-inspired-auditions-Windows
+          path: build/groove-auditions/Japan Inspired/**
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: Eighties-auditions-Windows
+          path: build/groove-auditions/80s Pop/**

@@ -19,12 +19,24 @@ int runLibraryTests(){checks=0;auto root=juce::File::getSpecialLocation(juce::Fi
 try{
     {
         auto a=std::make_unique<GbaProcessor>(root);auto& m=a->presets;const auto factory=m.all().front().id;
-        check(m.all().size()==530,"Factory count/order drifted");check(!root.getChildFile("library.json").exists(),"Construction unexpectedly writes recent history");
+        check(m.all().size()==650,"Factory count/order drifted");check(!root.getChildFile("library.json").exists(),"Construction unexpectedly writes recent history");
         for(const char* category:{"Hip-Hop - Detroit","Hip-Hop - West Coast","Hip-Hop - Florida"}) {
             PresetManager::Filter regional;regional.category=category;regional.source=PresetManager::Source::factory;
-            check(m.filtered(regional).size()==40,"Regional factory category is incomplete");
+            check(m.filtered(regional).size()==(juce::String(category)=="Hip-Hop - Detroit"?60u:40u),"Regional factory category is incomplete");
             for(const char* family:{"piano","bell","pluck","pad","vox"}){regional.query=family;check(!m.filtered(regional).empty(),"Regional family/tag search is incomplete");}
         }
+        for(const char* category:{"Hip-Hop - Chicago Drill","Funk","Japan Inspired","80s Pop"}) {
+            PresetManager::Filter pack;pack.category=category;pack.source=PresetManager::Source::factory;
+            const auto patches=m.filtered(pack);check(patches.size()==(juce::String(category)=="80s Pop"?28u:24u),"Groove category count is wrong");
+            for(const auto& patchId:patches){
+                check(m.load(patchId)&&a->presetId()==patchId,"Groove preset failed to load");
+                const auto expected=m.find(patchId)->settings;const auto actual=a->snapshot();bool matches=true;
+                for(std::size_t i=0;i<gba::parameterCount;++i)matches&=std::abs(expected.values[i]-actual.values[i])<=std::max(.00001f,(gba::specs[i].max-gba::specs[i].min)*.000001f);
+                check(matches,("Groove preset parameters changed beyond host normalization precision on load: "+m.find(patchId)->name.toStdString()).c_str());
+            }
+        }
+        PresetManager::Filter detroit;detroit.category="Hip-Hop - Detroit";detroit.query="piano";
+        check(m.filtered(detroit).size()==30,"Expanded Detroit piano search is incomplete");
         PresetManager::Filter f;f.query="FM bass";auto ids=m.filtered(f);check(!ids.empty(),"AND search across name/category/tags has no results");for(const auto& id:ids){auto* p=m.find(id);check((p->name+" "+p->category+" "+p->tags).containsIgnoreCase("bass"),"AND search admits missing words");}
         f.query="\"early 3D\" retro";ids=m.filtered(f);check(!ids.empty(),"Quoted technical-style search failed");for(const auto& id:ids)check(m.find(id)->tags.containsIgnoreCase("early 3D"),"Quoted phrase was split");
         f={};f.source=PresetManager::Source::user;check(m.filtered(f).empty(),"User source filter includes factory patches");
@@ -88,7 +100,7 @@ try{
         check(p->presetId()==stableId&&p->snapshot().values==settings.values&&m.all().size()==stableSize,"Failed import/export changed the current sound or library");
     }
     {
-        auto blocked=root.getChildFile("Blocked");check(blocked.createDirectory().wasOk()&&blocked.getChildFile("Presets").replaceWithText("occupied"),"Could not block preset folder");auto p=std::make_unique<GbaProcessor>(blocked);auto before=p->snapshot();auto id=p->presetId();check(p->presets.saveAs("No Write").failed()&&p->presets.all().size()==530,"Failed Save As changed library");check(p->snapshot().values==before.values&&p->presetId()==id,"Failed Save As changed active sound");
+        auto blocked=root.getChildFile("Blocked");check(blocked.createDirectory().wasOk()&&blocked.getChildFile("Presets").replaceWithText("occupied"),"Could not block preset folder");auto p=std::make_unique<GbaProcessor>(blocked);auto before=p->snapshot();auto id=p->presetId();check(p->presets.saveAs("No Write").failed()&&p->presets.all().size()==650,"Failed Save As changed library");check(p->snapshot().values==before.values&&p->presetId()==id,"Failed Save As changed active sound");
     }
     root.deleteRecursively();std::cout<<"All "<<checks<<" Phase 9 library checks passed.\n";return checks;
 }catch(...){root.deleteRecursively();throw;}}
