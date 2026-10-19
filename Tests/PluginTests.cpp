@@ -4,6 +4,7 @@
 #include <stdexcept>
 
 int runLibraryTests();
+int runSoundFontTests();
 namespace {
 int checks=0;
 struct StateListener final : juce::AudioProcessorListener {
@@ -34,6 +35,7 @@ int main() {
     auto root=juce::File::getSpecialLocation(juce::File::tempDirectory).getChildFile("gba2-tests-"+juce::Uuid().toString());
     try {
         checks+=runLibraryTests();
+        checks+=runSoundFontTests();
         auto processor=std::make_unique<GbaProcessor>(root);auto& p=*processor;
         p.setRateAndBufferSizeDetails(48000,256);p.prepareToPlay(48000,256);
         check(p.getLatencySamples()==16,"Host latency does not match the oversampled effects path");

@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.24)
-project(GBoyAdvance2 VERSION 0.12.1 LANGUAGES C CXX)
+project(GBoyAdvance2 VERSION 0.13.0 LANGUAGES C CXX)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
@@ -21,7 +21,15 @@ else()
         target_link_options(gba_dsp PUBLIC -fsanitize=address,undefined)
     endif()
 endif()
+add_library(gba_soundfont STATIC Source/dsp/SoundFont.cpp Source/dsp/Sf2Validation.cpp)
+target_link_libraries(gba_soundfont PUBLIC gba_dsp)
+target_include_directories(gba_soundfont PUBLIC Source)
+set_target_properties(gba_soundfont PROPERTIES POSITION_INDEPENDENT_CODE ON)
 if(BUILD_TESTING)
+    add_executable(gba2-soundfont-tests Tests/SoundFontDspTests.cpp)
+    target_link_libraries(gba2-soundfont-tests PRIVATE gba_soundfont)
+    add_test(NAME soundfont-playback COMMAND gba2-soundfont-tests)
+    set_tests_properties(soundfont-playback PROPERTIES TIMEOUT 180)
     add_executable(gba2-tests Tests/EngineTests.cpp Tests/AllocationTracker.cpp)
     target_link_libraries(gba2-tests PRIVATE gba_dsp)
     add_test(NAME synthesis COMMAND gba2-tests)
@@ -80,7 +88,7 @@ juce_add_plugin(GBoyAdvance2
     PLUGIN_MANUFACTURER_CODE Trzy
     PLUGIN_CODE GbA2
     PRODUCT_NAME "G Boy Advance 2"
-    DESCRIPTION "Original hybrid synthesis instrument"
+    DESCRIPTION "Hybrid synthesis and SoundFont instrument"
     IS_SYNTH TRUE
     NEEDS_MIDI_INPUT TRUE
     NEEDS_MIDI_OUTPUT FALSE
@@ -91,25 +99,25 @@ juce_add_plugin(GBoyAdvance2
     FORMATS VST3 Standalone)
 juce_generate_juce_header(GBoyAdvance2)
 target_sources(GBoyAdvance2 PRIVATE
-    Source/PluginProcessor.cpp Source/PluginEditor.cpp Source/PresetManager.cpp
+    Source/PluginProcessor.cpp Source/PluginEditor.cpp Source/PresetManager.cpp Source/SoundFontManager.cpp
     Source/PluginProcessor.h Source/PluginEditor.h Source/UiSkins.h Source/PixelText.h Source/PresetManager.h)
 target_compile_definitions(GBoyAdvance2 PUBLIC
     GBA_WINDOWS_SOFTWARE_EDITOR=$<BOOL:${GBA_WINDOWS_SOFTWARE_EDITOR}>
     JUCE_WEB_BROWSER=0 JUCE_USE_CURL=0 JUCE_VST3_CAN_REPLACE_VST2=0
     JUCE_DISPLAY_SPLASH_SCREEN=0 JUCE_REPORT_APP_USAGE=0)
-target_link_libraries(GBoyAdvance2 PRIVATE gba_dsp juce::juce_audio_utils juce::juce_audio_processors
+target_link_libraries(GBoyAdvance2 PRIVATE gba_soundfont gba_dsp juce::juce_audio_utils juce::juce_audio_processors
     PUBLIC juce::juce_recommended_config_flags juce::juce_recommended_warning_flags)
 if(BUILD_TESTING)
     juce_add_console_app(gba2-integration PRODUCT_NAME "GBA2 integration tests")
     juce_generate_juce_header(gba2-integration)
-    target_sources(gba2-integration PRIVATE Tests/PluginTests.cpp Tests/LibraryTests.cpp
-        Source/PluginProcessor.cpp Source/PluginEditor.cpp Source/PresetManager.cpp)
+    target_sources(gba2-integration PRIVATE Tests/PluginTests.cpp Tests/LibraryTests.cpp Tests/SoundFontTests.cpp
+        Source/PluginProcessor.cpp Source/PluginEditor.cpp Source/PresetManager.cpp Source/SoundFontManager.cpp)
     target_compile_definitions(gba2-integration PRIVATE JucePlugin_Name="G Boy Advance 2"
         GBA_WINDOWS_SOFTWARE_EDITOR=$<BOOL:${GBA_WINDOWS_SOFTWARE_EDITOR}>
         JucePlugin_IsSynth=1 JucePlugin_WantsMidiInput=1 JucePlugin_ProducesMidiOutput=0
         JUCE_WEB_BROWSER=0 JUCE_USE_CURL=0 JUCE_VST3_CAN_REPLACE_VST2=0
         JUCE_MODAL_LOOPS_PERMITTED=1)
-    target_link_libraries(gba2-integration PRIVATE gba_dsp juce::juce_audio_utils juce::juce_audio_processors)
+    target_link_libraries(gba2-integration PRIVATE gba_soundfont gba_dsp juce::juce_audio_utils juce::juce_audio_processors)
     add_test(NAME plugin-state-and-presets COMMAND gba2-integration)
     set_tests_properties(plugin-state-and-presets PROPERTIES TIMEOUT 180)
     if(WIN32)

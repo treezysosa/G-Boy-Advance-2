@@ -1,14 +1,10 @@
-# G BOY ADVANCE 2 — 0.12.1
+# G BOY ADVANCE 2 — 0.13.0
 
-A C++20 / JUCE 8 hybrid synthesis instrument for Windows x64 VST3 and standalone. **Sample playback has been removed at the owner's request.** All instrument audio is generated through synthesis. The update retains Purple, Glacier Blue, Black, White and Spice Orange skins; synthesis preset import/export; 410 factory patches; stable plugin/parameter identities; and the previous CPU improvements.
+Native Windows x64 VST3 and standalone hybrid synthesizer with optional **ROM Hacks SoundFont 2 playback**. Press the cartridge-shaped ROM Hacks button (or F3), choose LOAD SF2, select an instrument from the bank, and play MIDI or the on-screen piano. The normal 410 factory sounds still use synthesis. Five skins, 64 parameter IDs and the existing optimized synthesis engine are retained.
 
-[Windows/Ubuntu run 39096250046](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39096250046) passed all ten Windows suites: 8,007 DSP/preset checks, 398 application checks (including 103 library checks), 265/266 actual-bundle synthetic-host checks, pluginval strictness 10, Steinberg 47/0 and six installer lifecycle checks. The FL-named host harness is not FL Studio.
+SoundFonts are copied into the application-data SoundFonts folder; DAW state saves the bank reference and instrument. Back up that folder with projects. Missing banks are reported visibly and stay silent until loaded again. General WAV/AIFF import remains unavailable. No game ROM or third-party SoundFont/audio is bundled. TinySoundFont is pinned and included under MIT terms.
 
-[Download the tested Windows installer ZIP](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39096250046/artifacts/12124961435). Close FL Studio and the standalone app, extract the ZIP into a new folder, run `G-Boy-Advance-2-Setup-x64.exe` and keep the default paths. Then open FL64. SELECT changes SKIN; START imports/exports synthesis presets. [Portable/manual-install files](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39096250046/artifacts/12124154373) · [0.12.1 evidence and compatibility](docs/RELEASE_0_12_1.md).
-
-Older 0.12.0 projects restore their synthesis parameters and skin, show `SYNTH ONLY:` in the display and a removal notice in START, and discard embedded audio from newly saved state. Sample sounds no longer play. Original project, audio and preset files are left unchanged; preserve the original project if its sample content is still needed. Sample-containing presets are rejected/skipped. Schema 1 synthesis `.gba2preset` import/export continues to work.
-
-The 530-scene synthesis audio comparison is byte-identical to the prior optimized engine. Shared-runner profiling does not certify FL Studio CPU percentages or physical-driver deadlines. The owner reported earlier builds working in FL64; hands-on acceptance of this version remains pending. The licensing decision is deferred by the owner; this prepared build is unsigned and has no final public release tag.
+Fresh Windows build/validators/installer validation are pending. See [0.13.0 behavior, compatibility and limits](docs/RELEASE_0_13.md). The owner's licensing decision remains deferred; this is unsigned build preparation.
 
 ![G Boy Advance 2 Phase 2 native JUCE editor](docs/images/phase2-main.png)
 
@@ -19,7 +15,7 @@ Actual Phase 2 Windows JUCE component render at 1280×646 from [passing CI run 3
 Install Visual Studio 2022 with **Desktop development with C++**, a Windows SDK, CMake 3.24+, and Git. In PowerShell:
 
 ```powershell
-git clone --branch release/synth-only-0121 https://github.com/treezysosa/G-Boy-Advance-2.git
+git clone --branch feature/rom-hacks-sf2-0130 https://github.com/treezysosa/G-Boy-Advance-2.git
 cd G-Boy-Advance-2
 powershell -ExecutionPolicy Bypass -File scripts/build-windows.ps1
 ```
@@ -73,7 +69,7 @@ Close your DAW, copy the entire `.vst3` directory into `C:\Program Files\Common 
 
 Canonical library: [`Presets/factory.json`](Presets/factory.json). The compiled plugin embeds the same parameter values in `Source/FactoryData.h`; users do not need to install an external bank. Regenerate both with `python scripts/generate_presets.py`. Recipe changes require the offline calibration workflow in the preset-format document; no authoring files or audio renders are needed at runtime.
 
-User patches: `%APPDATA%\Treezy Audio\G Boy Advance 2\Presets\*.gba2preset`. Favorites and recents: `library.json` in the parent directory. Every patch contains parameters and metadata only. Use START → IMPORT to add external `.gba2preset` patches and EXPORT SOUND to share the current edited sound. Maize `.mse` banks contain samples and cannot be played by this synthesis-only instrument; `.chl` support needs an identified source format and is not implemented. See [preset schema](docs/PRESET_FORMAT.md).
+User patches: `%APPDATA%\Treezy Audio\G Boy Advance 2\Presets\*.gba2preset`. Favorites and recents: `library.json` in the parent directory. Every .gba2preset synthesis patch contains parameters and metadata only. SoundFont banks are imported separately through ROM Hacks. Use START → IMPORT to add external `.gba2preset` patches and EXPORT SOUND to share the current edited sound. Maize `.mse` banks are unsupported; only `.sf2` banks are supported in ROM Hacks; `.chl` support needs an identified source format and is not implemented. See [preset schema](docs/PRESET_FORMAT.md).
 
 ## Tests without JUCE
 

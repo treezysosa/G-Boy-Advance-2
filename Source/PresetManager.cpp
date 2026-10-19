@@ -107,7 +107,7 @@ juce::Result PresetManager::write(const GbaPreset& p,bool external){
 }
 juce::Result PresetManager::writePreferences(const std::set<juce::String>& f,const juce::StringArray& r){auto* object=new juce::DynamicObject();juce::var data(object);juce::Array<juce::var> fa,ra;for(const auto& id:f)fa.add(id);for(const auto& id:r)ra.add(id);object->setProperty("format","gba2.library");object->setProperty("schemaVersion",1);object->setProperty("favorites",fa);object->setProperty("recent",ra);return atomicJson(preferences,data);}
 juce::Result PresetManager::saveAs(juce::String name,juce::String tags){
-    const juce::ScopedLock lock(libraryIo);if(!validName(name))return finish(juce::Result::fail("Enter 1 to 100 characters without control characters."));if(tags.length()>512)return finish(juce::Result::fail("Tags must contain at most 512 characters."));
+    const juce::ScopedLock lock(libraryIo);if(processor.romHacks.enabled())return finish(juce::Result::fail("SoundFont selections are saved in the DAW project. Return to synthesis before saving a synthesis preset."));if(!validName(name))return finish(juce::Result::fail("Enter 1 to 100 characters without control characters."));if(tags.length()>512)return finish(juce::Result::fail("Tags must contain at most 512 characters."));
     // Refresh user files before authoring so another instance's names are respected.
     refresh();if(nameExists(name))return finish(juce::Result::fail("A user preset with this name already exists."));
     GbaPreset p;p.name=name.trim();p.tags=tags.trim().isEmpty()?"user synthesis":tags.trim();p.id="user."+juce::Uuid().toString();p.factory=false;p.category="User";p.settings=processor.snapshot();p.file=folder.getChildFile(p.id+".gba2preset");auto result=write(p);if(result.failed())return finish(result);
@@ -128,6 +128,7 @@ juce::Result PresetManager::importPreset(const juce::File& source){
     presets.push_back(p);sortUsers();++generation;load(p.id);return juce::Result::ok();
 }
 juce::Result PresetManager::exportCurrent(const juce::File& destination,juce::String name,juce::String tags){
+    if(processor.romHacks.enabled())return finish(juce::Result::fail("SoundFont selections are saved in the DAW project. Return to synthesis before exporting a synthesis preset."));
     const juce::ScopedLock lock(libraryIo);
     if(!destination.hasFileExtension("gba2preset"))return finish(juce::Result::fail("Use the .gba2preset extension."));
     if(destination.getParentDirectory()==folder)return finish(juce::Result::fail("Use Save As to store sounds in your preset library. Export to another folder."));

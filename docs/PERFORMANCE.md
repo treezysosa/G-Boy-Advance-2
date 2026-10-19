@@ -1,4 +1,5 @@
-> Current version: **0.12.1, synthesis only**. Sample playback was removed; [update and compatibility notes](RELEASE_0_12_1.md). Earlier build results below remain historical.
+> Current version: **0.13.0, synthesis plus optional ROM Hacks SF2 instruments**. [SoundFont behavior, project paths and limitations](RELEASE_0_13.md). Earlier release records below remain historical.
+
 
 # Development performance measurements
 

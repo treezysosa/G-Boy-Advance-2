@@ -43,6 +43,10 @@ public:
         return dx*dx+dy*dy<=1;
     }
 };
+class RomCartridgeButton final : public juce::TextButton {
+public:RomCartridgeButton():TextButton("ROM Hacks"){}
+    void paintButton(juce::Graphics&,bool,bool) override;
+};
 class GbaEditor final : public juce::AudioProcessorEditor,private juce::Timer {
 public:
     explicit GbaEditor(GbaProcessor&);
@@ -60,6 +64,7 @@ private:
     juce::TextButton previous {"<"},next {">"},presetDisplay,start {"START"},select {"SELECT"};
     ConsoleRoundButton aButton {"A"},bButton {"B"};
     DirectionPad dpad;
+    RomCartridgeButton romCartridge;
     juce::Slider volume,glide,pitch;
     std::array<juce::Slider,4> macros;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> volumeAttachment,glideAttachment;
@@ -75,6 +80,7 @@ private:
     void updateMacros();
     void showBrowser();
     void showAdvanced();
+    void showSoundFonts();
     void closeOverlay();
     void setMainControlsEnabled(bool);
     void configureRenderer();

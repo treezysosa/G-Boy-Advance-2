@@ -2,6 +2,7 @@
 #include <juce_audio_utils/juce_audio_utils.h>
 #include "dsp/SynthEngine.h"
 #include "PresetManager.h"
+#include "SoundFontManager.h"
 
 class GbaProcessor final : public juce::AudioProcessor, private juce::MidiKeyboardStateListener, private juce::Timer {
 public:
@@ -47,6 +48,7 @@ public:
     juce::AudioProcessorValueTreeState state;
     juce::MidiKeyboardState keyboard;
     PresetManager presets;
+    SoundFontManager romHacks;
     static juce::AudioProcessorValueTreeState::ParameterLayout createLayout();
 private:
     struct Command {int kind=0,channel=1,note=60;float value=0;};
@@ -62,11 +64,13 @@ private:
     mutable juce::CriticalSection metadataLock;
     juce::String activePresetId,activePresetName {"Custom patch"},activePresetCategory {"User"};
     bool removedSamplePlayback=false;
+    bool soundFontMode=false;int modeFade=0;float lastLeft=0,lastRight=0,modeLeft=0,modeRight=0;
+    std::uint64_t soundFontRevision=0;
     void enqueue(Command) noexcept;
     void drainCommands() noexcept;
     void midi(const juce::MidiMessage&) noexcept;
     void handleNoteOn(juce::MidiKeyboardState*,int,int,float) override;
     void handleNoteOff(juce::MidiKeyboardState*,int,int,float) override;
-    void timerCallback() override {servicePendingProgram();}
+    void timerCallback() override;
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(GbaProcessor)
 };

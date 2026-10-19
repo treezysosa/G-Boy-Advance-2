@@ -1,4 +1,5 @@
-> Current version: **0.12.1, synthesis only**. Sample playback was removed; [update and compatibility notes](RELEASE_0_12_1.md). Earlier build results below remain historical.
+> Current version: **0.13.0, synthesis plus optional ROM Hacks SF2 instruments**. [SoundFont behavior, project paths and limitations](RELEASE_0_13.md). Earlier release records below remain historical.
+
 
 Older 0.12.0 projects restore their synthesis parameters and skin, show `SYNTH ONLY:` in the display and a removal notice in START, and discard embedded audio from newly saved state. Sample sounds no longer play. Original project, audio and preset files are left unchanged; preserve the original project if its sample content is still needed. Sample-containing presets are rejected/skipped. Schema 1 synthesis `.gba2preset` import/export continues to work.
 
@@ -67,3 +68,8 @@ User IDs support the compact 32-hex UUIDs written by earlier builds and dashed U
 Use START → IMPORT / EXPORT SOUND for external `.gba2preset` files using the user schema above. Export includes all 64 stable parameter IDs and an independent user UUID. Import validates the same schema as the library, assigns a fresh UUID and resolves name collisions with ` (2)`, ` (3)`, etc. It never replaces an existing preset. Missing known parameters retain their documented defaults; numeric values are bounded/snapped by the existing parameter definitions. Files are limited to 1 MiB. Writes use same-directory atomic replacement outside the audio callback.
 
 The exported sound includes current parameter edits. External files remain independent of the installed library. Factory program slots and IDs are unchanged. Neither `.mse` sample banks nor an unspecified `.chl` format are supported. Reference: [Maize Sampler's documented sample-based instrument format](https://www.maizesoft.com/download/msp/document.pdf), sections Introduction and Export/FAQ.
+
+
+## ROM Hacks project reference (0.13.0)
+
+The project root schema remains 1. Optional `romHacks` is a JSON string with `{ "format":"gba2.soundfont", "version":1, "path":"<absolute cached SF2 path>", "preset":0, "name":"bank.sf2" }`. The instrument index refers to TinySoundFont's bank/program-sorted list. This does not alter the 64 parameter IDs or embed bank audio. Synthesis `.gba2preset` schema remains 1 and does not contain a SoundFont; SoundFont selections are saved with the DAW project instead. Imported copies use UUID `.sf2` names in the application-data SoundFonts folder, retained across installer upgrades/uninstall.

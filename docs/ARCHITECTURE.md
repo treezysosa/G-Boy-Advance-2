@@ -1,43 +1,75 @@
-> Current version: **0.12.1, synthesis only**. Sample playback was removed; [update and compatibility notes](RELEASE_0_12_1.md). Earlier build results below remain historical.
+> Current version: **0.13.0, synthesis plus optional ROM Hacks SF2 instruments**. [SoundFont behavior, project paths and limitations](RELEASE_0_13.md). Earlier release records below remain historical.
 
-# Architecture and real-time contract
 
-`Source/dsp` is standard C++20 with no GUI, JUCE, filesystem, sample player, or network dependency. It is independently compiled and tested. `ParameterList.inc` defines all 64 stable parameter IDs, names, ranges, defaults, and choices. `Settings` is a fixed-size value object. Do not reorder enum values without regenerating `FactoryData.h`; do not rename stable IDs after release.
+Older 0.12.0 projects restore their synthesis parameters and skin, show `SYNTH ONLY:` in the display and a removal notice in START, and discard embedded audio from newly saved state. Sample sounds no longer play. Original project, audio and preset files are left unchanged; preserve the original project if its sample content is still needed. Sample-containing presets are rejected/skipped. Schema 1 synthesis `.gba2preset` import/export continues to work.
 
-`SynthEngine` owns 32 fixed voices, per-channel MIDI controls, a held-key priority map, and mathematically generated mipmapped tables. Voice excitation includes subtractive PolyBLEP oscillators, FM, additive banks, table morphs, a fractional-delay Karplus–Strong string, five-resonance vocal excitation, dual digital retro oscillators with clocked shift-register noise, and six-mode inharmonic keys. The additive bank uses a double-precision sine recurrence; shared harmonic weights and prefix normalization update once per sample, preserving brightness smoothing. There is no decoded or stored audio. Initialization allocates effect delay lines and creates tables; the sample render loop and core note/controller handlers allocate nothing.
+# Preset format v1
 
-Each voice has double-precision amplitude/filter envelope accumulators with idempotent release, bounded double-precision LFO/vibrato/tremolo/syllable clocks, a topology-preserving state-variable filter, independent five-band vocal/three-band post-filter formant banks, portamento frequency, and note/channel ownership. Voice allocation prefers a free voice, then a releasing voice, then the oldest active one. A 64-sample old-output fade reduces stealing discontinuities. Mono and legato use last-held-key priority. Continuous parameters smooth over roughly 15 ms. The two waveform selectors, filter selector and both LFO destinations use fixed-size, interruptible 5 ms linear blends. Engine changes finish their current 5 ms fade before starting the latest requested engine, keeping at most two engines active; a stable selection settles within two fades (about 10 ms, rounded to frames) after the DSP observes it. Vowel and filter coefficients update every 16 samples with a bounded 0–15 counter. Filter coefficients update before excitation processing, including the first sample of a note. The TPT filter exposes low/high/band/notch outputs from one state update; the formant-bank branch is blended in parallel. The dedicated vocal engine uses its own five resonators, so selecting the formant filter processes a second independent bank; it no longer substitutes a notch filter. Engine fades advance oscillator/envelope clocks once, then evaluate only engines with nonzero weights. Shared additive weights stay current while that engine fades out. Plucked/modal models excite on activation, including a held-note switch; once fully faded out they arm for a fresh excitation on return. String delay compensates the feedback low-pass phase at the fundamental; excitation has its mean removed. Mip levels fade out before their highest harmonic reaches 0.45 times the sample rate.
+Factory source is `Presets/factory.json`, a JSON object containing `format: "gba2.factory"`, `schemaVersion: 1`, and a `presets` array. Every entry has a stable ID, display name, category, tag array, and a `parameters` object keyed by the stable IDs in `Source/dsp/ParameterList.inc`. Values are real-world numeric values, not normalized host values. Every generated factory entry contains every parameter.
 
-`Effects.h/.cpp` contains the native stereo effects chain. Saturation and harder distortion share a 2× path with 33-tap windowed-sinc half-band FIRs for interpolation and decimation. Only these nonlinear stages run at 2×; other effects run at the host rate. The FIRs stay warm when nonlinear mix is zero, while a matching 16-frame dry delay preserves phase alignment and constant latency. `GbaProcessor` reports 16 samples to the host. The final soft limiter remains at base rate; full-chain alias freedom is not claimed.
+Run `python scripts/generate_presets.py` after changing a recipe or schema. It deterministically generates 410 original voicings and `Source/FactoryData.h`, which the plugin embeds. It checks parameter-set uniqueness, complete explicit instrument/vocal/retro designs, recipe provenance, calibrated volume coverage and the frozen identity/program-order registry. CI rejects drift between generated artifacts and recipes. `EngineTests.cpp` retains the short onset check. `PresetTests.cpp` additionally renders three notes and two velocities, checks release/headroom, and writes `factory-audit.csv` and `factory-similarity.csv`.
 
-All fractional reads wrap integer addresses before interpolation, avoiding precision loss and a possible one-past-end index when adding a tiny negative float to the buffer length. Delay-time changes use two stationary read heads and a 20 ms linear crossfade; changes received during a fade queue until it finishes. Chorus, flanger, phaser, wow and flutter have independent bounded double phases, so non-integer rate ratios do not jump when a shared phase wraps. Wow blends continuously from dry. Delay/modulation/tape lines are sized for their actual maximum times; they allocate only in prepare.
+User files have extension `.gba2preset`:
 
-The four-line orthogonal FDN uses sample-rate-correct 3.2 kHz feedback damping. Four-stage allpass phasing, quantization/sample-and-hold, two second-order RBJ shelving EQs and mid/side width complete the chain. Derived drive/quantization/room/EQ coefficients update every 16 samples; host continuous parameters retain per-sample smoothing upstream. Reset clears FIR, dry, delay, modulation, EQ and feedback history. The callback does not allocate or access files.
+```json
+{
+  "format": "gba2.preset",
+  "schemaVersion": 1,
+  "id": "user.1aa57d4c-6863-4ca5-977c-2c00f40f6535",
+  "name": "My Velvet Vowels",
+  "category": "User",
+  "tags": "user synthesis",
+  "parameters": {
+    "engine": 5,
+    "volume": 0.72,
+    "formant.vowel": 1.4,
+    "formant.shift": 2.0,
+    "filter.cutoff": 7800,
+    "amp.attack": 0.18,
+    "amp.sustain": 0.7,
+    "amp.release": 1.2
+  }
+}
+```
 
-`GbaProcessor` reads APVTS atomic parameter values once per audio block and splits DSP rendering at each MIDI event's sample offset. It skips non-short MIDI packets rather than allocating for sysex. GUI keyboard and preview commands enter a fixed-size SPSC queue, preserving play/stop order. Pitch and panic use atomics. The callback does not call `MidiKeyboardState::processNextMidiBuffer`, touch preset files, copy ValueTrees, use a mutex, or open windows. A queue overflow requests panic so a dropped note-off cannot leave a stuck voice.
+Omitted user parameters receive defaults. Unknown parameters are ignored for forward portability. Recognized values must be numeric and finite and are clamped / rounded to the stable range. Unknown schema versions, invalid IDs, duplicate IDs, names outside 1–100 characters, and files over 1 MiB are skipped. UI reports the last load/write error. Factory patches cannot be renamed/deleted in place; Save As creates an independent user UUID file.
 
-Host program changes are atomic requests polled by a message-thread timer at 20 Hz. Preset application uses host parameter notifications outside the audio callback. UI/library work and file I/O remain on the message thread; user file replacement is transactional via `TemporaryFile`. The processor supports one stereo output bus and no audio input. Its host tail estimate includes envelope release plus echo/room decay to -100 dB and a small processing margin; it can exceed two minutes at maximum delay/feedback.
+There is no sample data, audio URL, waveform file, streaming handle, recorded voice, or external-bank reference in either format. Demonstration WAVs generated by tests are output artifacts only.
 
-Project state uses JUCE APVTS XML-in-binary with root `GBA2_STATE`, schema version 1, all parameter children, patch identity and editor width. State parsing rejects malformed / oversized data and clamps known domains. A non-audio metadata lock coordinates preset identity with serialization; the audio callback never takes it. The project carries all actual parameters, so external user files are not required to reopen a song. Parameter-only JSON files supply portable user patches. Factory JSON and generated C++ data are checked for reproducibility. Explicit instrument profiles, a recipe-digested master-level table and frozen identity/program registry drive generation. The runtime embeds only final parameter arrays; authoring metadata and offline audit WAVs are not runtime dependencies. No DSP or parameter changes are needed for calibration because master volume follows the limiter.
+## Factory authoring and level calibration
 
-`GbaEditor` uses JUCE sliders, buttons, keyboard, native list and viewport components. The chassis, knobs, bevels, display, D-pad and grille are vector graphics. The approved JPEG is a visual reference only and is not used as a clickable background. Advanced controls use APVTS attachments; reassigned front-panel knobs attach directly to stable destination parameters.
+`instrument-designs.json` contains explicit base/Afterglow synthesis profiles for the 102 named instrument designs and a few measured compatibility refinements. `vocal-designs.json` adds 75 explicit vocal profiles and Afterglow overrides with original-synthesis design notes. `retro-designs.json` adds 28 explicit retro designs / 56 voicings with seven technical-style tags. All 382 legacy identities and program indices remain, and 28 new ones append. `factory-levels.json` contains parameter-only master gains, category RMS targets and a digest of the recipes/schema and relevant DSP sources. `factory-index.json` freezes existing factory identities and program order; new entries append. The plugin embeds the final arrays, so these authoring files are not runtime dependencies.
 
-Known boundaries: block-level parameter snapshots, temporary extra CPU during bounded two-engine blends, basic output limiting, two LFO routes rather than an arbitrary modulation matrix, and synthetic approximations of acoustic instruments. See NEXT_STEPS.md for measured quality/performance work before release.
+After changing recipes, use the offline workflow (shown for a single-configuration CMake build):
 
-## Phase 7 vocal module
+```sh
+python3 scripts/generate_presets.py --uncalibrated
+cmake -S . -B build-audit -DGBA_BUILD_PLUGIN=OFF -DCMAKE_BUILD_TYPE=Release
+cmake --build build-audit --target gba2-preset-tests --parallel 2
+(cd build-audit && ./gba2-preset-tests --measure-only)
+python3 scripts/calibrate_presets.py build-audit/factory-audit.csv
+python3 scripts/generate_presets.py
+cmake --build build-audit --parallel 2
+ctest --test-dir build-audit --output-on-failure
+python3 scripts/report_presets.py build-audit
+```
 
-`VocalEngine.h` owns five TPT resonances, three linear spectral-tilt states, a mirrored lower choir phase and high-passed noise state per voice. Vowel coefficients and tilt update at the existing 16-sample control interval. Resonance damping follows bandwidth / center frequency and each band scales by damping, normalizing its peak; input harmonics remain pitched by MIDI while resonance centers follow only vowel/shift modulation. The three excitation layers use PolyBLEP saw plus sine, with a linear brightness tilt. Breath blends into a 160 Hz high-passed original noise source. Choir energy compensation avoids a simple gain boost. The engine is mono per voice; existing note/pan modulation, chorus and width produce stereo output. Existing syllabic motion is three Hz and does not generate words. `vocal-designs.json` is authoring metadata, not a runtime dependency. Existing formant patches sound different under this DSP revision despite stable state IDs.
+On Visual Studio builds, use `--config Release` and run `build-audit/Release/gba2-preset-tests.exe` from the audit directory. The ordinary test suite intentionally requires calibrated levels; `--measure-only` is the authoring pass. Calibration controls the existing master-volume parameter after the output limiter, so scaling is linear and does not require new parameters or DSP. Gains are bounded to 0.05–0.95, preserving headroom and quieter articulations that cannot reach the target. The metric is maximum rolling 100 ms stereo RMS, not LUFS or perceptual equal loudness. Recipe digests normalize CRLF to LF for platform portability.
 
-## Phase 8 retro module
+## Phase 9 library metadata and I/O
 
-`RetroEngine.h` owns two independent 15/7-bit shift-register pairs, two bounded double-precision noise clocks and one tone-filter state per voice. `start` resets these states on a retrigger; legato preserves them. Noise runs at 16 times the corresponding oscillator frequency, capped at 0.45 updates/sample, and brightness blends long/short registers. Sine/triangle and saw use deliberate 16/32-level DAC quantization; pulse/saw use PolyBLEP edges. The existing waveform choice fades apply independently to both oscillators. Brightness configures a one-pole source tone filter at the 16-sample control interval. MIDI, envelopes, filters and effects retain their shared paths. Engine 6 sounds different despite stable parameter/state IDs. Retro profiles span all eight hybrid engines; sample-era texture means mathematical synthesis with digital effects, never sample playback.
+User IDs support the compact 32-hex UUIDs written by earlier builds and dashed UUIDs. Tags accept a string or string array (maximum 512 characters). Names trim to 1–100 characters and cannot contain control characters. Existing imported duplicate display names remain readable; authoring new duplicates is rejected case-insensitively. Duplicate IDs are skipped in deterministic filename order. Linked files are skipped. Reads are bounded to 1 MiB even if a file grows during reading.
 
-## Phase 9 preset model/browser
+`library.json` now writes `{ "format": "gba2.library", "schemaVersion": 1, "favorites": [...], "recent": [...] }`. Unversioned earlier metadata is accepted and migrates on the next successful mutation. Recents are deduplicated, most-recent-first and bounded to 32. Invalid/unsupported metadata is retained; construction/refresh do not overwrite it. Sequential instance updates merge under a process-wide non-audio lock. Separate processes can still race simultaneous edits. Atomic native replacement preserves prior content on failure, without claiming crash/power-loss durability. See PHASE_9.md for limits and tests.
 
-`PresetManager::filtered` combines model predicates and tokenized AND/quoted-phrase matching. Browser cursor selection is independent of the processor patch until click/Enter/preview; this avoids MRU reordering during arrow browsing. Visible IDs drive selection actions; source/category filters survive library changes. A non-audio browser timer observes active identity/model revisions. Explicit refresh rebuilds user entries without applying their parameters.
 
-A process-wide recursive critical section serializes library mutations, including latest-file metadata merges. It is absent from the audio callback. User reads validate types/UUIDs and are stream-bounded to 1 MiB. A flushed same-directory temporary file replaces its destination using MoveFileExW on Windows or rename on POSIX; no copy/delete fallback or retry sleeps. Rename re-reads the user payload, and deletion validates identity again. Metadata persistence failures leave favorite state uncommitted and report warnings when sound/preset operations already succeeded. Separate-process simultaneous metadata edits and slow-storage UI stalls remain boundaries. Processor construction applies Dream Pad without writing history.
+## Import/export in 0.11.0
 
-## 0.10.1 hot paths
+Use START → IMPORT / EXPORT SOUND for external `.gba2preset` files using the user schema above. Export includes all 64 stable parameter IDs and an independent user UUID. Import validates the same schema as the library, assigns a fresh UUID and resolves name collisions with ` (2)`, ` (3)`, etc. It never replaces an existing preset. Missing known parameters retain their documented defaults; numeric values are bounded/snapped by the existing parameter definitions. Files are limited to 1 MiB. Writes use same-directory atomic replacement outside the audio callback.
 
-Glide and oscillator-2 detune coefficients are shared across voices per sample. Zero-depth LFOs retain their clocks and skip sine evaluation. Modal partial decay uses one exponential and double-precision successive powers, preserving the direct elapsed-time formula under automation. Band-limited subtractive/retro triangles use an odd-harmonic trigonometric recurrence, retaining their eight-partial maximum, Nyquist bound and gain. Direct-sum reference tests measure over 140 dB signal-to-error on the tested register/rate grid. Floating-point differences at retro quantizer thresholds need not be bit-identical to earlier builds.
+The exported sound includes current parameter edits. External files remain independent of the installed library. Factory program slots and IDs are unchanged. Neither `.mse` sample banks nor an unspecified `.chl` format are supported. Reference: [Maize Sampler's documented sample-based instrument format](https://www.maizesoft.com/download/msp/document.pdf), sections Introduction and Export/FAQ.
+
+
+## ROM Hacks project reference (0.13.0)
+
+The project root schema remains 1. Optional `romHacks` is a JSON string with `{ "format":"gba2.soundfont", "version":1, "path":"<absolute cached SF2 path>", "preset":0, "name":"bank.sf2" }`. The instrument index refers to TinySoundFont's bank/program-sorted list. This does not alter the 64 parameter IDs or embed bank audio. Synthesis `.gba2preset` schema remains 1 and does not contain a SoundFont; SoundFont selections are saved with the DAW project instead. Imported copies use UUID `.sf2` names in the application-data SoundFonts folder, retained across installer upgrades/uninstall.

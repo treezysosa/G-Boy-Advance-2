@@ -19,7 +19,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout GbaProcessor::createLayout()
 }
 GbaProcessor::GbaProcessor(juce::File dataRoot)
     : AudioProcessor(BusesProperties().withOutput("Stereo output",juce::AudioChannelSet::stereo(),true)),
-      state(*this,nullptr,"GBA2_STATE",createLayout()),presets(*this,dataRoot),engine(std::make_unique<gba::SynthEngine>()) {
+      state(*this,nullptr,"GBA2_STATE",createLayout()),presets(*this,dataRoot),romHacks(presets.userFolder().getParentDirectory()),engine(std::make_unique<gba::SynthEngine>()) {
     for(std::size_t i=0;i<raw.size();++i) raw[i]=state.getRawParameterValue(juce::String(gba::specs[i].id.data()));
     setLatencySamples(gba::SynthEngine::latencySamples);
     keyboard.addListener(this);presets.restoreDefault(false);startTimerHz(20);
@@ -33,11 +33,11 @@ double GbaProcessor::getTailLengthSeconds() const {
     const auto repeats=[](double feedback) {return feedback>0?std::ceil(std::log(1e-5)/std::log(feedback)):0.0;};
     const double echo=s[gba::Param::Delay]>0?s[gba::Param::DelayTime]*(1+repeats(s[gba::Param::DelayFeedback])):0;
     const double room=s[gba::Param::Reverb]>0?.045*(1+repeats(.5+.46*s[gba::Param::ReverbSize])):0;
-    return s[gba::Param::Release]+echo+room+.1;
+    return (romHacks.enabled()?std::max(30.0,double(s[gba::Param::Release])):double(s[gba::Param::Release]))+echo+room+.1;
 }
-void GbaProcessor::prepareToPlay(double sr,int) {engine->setSettings(snapshot());engine->prepare(sr);}
-void GbaProcessor::releaseResources() {engine->reset();active=0;level=0;}
-void GbaProcessor::reset() {engine->reset();active=0;level=0;}
+void GbaProcessor::prepareToPlay(double sr,int) {engine->setSettings(snapshot());engine->prepare(sr);romHacks.prepare(sr);soundFontMode=romHacks.enabled();modeFade=0;lastLeft=lastRight=0;}
+void GbaProcessor::releaseResources() {reset();}
+void GbaProcessor::reset() {engine->reset();if(auto* sf=romHacks.beginBlock(snapshot()))sf->reset();romHacks.endBlock();active=0;level=0;lastLeft=lastRight=0;}
 bool GbaProcessor::isBusesLayoutSupported(const BusesLayout& layout) const {
     return layout.getMainInputChannelSet().isDisabled()&&layout.getMainOutputChannelSet()==juce::AudioChannelSet::stereo();
 }
@@ -59,6 +59,12 @@ void GbaProcessor::drainCommands() noexcept {
     int first=0,count=0,second=0,count2=0;commandFifo.prepareToRead(255,first,count,second,count2);
     const auto process=[&](int begin,int amount) {
         for(int i=0;i<amount;++i) {const auto& c=commands[std::size_t(begin+i)];
+            if(soundFontMode){if(auto* sf=romHacks.audio()){
+                if(c.kind==1)sf->noteOn(c.channel,c.note,c.value);
+                if(c.kind==2)sf->noteOff(c.channel,c.note);
+                if(c.kind==3)sf->noteOn(c.channel,c.note,c.value,true);
+                if(c.kind==4)sf->stopPreview();
+            }continue;}
             if(c.kind==1)engine->noteOn(c.channel,c.note,c.value);
             if(c.kind==2)engine->noteOff(c.channel,c.note);
             if(c.kind==3)engine->noteOn(c.channel,c.note,c.value,true);
@@ -66,10 +72,17 @@ void GbaProcessor::drainCommands() noexcept {
         }
     };
     process(first,count);process(second,count2);commandFifo.finishedRead(count+count2);
-    if(panicRequested.exchange(false))engine->allNotesOff(true);
-    int pitch=pitchRequested.exchange(-1);if(pitch>=0)engine->pitchWheel(1,pitch);
+    if(panicRequested.exchange(false)){engine->allNotesOff(true);if(auto* sf=romHacks.audio())sf->reset();}
+    int pitch=pitchRequested.exchange(-1);if(pitch>=0){engine->pitchWheel(1,pitch);if(auto* sf=romHacks.audio())sf->pitchWheel(1,pitch);}
 }
 void GbaProcessor::midi(const juce::MidiMessage& m) noexcept {
+    if(soundFontMode){if(auto* sf=romHacks.audio()){
+        if(m.isNoteOn())sf->noteOn(m.getChannel(),m.getNoteNumber(),m.getFloatVelocity());
+        else if(m.isNoteOff())sf->noteOff(m.getChannel(),m.getNoteNumber());
+        else if(m.isPitchWheel())sf->pitchWheel(m.getChannel(),m.getPitchWheelValue());
+        else if(m.isController())sf->controller(m.getChannel(),m.getControllerNumber(),m.getControllerValue());
+        else if(m.isProgramChange())sf->programChange(m.getChannel(),m.getProgramChangeNumber());
+    }return;}
     if(m.isNoteOn())engine->noteOn(m.getChannel(),m.getNoteNumber(),m.getFloatVelocity());
     else if(m.isNoteOff())engine->noteOff(m.getChannel(),m.getNoteNumber());
     else if(m.isPitchWheel())engine->pitchWheel(m.getChannel(),m.getPitchWheelValue());
@@ -81,15 +94,22 @@ void GbaProcessor::midi(const juce::MidiMessage& m) noexcept {
 void GbaProcessor::processBlock(juce::AudioBuffer<float>& buffer,juce::MidiBuffer& messages) {
     juce::ScopedNoDenormals noDenormals;
     buffer.clear();if(buffer.getNumChannels()<2)return;
-    engine->setSettings(snapshot());drainCommands();
+    const auto settings=snapshot();const bool requested=romHacks.enabled();
+    auto* sf=romHacks.beginBlock(settings);
+    if(requested!=soundFontMode){soundFontMode=requested;engine->reset();if(sf)sf->reset();modeFade=240;modeLeft=lastLeft;modeRight=lastRight;}
+    engine->setSettings(settings);drainCommands();
     int offset=0,total=buffer.getNumSamples();
     auto* left=buffer.getWritePointer(0);auto* right=buffer.getWritePointer(1);
+    const auto render=[&](int begin,int count){if(soundFontMode){if(sf)sf->render(left+begin,right+begin,count);}else engine->render(left+begin,right+begin,count);};
     for(const auto metadata:messages) {
         int at=juce::jlimit(offset,total,metadata.samplePosition);
-        engine->render(left+offset,right+offset,at-offset);offset=at;if(metadata.numBytes<=3)midi(metadata.getMessage());
+        render(offset,at-offset);offset=at;if(metadata.numBytes<=3)midi(metadata.getMessage());
     }
-    engine->render(left+offset,right+offset,total-offset);
-    messages.clear();active.store(engine->activeVoices(),std::memory_order_relaxed);
+    render(offset,total-offset);
+    for(int i=0;modeFade>0&&i<total;++i){const float f=float(modeFade--)/240;left[i]=left[i]*(1-f)+modeLeft*f;right[i]=right[i]*(1-f)+modeRight*f;}
+    if(total>0){lastLeft=left[total-1];lastRight=right[total-1];}
+    messages.clear();active.store(soundFontMode?(sf?sf->activeVoices():0):engine->activeVoices(),std::memory_order_relaxed);
+    romHacks.endBlock();
     level.store(total>0?buffer.getMagnitude(0,total):0,std::memory_order_relaxed);
 }
 int GbaProcessor::getNumPrograms() {return int(gba::factoryPatches.size());}
@@ -102,10 +122,11 @@ void GbaProcessor::processBlockBypassed(juce::AudioBuffer<float>& buffer,juce::M
 }
 void GbaProcessor::setCurrentProgram(int i) {if(i>=0&&i<getNumPrograms())pendingProgram.store(i);}
 const juce::String GbaProcessor::getProgramName(int i) {return i>=0&&i<getNumPrograms()?juce::String(gba::factoryPatches[std::size_t(i)].name):juce::String();}
+void GbaProcessor::timerCallback(){servicePendingProgram();const auto r=romHacks.revision();if(r!=soundFontRevision){soundFontRevision=r;updateHostDisplay(juce::AudioProcessorListener::ChangeDetails{}.withNonParameterStateChanged(true));}}
 void GbaProcessor::servicePendingProgram() {int i=pendingProgram.exchange(-1);if(i>=0)presets.load(gba::factoryPatches[std::size_t(i)].id);}
 void GbaProcessor::applyPreset(const GbaPreset& p) {
     const juce::ScopedLock lock(metadataLock);
-    removedSamplePlayback=false;
+    removedSamplePlayback=false;romHacks.useSoundFont(false);
     // All changes use host-visible parameter notifications; the audio thread reads atomics only.
     for(std::size_t i=0;i<gba::parameterCount;++i) {
         auto* parameter=state.getParameter(juce::String(gba::specs[i].id.data()));
@@ -134,6 +155,7 @@ void GbaProcessor::getStateInformation(juce::MemoryBlock& destination) {
     auto copy=state.copyState();copy.setProperty("presetId",activePresetId,nullptr);copy.setProperty("presetName",activePresetName,nullptr);copy.setProperty("presetCategory",activePresetCategory,nullptr);copy.setProperty("schemaVersion",1,nullptr);copy.setProperty("editorWidth",editorWidth.load(),nullptr);
     copy.setProperty("editorSkin",juce::String(gba_ui::skins[std::size_t(gba_ui::validSkin(editorSkin.load()))].id.data()),nullptr);
     copy.removeProperty("sampleData",nullptr);
+    auto rom=romHacks.saveState();if(rom.isVoid())copy.removeProperty("romHacks",nullptr);else copy.setProperty("romHacks",juce::JSON::toString(rom),nullptr);
     if(removedSamplePlayback)copy.setProperty("samplePlaybackRemoved",true,nullptr);else copy.removeProperty("samplePlaybackRemoved",nullptr);
     if(auto xml=copy.createXml())copyXmlToBinary(*xml,destination);
 }
@@ -154,7 +176,9 @@ void GbaProcessor::setStateInformation(const void* data,int bytes) {
             child.setProperty("value",juce::jlimit(spec.min,spec.max,value),nullptr);
         }
     }
+    juce::var rom;if(restored.hasProperty("romHacks")&&juce::JSON::parse(restored.getProperty("romHacks").toString(),rom).failed())return;
     const juce::ScopedLock lock(metadataLock);
+    romHacks.restore(rom);romHacks.waitUntilIdle(30000);
     removedSamplePlayback=removed;
     pendingProgram.store(-1);state.replaceState(restored);
     activePresetId=restored.getProperty("presetId").toString();activePresetName=restored.getProperty("presetName","Custom patch").toString();activePresetCategory=restored.getProperty("presetCategory","User").toString();

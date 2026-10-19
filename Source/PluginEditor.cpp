@@ -75,6 +75,53 @@ public:
     void resized() override {viewport.setBounds(getLocalBounds());grid.setSize(std::max(100,getWidth()-16),grid.requiredHeight());}
 private:ParameterGrid grid;juce::Viewport viewport;
 };
+class SoundFontPanel final : public juce::Component,private juce::Timer {
+public:
+    SoundFontPanel(GbaProcessor& p,std::function<void()> close):processor(p){
+        setName("ROM Hacks browser");setWantsKeyboardFocus(true);
+        for(auto* c:std::initializer_list<juce::Component*>{&load,&back,&instruments,&file,&status,&preview,&stop,&synth,&enable})addAndMakeVisible(c);
+        instruments.setName("SoundFont instrument");file.setName("SoundFont file");status.setName("SoundFont status");
+        file.setFont(font(17,true));status.setFont(font(15));
+        load.onClick=[this]{choose();};back.onClick=[this,close]{asyncClose(this,close);};
+        instruments.onChange=[this]{processor.romHacks.select(instruments.getSelectedId()-1);refresh();};
+        preview.onClick=[this]{processor.preview();};stop.onClick=[this]{processor.stopPreview();};
+        synth.onClick=[this]{processor.romHacks.useSoundFont(false);processor.panic();refresh();};
+        enable.onClick=[this]{processor.romHacks.useSoundFont(true);refresh();};
+        refresh();startTimerHz(10);
+    }
+    ~SoundFontPanel() override{stopTimer();}
+    void paint(juce::Graphics& g) override{
+        panel(*this,g,getLocalBounds().toFloat(),14);caption(g,"ROM HACKS",{22,15,float(getWidth()-300),28},25);
+        const float sy=float(getHeight())/455;
+        g.setColour(text.withAlpha(.8f));g.setFont(font(std::max(12.0f,16*sy)));
+        g.drawFittedText("Load a SoundFont 2 (.sf2) bank, choose an instrument, then play MIDI or the piano.",24,int(66*sy),getWidth()-48,int(45*sy),juce::Justification::centredLeft,2);
+        g.setFont(font(std::max(11.0f,13*sy)));g.drawFittedText("Imported banks are copied to your SoundFonts folder. Bank and instrument selection are saved with your DAW project.",24,int(273*sy),getWidth()-48,int(44*sy),juce::Justification::centredLeft,2);
+        g.drawFittedText("Synth oscillator controls belong to synthesis presets. SoundFont limits and project backup instructions are in the manual.",24,int(412*sy),getWidth()-48,int(28*sy),juce::Justification::centredLeft,2);
+    }
+    void resized() override{
+        const int w=getWidth();const float sy=float(getHeight())/455;
+        auto place=[sy](juce::Component& c,int x,int y,int width,int height){c.setBounds(x,int(float(y)*sy),width,int(float(height)*sy));};
+        place(back,w-245,14,220,30);place(file,24,123,w-250,30);place(load,w-205,123,180,34);
+        place(instruments,24,174,w-48,38);place(preview,24,227,135,30);place(stop,170,227,105,30);place(enable,300,227,185,30);place(synth,w-245,227,220,30);place(status,24,330,w-48,70);
+    }
+private:
+    GbaProcessor& processor;juce::TextButton load{"LOAD SF2"},back{"BACK / ROM HACKS"},preview{"A  PREVIEW"},stop{"B  STOP"},synth{"RETURN TO SYNTH"},enable{"USE SOUNDFONT"};
+    juce::ComboBox instruments;juce::Label file,status;juce::StringArray shown;std::unique_ptr<juce::FileChooser> chooser;
+    void choose(){
+        chooser=std::make_unique<juce::FileChooser>("Load a SoundFont 2 bank",juce::File::getSpecialLocation(juce::File::userDocumentsDirectory),"*.sf2",true);
+        juce::Component::SafePointer<SoundFontPanel> safe(this);
+        chooser->launchAsync(juce::FileBrowserComponent::openMode|juce::FileBrowserComponent::canSelectFiles,[safe](const juce::FileChooser& dialog){if(safe!=nullptr&&dialog.getResult()!=juce::File()){safe->processor.romHacks.loadFile(dialog.getResult());safe->refresh();}});
+    }
+    void timerCallback() override{refresh();}
+    void refresh(){const auto info=processor.romHacks.view();
+        if(shown!=info.instruments){shown=info.instruments;instruments.clear(juce::dontSendNotification);instruments.addItemList(shown,1);}
+        instruments.setSelectedId(shown.isEmpty()?0:info.selected+1,juce::dontSendNotification);
+        instruments.setTextWhenNothingSelected("Load an .sf2 file to see its instruments");instruments.setEnabled(!info.loading&&!shown.isEmpty());load.setEnabled(!info.loading);
+        file.setText(info.fileName.isEmpty()?"No SoundFont loaded":info.fileName,juce::dontSendNotification);
+        status.setText(info.status.isEmpty()?"Ready to load your SoundFont bank.":info.status,juce::dontSendNotification);status.setTooltip(status.getText());
+        preview.setEnabled(info.enabled&&!info.loading&&!shown.isEmpty());enable.setEnabled(!info.loading&&!shown.isEmpty()&&!info.enabled);synth.setEnabled(info.enabled||info.loading);
+    }
+};
 class AdvancedPanel final : public juce::Component {
 public:
     AdvancedPanel(GbaProcessor& p,std::function<void()> close,std::function<void()> skinChanged):processor(p),tabs(juce::TabbedButtonBar::TabsAtTop) {
@@ -184,6 +231,19 @@ private:
     void returnKeyPressed(int) override {activate(true);}
     void deleteKeyPressed(int) override {if(remove.isEnabled())remove.triggerClick();}
 };
+}
+
+void RomCartridgeButton::paintButton(juce::Graphics& g,bool over,bool down){
+    juce::Graphics::ScopedSaveState saved(g);g.addTransform(juce::AffineTransform::scale(float(getWidth())/220,float(getHeight())/72));
+    const float dy=down?2.0f:0.0f;g.addTransform(juce::AffineTransform::translation(0,dy));
+    juce::Path cart;cart.startNewSubPath(4,15);cart.lineTo(24,15);cart.lineTo(24,4);cart.lineTo(196,4);cart.lineTo(196,15);cart.lineTo(216,15);cart.lineTo(216,67);cart.lineTo(4,67);cart.closeSubPath();
+    g.setColour(juce::Colours::black.withAlpha(.7f));g.fillPath(cart,juce::AffineTransform::translation(0,3));
+    g.setGradientFill(juce::ColourGradient(juce::Colour(over?0xfff4f2fa:0xffd2d3dc),0,3,juce::Colour(0xff555b70),0,72,false));g.fillPath(cart);
+    g.setColour(uiColour(*this,0xff080c25));g.strokePath(cart,juce::PathStrokeType(2));g.setColour(juce::Colours::white.withAlpha(.5f));g.drawLine(27,7,193,7,1.5f);
+    panel(*this,g,{34,15,152,41},5);caption(g,"ROM Hacks",{39,21,142,25},19);
+    for(int side:{12,202})for(int i=0;i<4;++i){g.setColour(juce::Colour(0xff404858));g.drawLine(float(side),25+float(i)*7,float(side+6),25+float(i)*7,2);}
+    for(int i=0;i<12;++i){g.setColour(juce::Colour(0xffd2b16e));g.fillRect(46+i*11,62,6,4);}
+    if(hasKeyboardFocus(false)){g.setColour(uiColour(*this,0xffd2b7ff));g.strokePath(cart,juce::PathStrokeType(2.5f));}
 }
 
 ConsoleLook::ConsoleLook() {setSkin(0);}
@@ -438,7 +498,8 @@ void ConsoleKeyboard::drawBlackNote(int,juce::Graphics& g,juce::Rectangle<float>
 
 GbaEditor::GbaEditor(GbaProcessor& p):AudioProcessorEditor(p),processor(p),keyboard(p.keyboard) {
     look.setSkin(processor.editorSkin.load());setLookAndFeel(&look);setOpaque(true);setWantsKeyboardFocus(true);
-    for(auto* c:std::initializer_list<juce::Component*>{&keyboard,&previous,&next,&presetDisplay,&start,&select,&aButton,&bButton,&dpad,&volume,&glide,&pitch})addAndMakeVisible(c);
+    for(auto* c:std::initializer_list<juce::Component*>{&keyboard,&previous,&next,&presetDisplay,&start,&select,&aButton,&bButton,&dpad,&romCartridge,&volume,&glide,&pitch})addAndMakeVisible(c);
+    romCartridge.setName("ROM Hacks cartridge");romCartridge.setTooltip("ROM Hacks: load and play .sf2 SoundFonts (F3)");romCartridge.onClick=[this]{showSoundFonts();};
     rotary(volume,"Master volume");rotary(glide,"Glide");
     volume.setTooltip("Master output volume");glide.setTooltip("Glide / portamento time. Voice mode is under SELECT.");
     for(std::size_t i=0;i<macros.size();++i){rotary(macros[i],"Macro "+juce::String::charToString(char('A'+i)));addAndMakeVisible(macros[i]);}
@@ -447,12 +508,12 @@ GbaEditor::GbaEditor(GbaProcessor& p):AudioProcessorEditor(p),processor(p),keybo
     volume.setDoubleClickReturnValue(true,.72);glide.setDoubleClickReturnValue(true,0);
     pitch.setName("Pitch wheel");pitch.setSliderStyle(juce::Slider::LinearVertical);pitch.setTextBoxStyle(juce::Slider::NoTextBox,false,0,0);pitch.setRange(0,16383,1);pitch.setValue(8192,juce::dontSendNotification);pitch.setTooltip("Pitch bend. Release to return to center.");
     pitch.onValueChange=[this]{processor.uiPitch(int(pitch.getValue()));};pitch.onDragEnd=[this]{pitch.setValue(8192,juce::sendNotificationSync);};pitch.setDoubleClickReturnValue(true,8192);
-    previous.setTooltip("Previous preset");next.setTooltip("Next preset");previous.onClick=[this]{processor.presets.step(-1);};next.onClick=[this]{processor.presets.step(1);};
+    previous.setTooltip("Previous preset");next.setTooltip("Next preset");previous.onClick=[this]{if(processor.romHacks.enabled())processor.romHacks.step(-1);else processor.presets.step(-1);};next.onClick=[this]{if(processor.romHacks.enabled())processor.romHacks.step(1);else processor.presets.step(1);};
     previous.setTitle("Previous preset");next.setTitle("Next preset");
-    presetDisplay.setName("Preset display");presetDisplay.onClick=[this]{showBrowser();};start.setTooltip("Open preset browser (F1)");select.setTooltip("Open advanced synthesis (F2)");start.onClick=[this]{showBrowser();};select.onClick=[this]{showAdvanced();};
-    aButton.setTooltip("Preview current patch with a short synthesized C4");bButton.setTooltip("Stop preview; DAW MIDI notes continue");aButton.onClick=[this]{processor.preview();};bButton.onClick=[this]{processor.stopPreview();};
+    presetDisplay.setName("Preset display");presetDisplay.onClick=[this]{if(processor.romHacks.enabled())showSoundFonts();else showBrowser();};start.setTooltip("Open preset browser (F1)");select.setTooltip("Open advanced synthesis (F2)");start.onClick=[this]{showBrowser();};select.onClick=[this]{showAdvanced();};
+    aButton.setTooltip("Preview current patch with a short C4");bButton.setTooltip("Stop preview; DAW MIDI notes continue");aButton.onClick=[this]{processor.preview();};bButton.onClick=[this]{processor.stopPreview();};
     aButton.setTitle("Preview current preset");bButton.setTitle("Stop preset preview");
-    dpad.onDirection=[this](int direction){if(direction<2)processor.presets.step(direction==0?-1:1);else processor.presets.stepCategory(direction==2?-1:1);};
+    dpad.onDirection=[this](int direction){if(processor.romHacks.enabled()){processor.romHacks.step((direction==0||direction==2)?-1:1,direction>=2);return;}if(direction<2)processor.presets.step(direction==0?-1:1);else processor.presets.stepCategory(direction==2?-1:1);};
     keyboard.setName("Piano keyboard");keyboard.setOctaveForMiddleC(4);keyboard.setAvailableRange(24,108);keyboard.setLowestVisibleKey(48);keyboard.setKeyPressBaseOctave(4);keyboard.setScrollButtonsVisible(true);
     keyboard.setDescription("Playable piano. Click or drag keys, or focus here to use the computer keyboard. Side arrows scroll octaves.");
     keyboard.setBlackNoteLengthProportion(.63f);keyboard.setBlackNoteWidthProportion(.63f);
@@ -586,6 +647,7 @@ void GbaEditor::resized() {
     float sx=float(getWidth())/1280,sy=float(getHeight())/646;
     auto bounds=[sx,sy](juce::Component& component,float x,float y,float w,float h){component.setBounds(int(std::round(x*sx)),int(std::round(y*sy)),int(std::round(w*sx)),int(std::round(h*sy)));};
     bounds(previous,350,28,68,56);bounds(presetDisplay,418,28,444,56);bounds(next,862,28,68,56);
+    bounds(romCartridge,42,105,220,72);
     bounds(dpad,55,183,160,160);bounds(start,76,375,130,30);bounds(select,76,412,130,30);
     bounds(volume,538,258,204,198);bounds(macros[0],325,320,85,85);bounds(macros[1],432,320,85,85);bounds(macros[2],762,320,85,85);bounds(macros[3],869,320,85,85);
     bounds(aButton,1162,198,96,96);bounds(bButton,1059,242,96,96);
@@ -616,12 +678,14 @@ void GbaEditor::applySkin() {
 }
 void GbaEditor::timerCallback() {
     if(look.skin()!=gba_ui::validSkin(processor.editorSkin.load()))applySkin();
-    presetDisplay.setButtonText(processor.presetName().toUpperCase());presetDisplay.setTooltip(processor.presetCategory()+" / "+processor.presetName()+" / Click to browse");updateMacros();
+    const auto sf=processor.romHacks.view();
+    if(sf.enabled){presetDisplay.setButtonText(sf.instruments.isEmpty()?"SF2: LOAD BANK":sf.instruments[sf.selected].fromFirstOccurrenceOf("  ",false,false).toUpperCase());presetDisplay.setTooltip(sf.fileName+" / Click for ROM Hacks");}
+    else {presetDisplay.setButtonText(processor.presetName().toUpperCase());presetDisplay.setTooltip(processor.presetCategory()+" / "+processor.presetName()+" / Click to browse");}updateMacros();
     const bool lit=processor.outputLevel()>.001f;
     if(lit!=signalLed) {signalLed=lit;repaint(juce::Rectangle<float>(284,41,32,32).transformedBy(juce::AffineTransform::scale(float(getWidth())/1280,float(getHeight())/646)).getSmallestIntegerContainer());}
 }
 void GbaEditor::setMainControlsEnabled(bool enabled) {
-    for(auto* c:std::initializer_list<juce::Component*>{&previous,&next,&presetDisplay,&start,&select,&aButton,&bButton,&dpad,&volume})c->setEnabled(enabled);
+    for(auto* c:std::initializer_list<juce::Component*>{&previous,&next,&presetDisplay,&start,&select,&aButton,&bButton,&dpad,&romCartridge,&volume})c->setEnabled(enabled);
     for(auto& macro:macros)macro.setEnabled(enabled);
 }
 void GbaEditor::showBrowser() {
@@ -632,10 +696,15 @@ void GbaEditor::showAdvanced() {
     if(dynamic_cast<AdvancedPanel*>(overlay.get())){closeOverlay();return;}
     overlay=std::make_unique<AdvancedPanel>(processor,[this]{closeOverlay();},[this]{applySkin();});addAndMakeVisible(*overlay);setMainControlsEnabled(false);resized();overlay->toFront(true);
 }
+void GbaEditor::showSoundFonts(){
+    if(dynamic_cast<SoundFontPanel*>(overlay.get())){closeOverlay();return;}
+    overlay=std::make_unique<SoundFontPanel>(processor,[this]{closeOverlay();});addAndMakeVisible(*overlay);setMainControlsEnabled(false);resized();overlay->toFront(true);
+}
 void GbaEditor::closeOverlay() {overlay.reset();setMainControlsEnabled(true);grabKeyboardFocus();}
 bool GbaEditor::keyPressed(const juce::KeyPress& key) {
     if(key==juce::KeyPress::escapeKey&&overlay){closeOverlay();return true;}
     if(key==juce::KeyPress::F1Key){showBrowser();return true;}if(key==juce::KeyPress::F2Key){showAdvanced();return true;}
+    if(key==juce::KeyPress::F3Key){showSoundFonts();return true;}
     if(overlay)return false;
     if(key==juce::KeyPress::spaceKey){processor.preview();return true;}
     return dpad.keyPressed(key);

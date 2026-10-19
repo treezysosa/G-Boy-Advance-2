@@ -1,4 +1,5 @@
-> Current version: **0.12.1, synthesis only**. Sample playback was removed; [update and compatibility notes](RELEASE_0_12_1.md). Earlier build results below remain historical.
+> Current version: **0.13.0, synthesis plus optional ROM Hacks SF2 instruments**. [SoundFont behavior, project paths and limitations](RELEASE_0_13.md). Earlier release records below remain historical.
+
 
 Older 0.12.0 projects restore their synthesis parameters and skin, show `SYNTH ONLY:` in the display and a removal notice in START, and discard embedded audio from newly saved state. Sample sounds no longer play. Original project, audio and preset files are left unchanged; preserve the original project if its sample content is still needed. Sample-containing presets are rejected/skipped. Schema 1 synthesis `.gba2preset` import/export continues to work.
 
@@ -97,10 +98,19 @@ Third-party notice files are included with portable and installed builds. The ow
 
 Press SELECT and choose SKIN in the header: Purple, Glacier Blue, Black, White or Spice Orange. Each plugin instance keeps its own colour. Save the DAW project to retain it. Standalone state also retains the choice on normal shutdown. Preset changes keep the chosen skin. Old projects open in Purple. The sound and automation parameters are independent of appearance.
 
-To design a custom instrument, select an engine and adjust oscillators, filters, envelopes, modulation and effects in SELECT. Use START → SAVE AS to add it to the User library. All custom instruments are synthesis patches; there is no sample mapping or audio import.
+To design a custom instrument, select an engine and adjust oscillators, filters, envelopes, modulation and effects in SELECT. Use START → SAVE AS to add it to the User library. Save As stores synthesis patches. For SoundFont instruments, use the ROM Hacks cartridge → LOAD SF2, choose the bank instrument, and save the DAW project. General WAV/AIFF import and sample mapping are unavailable.
 
 START → IMPORT opens a `.gba2preset` file chooser. The plugin validates the JSON/schema, parameter types, identity and file size (1 MiB maximum), then copies the patch into the user library with a new ID. Duplicate display names gain a numerical suffix, leaving existing files intact. The imported patch becomes the current sound. Your active browser filters can hide it; select User / All categories and clear search to find it.
 
 EXPORT SOUND saves the currently loaded sound, including unsaved edits and the name/tags fields, to another folder. It does not change the loaded patch or library. Load a highlighted browser row before exporting it. Share the exported `.gba2preset` file; no external audio bank is required. Presets store synthesis parameters only; skins are kept in project state.
 
-Maize Sampler `.mse` instruments bundle samples and need their compatible sample player. They are not playable or converted in this synthesis-only plugin. `.chl` is not an identified synthesis format here and is unsupported. Changing an extension does not convert an instrument.
+Maize Sampler `.mse` instruments bundle samples and need their compatible sample player. They are not playable or converted here. ROM Hacks supports SF2 SoundFonts separately. `.chl` is not an identified synthesis format here and is unsupported. Changing an extension does not convert an instrument.
+
+
+## ROM Hacks SoundFonts
+
+Press the cartridge above the D-pad or F3, then LOAD SF2. Choose the bank/program instrument and play MIDI or the piano. A previews; B releases preview notes. RETURN TO SYNTH or selecting a normal preset restores synthesis. While SoundFonts are active, the main arrows/D-pad left/right change instruments; D-pad up/down changes banks.
+
+Imported banks are copied to `%APPDATA%\Treezy Audio\G Boy Advance 2\SoundFonts`; back up that folder with songs. DAW state stores the cached bank path/instrument and shared settings, without embedding audio. Missing banks show an error and stay silent until you load a replacement. Save As/Export in the ordinary browser are reserved for synthesis presets.
+
+Shared master volume, filter, minimum attack, glide, vibrato, bend/sustain and effects apply. SF2 envelopes/loops/zones come from the bank; synth oscillator controls belong to synth patches. SF2 only, 128 MiB/file; no SF3, ROM files, general audio import or Maize/CHL decoding. Advanced SF2 modulation tables are unsupported. See RELEASE_0_13.md for full limitations.

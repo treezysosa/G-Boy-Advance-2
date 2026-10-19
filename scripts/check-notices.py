@@ -14,3 +14,12 @@ for item in manifest['files']:
     if item['gitBlobSha'] not in hashes:
         raise SystemExit('Upstream notice changed: ' + item['file'])
 print(f"PASS {len(manifest['files'])} pinned upstream notices (checkout newline conversion permitted)")
+
+for item in manifest.get("additionalDependencies", []):
+    data=(root.parents[1]/item["source"]).read_bytes()
+    lf=data.replace(b"\r\n",b"\n")
+    variants=(data,lf,lf.replace(b"\n",b"\r\n"))
+    hashes={hashlib.sha1(b"blob "+str(len(d)).encode()+b"\0"+d).hexdigest() for d in variants}
+    if item["gitBlobSha"] not in hashes:
+        raise SystemExit("Pinned dependency source changed: "+item["source"])
+print("PASS pinned SoundFont decoder source")

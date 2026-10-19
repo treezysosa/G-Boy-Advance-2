@@ -7,7 +7,7 @@
 [Setup]
 AppId={{2C50A781-6FD5-4B9C-BC20-C0CF1C2D8CA2}
 AppName=G Boy Advance 2
-AppVersion=0.12.1
+AppVersion=0.13.0
 AppPublisher=Treezy Audio
 DefaultDirName={autopf}\Treezy Audio\G Boy Advance 2
 ArchitecturesAllowed=x64compatible

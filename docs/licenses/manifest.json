@@ -91,6 +91,21 @@
       "file": "juce_audio_processors__format_types__pslextensions__ipslcontextinfo.h.txt",
       "upstream": "modules/juce_audio_processors/format_types/pslextensions/ipslcontextinfo.h",
       "gitBlobSha": "6410e934193a8071cde047d41e5bdf15216a562c"
+    },
+    {
+      "file": "TinySoundFont-LICENSE.txt",
+      "upstream": "https://github.com/schellingb/TinySoundFont/blob/790a219810cb0fca5defa8cdbd88e2487e5efc7a/LICENSE",
+      "gitBlobSha": "533da73eb51d65d6c34d4baf3420d770c3570a5e"
+    }
+  ],
+  "additionalDependencies": [
+    {
+      "name": "TinySoundFont",
+      "repository": "https://github.com/schellingb/TinySoundFont",
+      "commit": "790a219810cb0fca5defa8cdbd88e2487e5efc7a",
+      "license": "MIT",
+      "source": "Source/third_party/tsf.h",
+      "gitBlobSha": "a81f25d5ca2e210720d646dec2dbfaeb119acb09"
     }
   ]
 }
