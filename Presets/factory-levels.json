@@ -1,7 +1,7 @@
 {
   "format": "gba2.factory-levels",
   "schemaVersion": 1,
-  "recipeSha256": "f9aff8c8a3b9fea0272cdea81afa0a72f27f0ab108449b7f121b98d10c96c2b4",
+  "recipeSha256": "dcea0050cb18533bd88c3f1679cb67357c64352c29b7a65784bd86f216da3586",
   "metric": "Maximum rolling 100 ms stereo RMS at 48 kHz, MIDI 60 (bass 48), velocity 0.9, hold max(0.8s, attack+0.35s). Master volume is after the limiter; no audio is stored.",
   "targets": {
     "Bass": 0.036,
@@ -1034,7 +1034,7 @@
     "factory.5fb3c90f6b28606e": 0.310494,
     "factory.0bf64ed74476bf15": 0.523647,
     "factory.f42ce1740c51f6d4": 0.278787,
-    "factory.45fc9eca8d3d7ff9": 0.270655,
+    "factory.45fc9eca8d3d7ff9": 0.278468,
     "factory.cf3a5a8e7fd7b9d2": 0.288316,
     "factory.51ea7fade3671b76": 0.28324,
     "factory.e4f34f6a51b9e141": 0.530454,

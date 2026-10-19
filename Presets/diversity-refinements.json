@@ -52,8 +52,8 @@
       "parameters": {"Brightness": 0.88, "StringDamping": 0.9979, "Attack": 0.012, "Decay": 0.47, "FilterType": 2, "Cutoff": 1900, "Resonance": 0.28, "FilterEnv": -0.8, "FilterDecay": 0.3}
     },
     "Detroit Concrete Upright - Afterglow": {
-      "designNotes": "A rounded resonant upright-key body with a softer attack and sustained modal tail, distinct from the short offbeat hammer and celesta designs.",
-      "parameters": {"Brightness": 0.84, "Attack": 0.011, "Decay": 1.4, "Sustain": 0.14, "Cutoff": 900, "Resonance": 0.33, "FilterEnv": 2.8, "FilterDecay": 0.2}
+      "designNotes": "A rounded resonant upright-key bloom with a soft attack and sustained modal body, distinct from the struck chime and short offbeat hammer designs.",
+      "parameters": {"Brightness": 0.84, "Attack": 0.055, "Decay": 1.4, "Sustain": 0.3, "Cutoff": 900, "Resonance": 0.33, "FilterEnv": 2.8, "FilterDecay": 0.2}
     },
     "Detroit Late Shift Piano": {
       "designNotes": "A darker rounded modal strike and longer body decay distinguish this late-night key patch from music-box bells.",
