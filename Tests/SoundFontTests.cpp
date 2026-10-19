@@ -74,6 +74,9 @@ void libraryTests(const juce::File& root,const std::vector<unsigned char>& data)
     for(int i=0;i<513;++i)written&=many.getChildFile("Bank"+juce::String(i)+".sf2").replaceWithText("");
     ensure(written,"Large library fixtures failed");
     fresh->romHacks.setLibraryFolder(many);ensure(fresh->romHacks.waitUntilIdle(10000)&&fresh->romHacks.libraryView().files.size()==512&&fresh->romHacks.libraryView().status.contains("limited"),"Library scan limit was not enforced");
+    fresh->romHacks.setRememberLast(true);fresh.reset();
+    ensure(bool(juce::JSON::parse(user.getChildFile("soundfont-library.json"))["rememberLast"]),"Immediate shutdown lost the last library setting");
+    fresh=std::make_unique<GbaProcessor>(user);fresh->prepareToPlay(48000,256);ensure(fresh->romHacks.waitUntilIdle(10000)&&fresh->romHacks.enabled(),"Immediate-close preference did not take effect on next startup");
     const auto corruptRoot=root.getChildFile("CorruptLibrary"),corrupt=corruptRoot.getChildFile("soundfont-library.json");ensure(corruptRoot.createDirectory().wasOk()&&corrupt.replaceWithText("corrupt library preferences"),"Corrupt library fixture failed");
     {auto bad=std::make_unique<GbaProcessor>(corruptRoot);bad->prepareToPlay(48000,256);ensure(bad->romHacks.waitUntilIdle(10000)&&bad->romHacks.libraryView().status.contains("preferences")&&!bad->romHacks.enabled(),"Corrupt preferences prevented safe initialization");bad->romHacks.loadFile(alpha);ensure(bad->romHacks.waitUntilIdle(10000)&&bad->romHacks.enabled()&&corrupt.loadFileAsString()=="corrupt library preferences","Bad preferences prevented manual playback or were silently overwritten");}
     std::cout<<"PASS SoundFont library: default/custom folders, bank selector, process restart, last instrument, missing source, project precedence and recall opt-out\n";

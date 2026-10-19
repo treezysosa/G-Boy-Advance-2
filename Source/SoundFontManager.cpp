@@ -49,7 +49,7 @@ void SoundFontManager::useSoundFont(bool enable){
     std::lock_guard lock(mutex);
     const bool changed=enable||switchedOn.load()||summary.loading;
     if(!enable){++generation;request.reset();summary.loading=false;switchedOn=false;summary.status="Synthesis selected. Choose an instrument or USE SOUNDFONT to return.";}
-    else if(current){switchedOn=true;summary.status="SoundFont ready. Play MIDI or the piano keyboard.";}
+    else if(current){switchedOn=true;summary.status="SoundFont ready. Play MIDI or the piano keyboard.";rememberBank();}
     else {summary.status="Load an .sf2 SoundFont first.";return;}
     if(changed)++changes;
 }
@@ -216,4 +216,7 @@ void SoundFontManager::run(){
         }catch(const std::exception&){std::lock_guard lock(mutex);library.scanning=false;library.status="SoundFont library operation failed. Current playback is unchanged.";}
         {std::lock_guard lock(mutex);workerBusy=false;}
     }
+    // Shutdown can arrive immediately after an instrument/folder/recall click.
+    // Persist the last successful choice on this worker before it exits.
+    try {writeLibraryPreferences();}catch(const std::exception&){}
 }
