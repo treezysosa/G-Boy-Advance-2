@@ -1,10 +1,10 @@
 # Factory library audit
 
-620 parameter-only presets across 22 categories. The 102 named instrument designs, 60 named vocal designs, 28 named retro designs and 60 regional hip-hop designs each have an active Afterglow voicing. The 120 additional groove-pack designs are individually authored complete patches, without automatic Afterglow variants. Surviving IDs and all host program indices are frozen; thirty removed-category slots are reserved by `Presets/factory-index.json`.
+574 parameter-only presets across 20 categories. The 102 named instrument designs, 37 named vocal designs, 28 named retro designs and 60 regional hip-hop designs each have an active Afterglow voicing. The 120 additional groove-pack designs are individually authored complete patches, without automatic Afterglow variants. Surviving IDs and all host program indices are frozen; seventy-six removed-category slots are reserved by `Presets/factory-index.json`.
 
 This report describes native numerical renders at 48 kHz. It does not certify perceptual uniqueness, natural acoustic realism or commercial sound quality. Human listening acceptance remains pending.
 
-Central-note maximum rolling 100 ms stereo RMS: 0.009269–0.036000 (11.78 dB spread). 540/620 patches are within 0.5 dB of their category target. 83 master gains reached 0.95; quieter articulations remain rather than changing the engine gain or adding hidden normalization.
+Central-note maximum rolling 100 ms stereo RMS: 0.009269–0.036000 (11.78 dB spread). 494/574 patches are within 0.5 dB of their category target. 83 master gains reached 0.95; quieter articulations remain rather than changing the engine gain or adding hidden normalization.
 
 | Category | Presets | Engines | Central RMS min–max |
 |---|---:|---|---:|
@@ -17,10 +17,8 @@ Central-note maximum rolling 100 ms stereo RMS: 0.009269–0.036000 (11.78 dB sp
 | Plucks | 20 | additive, chiptune, fm, physical modeling, subtractive, wavetable | 0.01132–0.02600 |
 | Sax-Style Leads | 16 | formant | 0.02600–0.02600 |
 | Strings | 20 | additive, physical modeling, subtractive, wavetable | 0.01518–0.02800 |
-| Vocals - Soul and R&B | 18 | formant | 0.02000–0.02000 |
 | Vocals - Global Pop Textures | 24 | formant | 0.02000–0.02000 |
 | Vocals - Horror | 14 | formant | 0.02000–0.02000 |
-| Vocals - Cartoon and Gaming | 28 | formant | 0.02000–0.02000 |
 | Vocals - Choirs and Textures | 36 | formant | 0.01425–0.02000 |
 | Retro Games | 56 | additive, chiptune, fm, formant, modal, physical modeling, wavetable | 0.00975–0.02500 |
 | Hip-Hop - Detroit | 60 | additive, fm, formant, modal, physical modeling, subtractive, wavetable | 0.01372–0.03600 |
@@ -33,7 +31,7 @@ Central-note maximum rolling 100 ms stereo RMS: 0.009269–0.036000 (11.78 dB sp
 
 ## Listening renders
 
-`gba2-preset-tests --auditions` creates one six-second stereo PCM excerpt per category plus an index under `preset-auditions/`. Two notes at different velocities and a release section make patches easy to compare. Ten additional contrasting vocal excerpts are written to `vocal-auditions/`, and all 28 base retro designs to `retro-auditions/`. These original synthesized WAVs are test output only and are never installed or loaded by the instrument. Six seconds may not contain the entire effects tail.
+`gba2-preset-tests --auditions` creates one six-second stereo PCM excerpt per category plus an index under `preset-auditions/`. Two notes at different velocities and a release section make patches easy to compare. Eight additional contrasting vocal excerpts are written to `vocal-auditions/`, and all 28 base retro designs to `retro-auditions/`. These original synthesized WAVs are test output only and are never installed or loaded by the instrument. Six seconds may not contain the entire effects tail.
 
 ## Similarity review
 
@@ -43,7 +41,7 @@ No pairs are below the configured dry spectral/envelope threshold on this audit 
 
 ## Multi-register all-pair audit (0.16.1)
 
-The additional `gba2-preset-diversity-tests` renders all 620 patches with and without effects at the same MIDI notes 48, 60 and 72, velocities 0.4 and 0.9, 48 kHz: 7,440 renders and 191,890 unique pairs. Each signature includes two 64-band spectra, sixteen held-envelope points and four release measurements. Spectra and envelopes are gain-normalized; dry rendering removes effects. Category names do not restrict comparisons. Renamed and gain/effects-only negative controls must be detected; a sine/saw positive control must remain distinct.
+The additional `gba2-preset-diversity-tests` renders all 574 patches with and without effects at the same MIDI notes 48, 60 and 72, velocities 0.4 and 0.9, 48 kHz: 6,888 renders and 164,451 unique pairs. Each signature includes two 64-band spectra, sixteen held-envelope points and four release measurements. Spectra and envelopes are gain-normalized; dry rendering removes effects. Category names do not restrict comparisons. Renamed and gain/effects-only negative controls must be detected; a sine/saw positive control must remain distinct.
 
 Result: 0 duplicate candidates at <= 0.025; 0 close-pair review flags below 0.06. Minimum dry distance: 0.060104. CSVs record the nearest neighbor of every patch and every flagged pair. Numerical thresholds are screening tools, not perceptual guarantees.
 

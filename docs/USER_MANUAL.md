@@ -148,8 +148,8 @@ These are original synthesis patches, without recorded instruments, artist voice
 
 ## Removed vocal categories (0.16.1)
 
-Vocals - Pop and Indie (16 presets) and Vocals - Southern and West Coast (14 presets), Vocals - Cartoon and Gaming (28 presets) and Vocals - Soul and R&B (18 presets) are removed from Factory search, category selection, favorites/recent results and D-pad browsing. All other 574 factory patches remain unchanged, including vocals in the remaining categories and regional hip-hop banks. Existing user presets remain available.
+Vocals - Pop and Indie (16 presets), Vocals - Southern and West Coast (14 presets), Vocals - Cartoon and Gaming (28 presets) and Vocals - Soul and R&B (18 presets) are removed from Factory search, category selection, favorites/recent results and D-pad browsing. All other 574 factory patches remain unchanged, including vocals in the remaining categories and regional hip-hop banks. Existing user presets remain available.
 
 Saved DAW projects store their synthesis settings. Reopening a project that used a removed factory preset keeps its saved sound, name, edited settings and program number; its category display reads Saved Project. Use START → Save As to keep an independent user preset. The removed sounds cannot be freshly selected from the factory bank.
 
-The seventy-six old program numbers are reserved in the host program list so the other sounds do not move. Explicitly selecting a Reserved N (Default) slot plays Dream Pad. Reserved slots do not count toward the 574 factory presets. SoundFont banks, user files, skins and audio parameters are unchanged.
+The seventy-six old program numbers are reserved in the host program list so the other sounds do not move. Selecting a Reserved N (Default) slot from another program plays Dream Pad. Repeating the current retired slot after restoring a project preserves its saved sound; switch to another program first to intentionally load the default. Reserved slots do not count toward the 574 factory presets. SoundFont banks, user files, skins and audio parameters are unchanged.
