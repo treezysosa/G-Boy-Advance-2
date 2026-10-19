@@ -1,4 +1,4 @@
-> Current version: **0.16.1, 620 presets in 22 categories, twenty skins and SF2 library recall**. [Current release evidence and limits](RELEASE_0_16_1.md). Earlier release records below remain historical.
+> Current version: **0.16.1, 574 presets in 20 categories, twenty skins and SF2 library recall**. [Current release evidence and limits](RELEASE_0_16_1.md). Earlier release records below remain historical.
 
 
 # Release acceptance record
@@ -7,7 +7,7 @@ This is an unsigned development build, not a certified production release. Recor
 
 ## Automated gates
 
-- Generated 620-preset library and stable identities / parameter IDs.
+- Generated 574-preset library and stable identities / parameter IDs.
 - Windows x64 VST3/standalone compile; nine DSP suites and JUCE application tests.
 - Actual-bundle host acceptance: prepared latency, MIDI, bypass, state and instances.
 - pluginval strictness 10; separate pinned official Steinberg validator.
@@ -35,7 +35,7 @@ For latency compare a dry note rendered live and offline with host compensation 
 - Twenty skins: nonrepeating automatic launch colours across plugin/DAW/standalone restarts; fixed-colour project mode; per-instance isolation, project save/reopen, dark-panel readability on White/Black, selector and native dialogs.
 - Custom synthesis patch import/export, duplicate-name handling, export edited sounds, malformed files, backups and old projects.
 - UI vs approved purple reference at minimum/maximum sizes, 100/125/150/200% and mixed-monitor DPI; pointer/keyboard focus, every control, screen reader and contrast.
-- Listen to all 620 factory sounds over low/mid/high registers and velocities; distinctness, levels, clicks, aliasing, vocal vowels, guitar/sax/flute articulation. Synthesized approximations are not acoustic/voice replicas.
+- Listen to all 574 factory sounds over low/mid/high registers and velocities; distinctness, levels, clicks, aliasing, vocal vowels, guitar/sax/flute articulation. Synthesized approximations are not acoustic/voice replicas.
 - Review performance/aliasing under effects and interrupted engine transitions. Profile fixes must retain calibrated factory levels or trigger recalibration and full validation.
 - Review synchronous library I/O on slow storage and cross-process metadata races; explicit Refresh discovers external file changes.
 

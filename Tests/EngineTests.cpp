@@ -102,7 +102,7 @@ int main(int argc,char** argv) {
         }
         std::cout<<"PASS extreme automation and sample-rate reinitialization\n";
         if(argc>1 && std::string_view(argv[1])=="--render") {
-            const char* names[]{"Dream Pad","70s Soul Guitar","FM Piano","Crystal Bells","90s R&B Vocal-Style Synth","8-Bit Lead"};
+            const char* names[]{"Dream Pad","70s Soul Guitar","FM Piano","Crystal Bells","Angelic Choir Synth","8-Bit Lead"};
             for(auto name:names) for(const auto& patch:gba::factoryPatches)if(std::string_view(patch.name)==name) {
                 s.values=patch.values;init(e,s);Audio demo(48000*4);e.noteOn(1,60,.9f);e.noteOn(1,67,.8f);e.render(demo.l.data(),demo.r.data(),48000*2);e.allNotesOff();e.render(demo.l.data()+48000*2,demo.r.data()+48000*2,48000*2);writeWav(std::string(name)+".wav",demo,48000);
             }

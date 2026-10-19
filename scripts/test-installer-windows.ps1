@@ -59,7 +59,7 @@ function Check-Installed {
     }
     $factory=Get-Content -LiteralPath (Join-Path $app 'Factory Presets/factory.json') -Raw | ConvertFrom-Json
     $categories=@($factory.presets.category | Sort-Object -Unique)
-    if($factory.presets.Count -ne 620 -or $categories.Count -ne 22 -or $categories -contains 'Vocals - Pop and Indie' -or $categories -contains 'Vocals - Southern and West Coast') {throw 'Installed factory bank did not remove the requested vocal categories.'}
+    if($factory.presets.Count -ne 574 -or $categories.Count -ne 20 -or $categories -contains 'Vocals - Pop and Indie' -or $categories -contains 'Vocals - Southern and West Coast' -or $categories -contains 'Vocals - Cartoon and Gaming' -or $categories -contains 'Vocals - Soul and R&B') {throw 'Installed factory bank did not remove the requested vocal categories.'}
     if ((Get-FileHash -LiteralPath $sentinel).Hash -ne $sentinelHash) { throw 'Installer changed user preset data.' }
     if ((Get-FileHash -LiteralPath $audioSentinel).Hash -ne $audioSentinelHash) { throw 'Installer changed personal audio data.' }
     if ((Get-FileHash -LiteralPath $sfSentinel).Hash -ne $sfSentinelHash) { throw 'Installer changed the SoundFont cache.' }

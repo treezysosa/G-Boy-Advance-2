@@ -1,8 +1,8 @@
 # G BOY ADVANCE 2 — 0.16.1
 
-**620 factory presets across 22 categories.** Vocals - Pop and Indie and Vocals - Southern and West Coast have been removed, including their thirty factory patches. All remaining sounds, calibrated levels and identities are unchanged. The Detroit, Chicago Drill, Funk, Japan Inspired and 80s Pop additions remain available.
+**574 factory presets across 20 categories.** Vocals - Pop and Indie, Vocals - Southern and West Coast, Vocals - Cartoon and Gaming and Vocals - Soul and R&B have been removed, including their seventy-six factory patches. All remaining sounds, calibrated levels and identities are unchanged. The Detroit, Chicago Drill, Funk, Japan Inspired and 80s Pop additions remain available.
 
-Saved projects retain their explicit synthesis settings, including sounds from the removed categories. Thirty old host program numbers are reserved to keep every surviving program number stable; explicitly selecting a reserved slot loads Dream Pad. Reserved slots are separate from the 620 active factory presets. Existing user presets are retained.
+Saved projects retain their explicit synthesis settings, including sounds from the removed categories. Seventy-six old host program numbers are reserved to keep every surviving program number stable; explicitly selecting a reserved slot loads Dream Pad. Reserved slots are separate from the 574 active factory presets. Existing user presets are retained.
 
 All twenty skins, launch colours, ROM Hacks SF2 drag/drop, library folders and recall, and the existing DSP optimizations remain available. See [current release details](docs/RELEASE_0_16_1.md). Build and validation results for this update are being prepared; the preceding verified version is documented in [0.16.0](docs/RELEASE_0_16.md).
 
@@ -60,7 +60,7 @@ Close your DAW, copy the entire `.vst3` directory into `C:\Program Files\Common 
 - Sine, harmonic-limited triangle, PolyBLEP saw / square / pulse, and noise; resonant low-pass, high-pass, band-pass, notch, and formant filters.
 - Two ADSRs, two routable LFOs, vibrato, tremolo, velocity, 16-channel MIDI pitch bend / modulation / sustain, 1–32 voices, stealing, mono / legato, glide.
 - Reverb, delay, chorus, phaser, flanger, saturation, distortion, bitcrusher, tape wow / flutter, low / high shelves, and stereo width.
-- 620 original factory patches across 22 categories, explicit named-instrument, vocal and retro profiles, calibrated levels and stable program identities. Vocal patches are synthesized vowel-like timbres and contain no recorded voices or speech.
+- 574 original factory patches across 20 categories, explicit named-instrument, vocal and retro profiles, calibrated levels and stable program identities. Vocal patches are synthesized vowel-like timbres and contain no recorded voices or speech.
 - Reference-based vector UI, playable keyboard, spring-return pitch wheel, functional D-pad, preview A / stop B, START browser, SELECT advanced editor, assignable A–D controls.
 - Twenty colour skins with nonrepeating launch colours or a fixed project choice; SoundFont drag and drop; host-visible parameters, project state, user preset Save As / import / export / rename / delete, favorites / recent patches, category search, tags, keyboard navigation.
 - Windows CI, portable packaging and Inno Setup installer script, DSP and JUCE integration tests.

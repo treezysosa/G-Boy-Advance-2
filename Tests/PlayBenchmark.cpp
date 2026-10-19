@@ -14,7 +14,7 @@ int main(int argc,char** argv) {
     std::ofstream out(argv[1]);if(!out)return 1;
     out<<"fixture,workload,sample_rate,block,voices,callbacks,mean_us,p50_us,p95_us,p99_us,max_us,budget_us,over_budget,invalid_samples\n"<<std::setprecision(9);
     auto e=std::make_unique<gba::SynthEngine>();int cases=0;
-    for(std::string_view name:{"FM Piano","Dream Pad","Smooth R&B Vocal Pad",
+    for(std::string_view name:{"FM Piano","Dream Pad","Angelic Choir Synth",
         "Detroit Concrete Upright","Detroit Ice Glass Bell","Detroit Short Ah Vox",
         "West Coast Sunset Tine Keys","West Coast Freeway String Pad","West Coast High Whistle Lead",
         "Florida Bright Club Piano","Florida Heat Wave Pluck","Florida Airy Ooh Texture",

@@ -1026,92 +1026,110 @@
     {
       "id": "factory.91d3a5453b1cb512",
       "name": "60s Soul Vocal-Style Synth",
-      "category": "Vocals - Soul and R&B"
+      "category": "Vocals - Soul and R&B",
+      "retired": true
     },
     {
       "id": "factory.d55da290e9f026b8",
       "name": "60s Soul Vocal-Style Synth - Afterglow",
-      "category": "Vocals - Soul and R&B"
+      "category": "Vocals - Soul and R&B",
+      "retired": true
     },
     {
       "id": "factory.0d61782980cbe360",
       "name": "70s Soul Vocal-Style Synth",
-      "category": "Vocals - Soul and R&B"
+      "category": "Vocals - Soul and R&B",
+      "retired": true
     },
     {
       "id": "factory.f00fee9c6fcadc42",
       "name": "70s Soul Vocal-Style Synth - Afterglow",
-      "category": "Vocals - Soul and R&B"
+      "category": "Vocals - Soul and R&B",
+      "retired": true
     },
     {
       "id": "factory.2c09c8e10b211d40",
       "name": "90s R&B Vocal-Style Synth",
-      "category": "Vocals - Soul and R&B"
+      "category": "Vocals - Soul and R&B",
+      "retired": true
     },
     {
       "id": "factory.c19fc99477e6872c",
       "name": "90s R&B Vocal-Style Synth - Afterglow",
-      "category": "Vocals - Soul and R&B"
+      "category": "Vocals - Soul and R&B",
+      "retired": true
     },
     {
       "id": "factory.baf12014cbc0223e",
       "name": "2000s R&B Vocal-Style Synth",
-      "category": "Vocals - Soul and R&B"
+      "category": "Vocals - Soul and R&B",
+      "retired": true
     },
     {
       "id": "factory.b2e7d62dac9d9b8a",
       "name": "2000s R&B Vocal-Style Synth - Afterglow",
-      "category": "Vocals - Soul and R&B"
+      "category": "Vocals - Soul and R&B",
+      "retired": true
     },
     {
       "id": "factory.5c549cf5460e4976",
       "name": "Female-Range R&B Vocal Synth",
-      "category": "Vocals - Soul and R&B"
+      "category": "Vocals - Soul and R&B",
+      "retired": true
     },
     {
       "id": "factory.b758ab7fe40f3139",
       "name": "Female-Range R&B Vocal Synth - Afterglow",
-      "category": "Vocals - Soul and R&B"
+      "category": "Vocals - Soul and R&B",
+      "retired": true
     },
     {
       "id": "factory.d06cf34f94238ea6",
       "name": "Smooth R&B Vocal Pad",
-      "category": "Vocals - Soul and R&B"
+      "category": "Vocals - Soul and R&B",
+      "retired": true
     },
     {
       "id": "factory.8132021ea490193a",
       "name": "Smooth R&B Vocal Pad - Afterglow",
-      "category": "Vocals - Soul and R&B"
+      "category": "Vocals - Soul and R&B",
+      "retired": true
     },
     {
       "id": "factory.0941d1ecdd88cd0a",
       "name": "Neo Soul Vocal Pad",
-      "category": "Vocals - Soul and R&B"
+      "category": "Vocals - Soul and R&B",
+      "retired": true
     },
     {
       "id": "factory.0d6d8d2c46e5a3af",
       "name": "Neo Soul Vocal Pad - Afterglow",
-      "category": "Vocals - Soul and R&B"
+      "category": "Vocals - Soul and R&B",
+      "retired": true
     },
     {
       "id": "factory.195b55c926388927",
       "name": "Lo-Fi Soul Vocal Synth",
-      "category": "Vocals - Soul and R&B"
+      "category": "Vocals - Soul and R&B",
+      "retired": true
     },
     {
       "id": "factory.3e0296f55a7406ec",
       "name": "Lo-Fi Soul Vocal Synth - Afterglow",
-      "category": "Vocals - Soul and R&B"
+      "category": "Vocals - Soul and R&B",
+      "retired": true
     },
     {
       "id": "factory.e0c8acfb26e4e1c0",
       "name": "Vintage Soul Choir",
-      "category": "Vocals - Soul and R&B"
+      "category": "Vocals - Soul and R&B",
+      "retired": true
     },
     {
       "id": "factory.81e0bda26fac5ff0",
       "name": "Vintage Soul Choir - Afterglow",
-      "category": "Vocals - Soul and R&B"
+      "category": "Vocals - Soul and R&B",
+      "retired": true
     },
     {
       "id": "factory.c9f0c3cf841deb3f",
@@ -1486,142 +1504,170 @@
     {
       "id": "factory.1ff9505b65c9ede5",
       "name": "Mystery Cartoon-Inspired Vocal Synth",
-      "category": "Vocals - Cartoon and Gaming"
+      "category": "Vocals - Cartoon and Gaming",
+      "retired": true
     },
     {
       "id": "factory.2dec2b33f328bb2c",
       "name": "Mystery Cartoon-Inspired Vocal Synth - Afterglow",
-      "category": "Vocals - Cartoon and Gaming"
+      "category": "Vocals - Cartoon and Gaming",
+      "retired": true
     },
     {
       "id": "factory.e89a6f840168209e",
       "name": "Retro Cartoon Vocal FX",
-      "category": "Vocals - Cartoon and Gaming"
+      "category": "Vocals - Cartoon and Gaming",
+      "retired": true
     },
     {
       "id": "factory.228b67a08620bef7",
       "name": "Retro Cartoon Vocal FX - Afterglow",
-      "category": "Vocals - Cartoon and Gaming"
+      "category": "Vocals - Cartoon and Gaming",
+      "retired": true
     },
     {
       "id": "factory.2a389035307a04c2",
       "name": "Anime-Inspired Vocal Synth",
-      "category": "Vocals - Cartoon and Gaming"
+      "category": "Vocals - Cartoon and Gaming",
+      "retired": true
     },
     {
       "id": "factory.558c566319c0ec2c",
       "name": "Anime-Inspired Vocal Synth - Afterglow",
-      "category": "Vocals - Cartoon and Gaming"
+      "category": "Vocals - Cartoon and Gaming",
+      "retired": true
     },
     {
       "id": "factory.c6446b42a5cd3596",
       "name": "Monster-Collecting Game-Inspired Vocal FX",
-      "category": "Vocals - Cartoon and Gaming"
+      "category": "Vocals - Cartoon and Gaming",
+      "retired": true
     },
     {
       "id": "factory.a4c50afaecfeabd2",
       "name": "Monster-Collecting Game-Inspired Vocal FX - Afterglow",
-      "category": "Vocals - Cartoon and Gaming"
+      "category": "Vocals - Cartoon and Gaming",
+      "retired": true
     },
     {
       "id": "factory.be827471145db25b",
       "name": "Retro Platformer Vocal Synth",
-      "category": "Vocals - Cartoon and Gaming"
+      "category": "Vocals - Cartoon and Gaming",
+      "retired": true
     },
     {
       "id": "factory.2611753d60b83303",
       "name": "Retro Platformer Vocal Synth - Afterglow",
-      "category": "Vocals - Cartoon and Gaming"
+      "category": "Vocals - Cartoon and Gaming",
+      "retired": true
     },
     {
       "id": "factory.e9bae4f5a4c012e5",
       "name": "Arcade Announcer-Style Synth",
-      "category": "Vocals - Cartoon and Gaming"
+      "category": "Vocals - Cartoon and Gaming",
+      "retired": true
     },
     {
       "id": "factory.c1b5f648571f0d7c",
       "name": "Arcade Announcer-Style Synth - Afterglow",
-      "category": "Vocals - Cartoon and Gaming"
+      "category": "Vocals - Cartoon and Gaming",
+      "retired": true
     },
     {
       "id": "factory.cc1803f0fa3fe433",
       "name": "16-Bit Vocal Synth",
-      "category": "Vocals - Cartoon and Gaming"
+      "category": "Vocals - Cartoon and Gaming",
+      "retired": true
     },
     {
       "id": "factory.0d40c882b0dc8ae4",
       "name": "16-Bit Vocal Synth - Afterglow",
-      "category": "Vocals - Cartoon and Gaming"
+      "category": "Vocals - Cartoon and Gaming",
+      "retired": true
     },
     {
       "id": "factory.05bf160ed3816388",
       "name": "Handheld Console Vocal FX",
-      "category": "Vocals - Cartoon and Gaming"
+      "category": "Vocals - Cartoon and Gaming",
+      "retired": true
     },
     {
       "id": "factory.79bdd78621fdccdf",
       "name": "Handheld Console Vocal FX - Afterglow",
-      "category": "Vocals - Cartoon and Gaming"
+      "category": "Vocals - Cartoon and Gaming",
+      "retired": true
     },
     {
       "id": "factory.0f5345e7fc8fba7b",
       "name": "Early 3D Console Vocal FX",
-      "category": "Vocals - Cartoon and Gaming"
+      "category": "Vocals - Cartoon and Gaming",
+      "retired": true
     },
     {
       "id": "factory.bb507c1b3e5e0b92",
       "name": "Early 3D Console Vocal FX - Afterglow",
-      "category": "Vocals - Cartoon and Gaming"
+      "category": "Vocals - Cartoon and Gaming",
+      "retired": true
     },
     {
       "id": "factory.2bf79f55c21e1d7f",
       "name": "Retro Sports Game Vocal FX",
-      "category": "Vocals - Cartoon and Gaming"
+      "category": "Vocals - Cartoon and Gaming",
+      "retired": true
     },
     {
       "id": "factory.1b9705b3470253a0",
       "name": "Retro Sports Game Vocal FX - Afterglow",
-      "category": "Vocals - Cartoon and Gaming"
+      "category": "Vocals - Cartoon and Gaming",
+      "retired": true
     },
     {
       "id": "factory.37821ca4a726e7f8",
       "name": "90s Sitcom-Inspired Vocal Synth",
-      "category": "Vocals - Cartoon and Gaming"
+      "category": "Vocals - Cartoon and Gaming",
+      "retired": true
     },
     {
       "id": "factory.a67550fd0005389a",
       "name": "90s Sitcom-Inspired Vocal Synth - Afterglow",
-      "category": "Vocals - Cartoon and Gaming"
+      "category": "Vocals - Cartoon and Gaming",
+      "retired": true
     },
     {
       "id": "factory.13f463b3800e3369",
       "name": "Vintage TV Vocal FX",
-      "category": "Vocals - Cartoon and Gaming"
+      "category": "Vocals - Cartoon and Gaming",
+      "retired": true
     },
     {
       "id": "factory.7e2c3327ccba7a8d",
       "name": "Vintage TV Vocal FX - Afterglow",
-      "category": "Vocals - Cartoon and Gaming"
+      "category": "Vocals - Cartoon and Gaming",
+      "retired": true
     },
     {
       "id": "factory.f8381d003a2d18d1",
       "name": "Skateboarding Game-Inspired Vocal FX",
-      "category": "Vocals - Cartoon and Gaming"
+      "category": "Vocals - Cartoon and Gaming",
+      "retired": true
     },
     {
       "id": "factory.0640f8244f0741f3",
       "name": "Skateboarding Game-Inspired Vocal FX - Afterglow",
-      "category": "Vocals - Cartoon and Gaming"
+      "category": "Vocals - Cartoon and Gaming",
+      "retired": true
     },
     {
       "id": "factory.4f6f655bc1a69ced",
       "name": "Retro Action Game Vocal FX",
-      "category": "Vocals - Cartoon and Gaming"
+      "category": "Vocals - Cartoon and Gaming",
+      "retired": true
     },
     {
       "id": "factory.d19008a892b1be21",
       "name": "Retro Action Game Vocal FX - Afterglow",
-      "category": "Vocals - Cartoon and Gaming"
+      "category": "Vocals - Cartoon and Gaming",
+      "retired": true
     },
     {
       "id": "factory.d8378a5aa080c603",

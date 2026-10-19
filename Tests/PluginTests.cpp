@@ -34,12 +34,12 @@ juce::MouseEvent mouse(juce::Component& component,juce::Point<float> point) {
 #endif
 void removedVocalProjects(const juce::File& root) {
     const auto fixtures=removedVocalStateFixtures();const auto* projects=fixtures["projects"].getArray();
-    check(projects&&projects->size()==30,"Missing actual old vocal project fixtures");
+    check(projects&&projects->size()==76,"Missing actual old vocal project fixtures");
     auto p=std::make_unique<GbaProcessor>(root.getChildFile("RemovedVocals"));
     p->setRateAndBufferSizeDetails(48000,256);p->prepareToPlay(48000,256);
     const auto defaultSettings=p->snapshot();
-    check(p->presets.all().size()==620&&p->presets.categories().size()==22,"Retired categories remain in the factory browser");
-    for(const char* name:{"Vocals - Pop and Indie","Vocals - Southern and West Coast"}) {
+    check(p->presets.all().size()==574&&p->presets.categories().size()==20,"Retired categories remain in the factory browser");
+    for(const char* name:{"Vocals - Pop and Indie","Vocals - Southern and West Coast","Vocals - Cartoon and Gaming","Vocals - Soul and R&B"}) {
         PresetManager::Filter f;f.category=name;check(p->presets.filtered(f).empty()&&!p->presets.categories().contains(name),"Removed category remains selectable");
     }
     for(const auto& patch:gba::factoryPatches)check(p->getProgramName(patch.program)==patch.name,"Surviving factory host program number moved");
@@ -70,8 +70,8 @@ void removedVocalProjects(const juce::File& root) {
     juce::MemoryBlock lastProject;check(lastProject.fromBase64Encoding(projects->getLast()["state"].toString()),"Last old project fixture is invalid");p->setStateInformation(lastProject.getData(),int(lastProject.getSize()));
     const auto kept=p->snapshot();check(p->presets.saveAs("Kept Project Sound").wasOk(),"Could not keep a restored sound as a user preset");
     const auto userId=p->presetId();p->presets.restoreDefault(false);check(p->presets.load(userId)&&p->snapshot().values==kept.values,"User preset no longer reloads independently of removed factory categories");
-    for(int i=0;i<22;++i){p->presets.stepCategory(1);check(p->presetCategory()!="Vocals - Pop and Indie"&&p->presetCategory()!="Vocals - Southern and West Coast","D-pad category navigation reaches a removed category");}
-    std::cout<<"PASS 30 actual 0.16.0 removed-vocal projects: edited settings, audible notes, resave, reserved host slots, surviving program numbers and 22 browser categories\n";
+    for(int i=0;i<20;++i){p->presets.stepCategory(1);check(p->presetCategory()!="Vocals - Pop and Indie"&&p->presetCategory()!="Vocals - Southern and West Coast"&&p->presetCategory()!="Vocals - Cartoon and Gaming"&&p->presetCategory()!="Vocals - Soul and R&B","D-pad category navigation reaches a removed category");}
+    std::cout<<"PASS 76 actual 0.16.0 removed-vocal projects: edited settings, audible notes, resave, reserved host slots, surviving program numbers and 20 browser categories\n";
 }
 void launchAppearance(const juce::File& root) {
     for(int previous=0;previous<int(gba_ui::skins.size());++previous) {

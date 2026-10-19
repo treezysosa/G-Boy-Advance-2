@@ -1,11 +1,11 @@
 # Exact next steps
 
-Version 0.16.1 removes two factory vocal categories and thirty sounds. The remaining 620 presets are unchanged; original host slots are preserved and old project settings are restored. [Current evidence](RELEASE_0_16_1.md). Local project-migration checks pass; the Windows build is in progress. The remaining manual acceptance items are below.
+Version 0.16.1 removes four factory vocal categories and seventy-six sounds. The remaining 574 presets are unchanged; original host slots are preserved and old project settings are restored. [Current evidence](RELEASE_0_16_1.md). Local project-migration checks pass; the Windows build is in progress. The remaining manual acceptance items are below.
 
 1. Complete the remaining manual matrix in RELEASE_CHECKLIST.md on real Windows devices and the five named DAWs. Record host/Windows versions, interface/driver, sample rate, buffer, date and evidence. Source inspection and a custom host do not establish named-DAW compatibility.
 2. Profile low driver buffers with real GUI, multiple instances, note-on bursts and rapid engine/parameter requests. Investigate any actual underruns; the current shared-runner over-budget observations are recorded in RELEASE_0_13.md without assigning a cause. Revalidate/recalibrate audio if further DSP work changes timbre/levels.
 3. Check compensated bounce/alignment (16 reported samples after prepare), held-note/pedal changes during bypass, transport/program changes, long-feedback export tails and project reload/automation in each host.
-4. Listen to all 620 sounds in low/mid/high registers and velocities. Numerical distinction/levels, over-140 dB triangle reference SNR and near-identical excerpts support verification but do not certify natural articulation or commercial sound quality.
+4. Listen to all 574 sounds in low/mid/high registers and velocities. Numerical distinction/levels, over-140 dB triangle reference SNR and near-identical excerpts support verification but do not certify natural articulation or commercial sound quality.
 5. Verify standalone real audio/MIDI devices, separate non-admin account use, interactive wizard/cancel paths and upgrades from older versions. Silent automated install tests use a clean admin VM.
 6. Accept the approved-reference UI on physical monitors at min/max sizes and 100/125/150/200% / mixed DPI, pointer/keyboard focus and accessibility. Software snapshots are not physical-DPI acceptance.
 7. Review slow-storage synchronous library I/O and simultaneous separate-process metadata edits. These are off the audio thread; external file changes require Refresh.

@@ -1,4 +1,4 @@
-> Current version: **0.16.1: 620 presets in 22 categories; two vocal categories removed**, retaining ROM Hacks SF2 drag/drop, default folder and last-bank recall. [Current changes and evidence](RELEASE_0_16_1.md) · [SoundFont workflow](RELEASE_0_14_1.md).
+> Current version: **0.16.1: 574 presets in 20 categories; four vocal categories removed**, retaining ROM Hacks SF2 drag/drop, default folder and last-bank recall. [Current changes and evidence](RELEASE_0_16_1.md) · [SoundFont workflow](RELEASE_0_14_1.md).
 
 
 Older 0.12.0 projects restore their synthesis parameters and skin, show `SYNTH ONLY:` in the display and a removal notice in START, and discard embedded audio from newly saved state. Sample sounds no longer play. Original project, audio and preset files are left unchanged; preserve the original project if its sample content is still needed. Sample-containing presets are rejected/skipped. Schema 1 synthesis `.gba2preset` import/export continues to work.
@@ -57,7 +57,7 @@ This development version passes Windows compilation, automated tests and pluginv
 
 ## Factory bank revision 0.6
 
-The bank contains 620 factory sounds in 22 categories. Vocals - Pop and Indie and Vocals - Southern and West Coast have been removed, including their thirty presets. Surviving sounds, names, IDs and original host program numbers are retained. Named instruments have explicit synthesis profiles and Afterglow variants change active excitation/envelope controls. Factory levels are calibrated using a 100 ms stereo RMS metric; quieter articulations remain quieter when the master knob reaches its gain ceiling. This is not perceptual loudness normalization.
+The bank contains 574 factory sounds in 20 categories. Vocals - Pop and Indie, Vocals - Southern and West Coast, Vocals - Cartoon and Gaming and Vocals - Soul and R&B have been removed, including their seventy-six presets. Surviving sounds, names, IDs and original host program numbers are retained. Named instruments have explicit synthesis profiles and Afterglow variants change active excitation/envelope controls. Factory levels are calibrated using a 100 ms stereo RMS metric; quieter articulations remain quieter when the master knob reaches its gain ceiling. This is not perceptual loudness normalization.
 
 Saved projects restore their actual parameter values, even when their factory ID also exists in the revised bank. Loading the factory preset again selects its new voicing. User presets remain independent. Optional category audition WAVs are original test renders for listening review; they are never loaded by the instrument.
 
@@ -148,8 +148,8 @@ These are original synthesis patches, without recorded instruments, artist voice
 
 ## Removed vocal categories (0.16.1)
 
-Vocals - Pop and Indie (16 presets) and Vocals - Southern and West Coast (14 presets) are removed from Factory search, category selection, favorites/recent results and D-pad browsing. All other 620 factory patches remain unchanged, including vocals in the remaining categories and regional hip-hop banks. Existing user presets remain available.
+Vocals - Pop and Indie (16 presets) and Vocals - Southern and West Coast (14 presets), Vocals - Cartoon and Gaming (28 presets) and Vocals - Soul and R&B (18 presets) are removed from Factory search, category selection, favorites/recent results and D-pad browsing. All other 574 factory patches remain unchanged, including vocals in the remaining categories and regional hip-hop banks. Existing user presets remain available.
 
 Saved DAW projects store their synthesis settings. Reopening a project that used a removed factory preset keeps its saved sound, name, edited settings and program number; its category display reads Saved Project. Use START → Save As to keep an independent user preset. The removed sounds cannot be freshly selected from the factory bank.
 
-The thirty old program numbers are reserved in the host program list so the other sounds do not move. Explicitly selecting a Reserved N (Default) slot plays Dream Pad. Reserved slots do not count toward the 620 factory presets. SoundFont banks, user files, skins and audio parameters are unchanged.
+The seventy-six old program numbers are reserved in the host program list so the other sounds do not move. Explicitly selecting a Reserved N (Default) slot plays Dream Pad. Reserved slots do not count toward the 574 factory presets. SoundFont banks, user files, skins and audio parameters are unchanged.
