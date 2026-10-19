@@ -647,7 +647,7 @@ void GbaEditor::resized() {
     float sx=float(getWidth())/1280,sy=float(getHeight())/646;
     auto bounds=[sx,sy](juce::Component& component,float x,float y,float w,float h){component.setBounds(int(std::round(x*sx)),int(std::round(y*sy)),int(std::round(w*sx)),int(std::round(h*sy)));};
     bounds(previous,350,28,68,56);bounds(presetDisplay,418,28,444,56);bounds(next,862,28,68,56);
-    bounds(romCartridge,42,105,220,72);
+    bounds(romCartridge,310,224,220,72);
     bounds(dpad,55,183,160,160);bounds(start,76,375,130,30);bounds(select,76,412,130,30);
     bounds(volume,538,258,204,198);bounds(macros[0],325,320,85,85);bounds(macros[1],432,320,85,85);bounds(macros[2],762,320,85,85);bounds(macros[3],869,320,85,85);
     bounds(aButton,1162,198,96,96);bounds(bButton,1059,242,96,96);

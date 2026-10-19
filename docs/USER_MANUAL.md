@@ -1,4 +1,4 @@
-> Current version: **0.13.0, synthesis plus optional ROM Hacks SF2 instruments**. [SoundFont behavior, project paths and limitations](RELEASE_0_13.md). Earlier release records below remain historical.
+> Current version: **0.13.1, synthesis plus optional ROM Hacks SF2 instruments**. [SoundFont behavior, project paths and limitations](RELEASE_0_13.md). Earlier release records below remain historical.
 
 
 Older 0.12.0 projects restore their synthesis parameters and skin, show `SYNTH ONLY:` in the display and a removal notice in START, and discard embedded audio from newly saved state. Sample sounds no longer play. Original project, audio and preset files are left unchanged; preserve the original project if its sample content is still needed. Sample-containing presets are rejected/skipped. Schema 1 synthesis `.gba2preset` import/export continues to work.
@@ -109,7 +109,7 @@ Maize Sampler `.mse` instruments bundle samples and need their compatible sample
 
 ## ROM Hacks SoundFonts
 
-Press the cartridge above the D-pad or F3, then LOAD SF2. Choose the bank/program instrument and play MIDI or the piano. A previews; B releases preview notes. RETURN TO SYNTH or selecting a normal preset restores synthesis. While SoundFonts are active, the main arrows/D-pad left/right change instruments; D-pad up/down changes banks.
+Press the cartridge beside the master volume knob, above macros A and B, or F3, then LOAD SF2. Choose the bank/program instrument and play MIDI or the piano. A previews; B releases preview notes. RETURN TO SYNTH or selecting a normal preset restores synthesis. While SoundFonts are active, the main arrows/D-pad left/right change instruments; D-pad up/down changes banks.
 
 Imported banks are copied to `%APPDATA%\Treezy Audio\G Boy Advance 2\SoundFonts`; back up that folder with songs. DAW state stores the cached bank path/instrument and shared settings, without embedding audio. Missing banks show an error and stay silent until you load a replacement. Save As/Export in the ordinary browser are reserved for synthesis presets.
 

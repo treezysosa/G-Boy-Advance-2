@@ -1,4 +1,6 @@
-# G BOY ADVANCE 2 — 0.13.0
+# G BOY ADVANCE 2 — 0.13.1
+
+Version 0.13.1 moves the ROM Hacks cartridge into the center control area, immediately left of the master volume knob and above macros A and B. The 0.13.0 download and test evidence below describe the previous build; the updated installer is being validated.
 
 Native Windows x64 VST3 and standalone hybrid synthesizer with optional **ROM Hacks SoundFont 2 playback**. Press the cartridge-shaped ROM Hacks button (or F3), choose LOAD SF2, select an instrument from the bank, and play MIDI or the on-screen piano. The normal 410 factory sounds still use synthesis. Five skins, 64 parameter IDs and the existing optimized synthesis engine are retained.
 
