@@ -135,13 +135,22 @@ int main(int argc,char** argv) {
         const auto legacyProjects=removedVocalStateFixtures();
         for(const auto& project:*legacyProjects["projects"].getArray()) {
             const int slot=int(project["program"]);check(p->getProgramName(slot).startsWith("Reserved "),"Deleted factory sound remains advertised by the VST3 host");
-            juce::MemoryBlock old;check(old.fromBase64Encoding(project["state"].toString()),"Invalid 0.16.0 hosted state fixture");p->setStateInformation(old.getData(),int(old.getSize()));
+            juce::MemoryBlock old;check(old.fromBase64Encoding(project["state"].toString()),"Invalid 0.16.0 hosted state fixture");
+            // The JUCE host adapter wraps the component's binary state in its
+            // own XML container. The fixtures contain processor state, not that
+            // outer host container. Feed them to IComponent, as a real host does.
+            juce::XmlElement hostState("VST3PluginState");hostState.createNewChildElement("IComponent")->addTextElement(old.toBase64Encoding());
+            juce::MemoryBlock hosted;juce::AudioProcessor::copyXmlToBinary(hostState,hosted);p->setStateInformation(hosted.getData(),int(hosted.getSize()));
             check(p->getCurrentProgram()==slot,"Actual VST3 wrapper remapped an old removed-category project");
-            juce::MemoryBlock saved;p->getStateInformation(saved);auto xml=juce::AudioProcessor::getXmlFromBinary(saved.getData(),int(saved.getSize()));
+            juce::MemoryBlock saved;p->getStateInformation(saved);auto outer=juce::AudioProcessor::getXmlFromBinary(saved.getData(),int(saved.getSize()));
+            const auto* component=outer?outer->getChildByName("IComponent"):nullptr;juce::MemoryBlock componentState;
+            const bool decoded=component&&componentState.fromBase64Encoding(component->getAllSubText());
+            auto xml=decoded?juce::AudioProcessor::getXmlFromBinary(componentState.getData(),int(componentState.getSize())):nullptr;
             check(xml&&xml->getStringAttribute("presetId")==project["id"].toString()&&xml->getStringAttribute("presetCategory")=="Saved Project","Actual VST3 wrapper lost removed-project metadata");
             p->setCurrentProgram(slot);pump(60);juce::MemoryBlock echoed;p->getStateInformation(echoed);
             check(echoed==saved,"Host program echo replaced an old removed-category project's explicit sound");
         }
+        p=load(); // Keep the general host tests independent of fixture voicings.
         // Confirm all 64 public controls are present, not just a generic host bypass.
         for(std::size_t i=0;i<gba::parameterCount;++i)check(parameter(*p,gba::Param(i))!=nullptr,"Hosted parameter missing");
         std::cout<<"Loaded actual VST3 version "<<types[0]->version<<"\n";
