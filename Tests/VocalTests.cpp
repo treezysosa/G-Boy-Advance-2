@@ -72,8 +72,8 @@ void factoryRegisters(){
                 check(finite&&energy(a.l)>1e-9,"Factory vocal is silent/non-finite in extended rate/register grid");}
         }
     }
-    check(vocalCount==300,"Expected 150 vocal presets at two additional sample rates");
-    std::cout<<"PASS all 150 vocal presets at 44.1/96 kHz in low/high registers\n";
+    check(vocalCount==240,"Expected 120 vocal presets at two additional sample rates");
+    std::cout<<"PASS all 120 vocal presets at 44.1/96 kHz in low/high registers\n";
 }
 void articulation(gba::SynthEngine& e){
     auto s=clean();s.set(gba::Param::Syllable,1);auto articulated=note(e,s,60,48000,48000);

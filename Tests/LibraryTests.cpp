@@ -19,7 +19,7 @@ int runLibraryTests(){checks=0;auto root=juce::File::getSpecialLocation(juce::Fi
 try{
     {
         auto a=std::make_unique<GbaProcessor>(root);auto& m=a->presets;const auto factory=m.all().front().id;
-        check(m.all().size()==650,"Factory count/order drifted");check(!root.getChildFile("library.json").exists(),"Construction unexpectedly writes recent history");
+        check(m.all().size()==620,"Factory count/order drifted");check(!root.getChildFile("library.json").exists(),"Construction unexpectedly writes recent history");
         for(const char* category:{"Hip-Hop - Detroit","Hip-Hop - West Coast","Hip-Hop - Florida"}) {
             PresetManager::Filter regional;regional.category=category;regional.source=PresetManager::Source::factory;
             check(m.filtered(regional).size()==(juce::String(category)=="Hip-Hop - Detroit"?60u:40u),"Regional factory category is incomplete");
@@ -70,7 +70,7 @@ try{
         auto invalidRoot=root.getChildFile("Malformed");auto p=std::make_unique<GbaProcessor>(invalidRoot);auto folder=p->presets.userFolder();check(folder.createDirectory().wasOk(),"Could not create malformed fixture folder");auto goodId="user."+juce::Uuid().toString();auto good=patch(goodId,"Valid Baseline");json(folder.getChildFile("a-good.gba2preset"),good);
         const auto bad=[&](const juce::String& file,juce::var data){json(folder.getChildFile(file+".gba2preset"),data);};
         bad("duplicate",good);auto v=patch("user.invalid","Bad ID");bad("bad-id",v);v=patch("user."+juce::Uuid().toString(),"Version");v.getDynamicObject()->setProperty("schemaVersion",1.5);bad("version",v);v=patch("user."+juce::Uuid().toString(),"Bool");v["parameters"].getDynamicObject()->setProperty("volume",true);bad("bool",v);v=patch("user."+juce::Uuid().toString(),"Missing");v.getDynamicObject()->removeProperty("parameters");bad("missing",v);v=patch("user."+juce::Uuid().toString(),"Name\nBad");bad("name",v);check(folder.getChildFile("broken.gba2preset").replaceWithText("{broken"),"Could not write invalid JSON fixture");check(folder.getChildFile("big.gba2preset").replaceWithText(juce::String::repeatedString("x",1024*1024+1)),"Could not write oversized fixture");
-        check(p->presets.refresh().failed()&&p->presets.all().size()==std::size_t(p->getNumPrograms())+1&&p->presets.find(goodId),"Malformed/duplicate/oversized presets were accepted or valid patch lost");
+        check(p->presets.refresh().failed()&&p->presets.all().size()==std::size_t(621)&&p->presets.find(goodId),"Malformed/duplicate/oversized presets were accepted or valid patch lost");
         auto legacy=invalidRoot.getChildFile("library.json");auto* o=new juce::DynamicObject();juce::var prefs(o);juce::Array<juce::var> favorites;favorites.add(goodId);favorites.add("factory.unknown");favorites.add(42);o->setProperty("favorites",favorites);juce::Array<juce::var> recents;recents.add(goodId);recents.add(goodId);o->setProperty("recent",recents);json(legacy,prefs);p->presets.refresh();check(p->presets.isFavorite(goodId)&&p->presets.recentIds().size()==1,"Legacy preference validation/migration failed");check(p->presets.toggleFavorite(goodId).wasOk()&&juce::JSON::parse(legacy)["format"].toString()=="gba2.library","Legacy metadata was not versioned after update");
     }
     {
@@ -100,7 +100,7 @@ try{
         check(p->presetId()==stableId&&p->snapshot().values==settings.values&&m.all().size()==stableSize,"Failed import/export changed the current sound or library");
     }
     {
-        auto blocked=root.getChildFile("Blocked");check(blocked.createDirectory().wasOk()&&blocked.getChildFile("Presets").replaceWithText("occupied"),"Could not block preset folder");auto p=std::make_unique<GbaProcessor>(blocked);auto before=p->snapshot();auto id=p->presetId();check(p->presets.saveAs("No Write").failed()&&p->presets.all().size()==650,"Failed Save As changed library");check(p->snapshot().values==before.values&&p->presetId()==id,"Failed Save As changed active sound");
+        auto blocked=root.getChildFile("Blocked");check(blocked.createDirectory().wasOk()&&blocked.getChildFile("Presets").replaceWithText("occupied"),"Could not block preset folder");auto p=std::make_unique<GbaProcessor>(blocked);auto before=p->snapshot();auto id=p->presetId();check(p->presets.saveAs("No Write").failed()&&p->presets.all().size()==620,"Failed Save As changed library");check(p->snapshot().values==before.values&&p->presetId()==id,"Failed Save As changed active sound");
     }
     root.deleteRecursively();std::cout<<"All "<<checks<<" Phase 9 library checks passed.\n";return checks;
 }catch(...){root.deleteRecursively();throw;}}

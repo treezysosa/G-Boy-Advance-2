@@ -76,7 +76,7 @@ for voices in (1,4,8):
         a=sum(float(r['mean_us'])*int(r['callbacks']) for r in chosen(before_play))
         b=sum(float(r['mean_us'])*int(r['callbacks']) for r in chosen(after_play))
         result['playing'][f'{voices}-{workload}']={'beforeMeasuredUs':a,'afterMeasuredUs':b,'reductionPercent':100*(1-b/a)}
-result['baselineDspCommit']='6c59ca0961d51878276938fdf01a9ecfd1707a2a'
+result['baselineDspCommit']='a03aa20d395f41663f4ead1badb04291eb3cb7d2'
 result['limit'] = 'Native DSP on one shared runner with identical current factory arrays; timings are observational, not FL Studio CPU percentages or physical-driver deadline certification.'
 (folder / 'cpu-comparison.json').write_text(json.dumps(result, indent=2) + '\n')
 print(json.dumps(result, indent=2))

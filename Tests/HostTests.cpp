@@ -1,5 +1,6 @@
 #include <juce_audio_utils/juce_audio_utils.h>
 #include "dsp/Parameters.h"
+#include "RemovedVocalStates.h"
 #include <atomic>
 #include <chrono>
 #include <cmath>
@@ -131,6 +132,14 @@ int main(int argc,char** argv) {
         check(p->getProgramName(409)=="Handheld Pulse Motion - Afterglow","Final factory program moved");
         check(p->getProgramName(529)=="Florida High Night Whistle - Afterglow","Regional host programs are missing");
         check(p->getProgramName(649)=="80s Neon Vowel Chords","Groove-pack host programs are missing");
+        const auto legacyProjects=removedVocalStateFixtures();
+        for(const auto& project:*legacyProjects["projects"].getArray()) {
+            const int slot=int(project["program"]);check(p->getProgramName(slot).startsWith("Reserved "),"Deleted factory sound remains advertised by the VST3 host");
+            juce::MemoryBlock old;check(old.fromBase64Encoding(project["state"].toString()),"Invalid 0.16.0 hosted state fixture");p->setStateInformation(old.getData(),int(old.getSize()));
+            check(p->getCurrentProgram()==slot,"Actual VST3 wrapper remapped an old removed-category project");
+            juce::MemoryBlock saved;p->getStateInformation(saved);auto xml=juce::AudioProcessor::getXmlFromBinary(saved.getData(),int(saved.getSize()));
+            check(xml&&xml->getStringAttribute("presetId")==project["id"].toString()&&xml->getStringAttribute("presetCategory")=="Saved Project","Actual VST3 wrapper lost removed-project metadata");
+        }
         // Confirm all 64 public controls are present, not just a generic host bypass.
         for(std::size_t i=0;i<gba::parameterCount;++i)check(parameter(*p,gba::Param(i))!=nullptr,"Hosted parameter missing");
         std::cout<<"Loaded actual VST3 version "<<types[0]->version<<"\n";

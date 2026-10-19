@@ -154,7 +154,7 @@ void GbaProcessor::processBlock(juce::AudioBuffer<float>& buffer,juce::MidiBuffe
     romHacks.endBlock();
     level.store(total>0?buffer.getMagnitude(0,total):0,std::memory_order_relaxed);
 }
-int GbaProcessor::getNumPrograms() {return int(gba::factoryPatches.size());}
+int GbaProcessor::getNumPrograms() {return int(gba::factoryPrograms.size());}
 void GbaProcessor::processBlockBypassed(juce::AudioBuffer<float>& buffer,juce::MidiBuffer& messages) {
     // Keep MIDI, envelopes and effects moving while the zero-input instrument
     // is muted. In particular, note-offs during bypass must not leave held notes
@@ -163,9 +163,18 @@ void GbaProcessor::processBlockBypassed(juce::AudioBuffer<float>& buffer,juce::M
     buffer.clear();
 }
 void GbaProcessor::setCurrentProgram(int i) {if(i>=0&&i<getNumPrograms())pendingProgram.store(i);}
-const juce::String GbaProcessor::getProgramName(int i) {return i>=0&&i<getNumPrograms()?juce::String(gba::factoryPatches[std::size_t(i)].name):juce::String();}
+const juce::String GbaProcessor::getProgramName(int i) {return i>=0&&i<getNumPrograms()?juce::String(gba::factoryPrograms[std::size_t(i)].name):juce::String();}
 void GbaProcessor::timerCallback(){servicePendingProgram();const auto r=romHacks.revision();if(r!=soundFontRevision){soundFontRevision=r;updateHostDisplay(juce::AudioProcessorListener::ChangeDetails{}.withNonParameterStateChanged(true));}}
-void GbaProcessor::servicePendingProgram() {int i=pendingProgram.exchange(-1);if(i>=0)presets.load(gba::factoryPatches[std::size_t(i)].id);}
+void GbaProcessor::servicePendingProgram() {
+    const int i=pendingProgram.exchange(-1);if(i<0||i>=getNumPrograms())return;
+    const auto& program=gba::factoryPrograms[std::size_t(i)];
+    if(program.patchIndex>=0){presets.load(program.id);return;}
+    // Removed categories have no runtime recipes. Keep their host numbers reserved
+    // so program automation for every surviving sound continues selecting it.
+    presets.restoreDefault(false);
+    const juce::ScopedLock lock(metadataLock);
+    activePresetId=program.id;activePresetName=program.name;currentProgram.store(i);
+}
 void GbaProcessor::applyPreset(const GbaPreset& p) {
     const juce::ScopedLock lock(metadataLock);
     removedSamplePlayback=false;romHacks.useSoundFont(false);
@@ -176,7 +185,7 @@ void GbaProcessor::applyPreset(const GbaPreset& p) {
     }
     activePresetId=p.id;activePresetName=p.name;activePresetCategory=p.category;
     currentProgram.store(0);
-    for(std::size_t i=0;i<gba::factoryPatches.size();++i)if(p.id==gba::factoryPatches[i].id) {currentProgram.store(int(i));break;}
+    for(std::size_t i=0;i<gba::factoryPrograms.size();++i)if(p.id==gba::factoryPrograms[i].id) {currentProgram.store(int(i));break;}
     stopPreview();
 }
 juce::String GbaProcessor::presetId() const {const juce::ScopedLock lock(metadataLock);return activePresetId;}
@@ -184,7 +193,12 @@ juce::String GbaProcessor::presetName() const {const juce::ScopedLock lock(metad
 juce::String GbaProcessor::presetCategory() const {const juce::ScopedLock lock(metadataLock);return activePresetCategory;}
 juce::String GbaProcessor::stateNotice() const {
     const juce::ScopedLock lock(metadataLock);
-    return removedSamplePlayback?"Sample playback was removed. Only synthesis settings were restored; the original project file is unchanged.":juce::String();
+    if(removedSamplePlayback)return "Sample playback was removed. Only synthesis settings were restored; the original project file is unchanged.";
+    const int program=currentProgram.load();
+    if(activePresetCategory=="Saved Project"&&program>=0&&std::size_t(program)<gba::factoryPrograms.size()
+       &&gba::factoryPrograms[std::size_t(program)].patchIndex<0)
+        return "This factory category was removed. The sound saved in your project was restored. Use Save As to keep a user preset.";
+    return {};
 }
 void GbaProcessor::setEditorSkin(int index) {
     const int selected=gba_ui::validSkin(index);
@@ -244,7 +258,11 @@ void GbaProcessor::setStateInformation(const void* data,int bytes) {
     if(!automatic||!editorAppearanceInitialized)
         editorSkin.store(gba_ui::skinIndex(restored.getProperty("editorSkin","purple").toString().toStdString()));
     currentProgram.store(0);
-    for(std::size_t i=0;i<gba::factoryPatches.size();++i)if(restored.getProperty("presetId").toString()==gba::factoryPatches[i].id){currentProgram.store(int(i));break;}
+    for(std::size_t i=0;i<gba::factoryPrograms.size();++i)if(activePresetId==gba::factoryPrograms[i].id){
+        currentProgram.store(int(i));
+        if(gba::factoryPrograms[i].patchIndex<0)activePresetCategory="Saved Project";
+        break;
+    }
     panicRequested.store(true);
 }
 juce::AudioProcessorEditor* GbaProcessor::createEditor() {initializeEditorAppearance();romHacks.startLibrary();return new GbaEditor(*this);}

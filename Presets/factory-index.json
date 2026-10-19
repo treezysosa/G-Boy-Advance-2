@@ -1,7 +1,7 @@
 {
   "format": "gba2.factory-index",
   "schemaVersion": 1,
-  "description": "Frozen legacy factory identities and host program order. Existing identities must remain; new presets append.",
+  "description": "Stable host program slots. Retired identities retain metadata only, have no active recipes, and select the default patch when explicitly requested. New identities append.",
   "presets": [
     {
       "id": "factory.1d01b9c467ecfb27",
@@ -1116,82 +1116,98 @@
     {
       "id": "factory.c9f0c3cf841deb3f",
       "name": "80s Pop Vocal Synth",
-      "category": "Vocals - Pop and Indie"
+      "category": "Vocals - Pop and Indie",
+      "retired": true
     },
     {
       "id": "factory.d9568f63a27ae164",
       "name": "80s Pop Vocal Synth - Afterglow",
-      "category": "Vocals - Pop and Indie"
+      "category": "Vocals - Pop and Indie",
+      "retired": true
     },
     {
       "id": "factory.868e9db9eaac8b22",
       "name": "Modern Pop Vocal Synth",
-      "category": "Vocals - Pop and Indie"
+      "category": "Vocals - Pop and Indie",
+      "retired": true
     },
     {
       "id": "factory.0189858b0bcb0619",
       "name": "Modern Pop Vocal Synth - Afterglow",
-      "category": "Vocals - Pop and Indie"
+      "category": "Vocals - Pop and Indie",
+      "retired": true
     },
     {
       "id": "factory.1b43fe8ad5821dd1",
       "name": "Indie Pop Vocal Pad",
-      "category": "Vocals - Pop and Indie"
+      "category": "Vocals - Pop and Indie",
+      "retired": true
     },
     {
       "id": "factory.69ab26c9e9f61090",
       "name": "Indie Pop Vocal Pad - Afterglow",
-      "category": "Vocals - Pop and Indie"
+      "category": "Vocals - Pop and Indie",
+      "retired": true
     },
     {
       "id": "factory.a98a86381525cfd1",
       "name": "Dream Pop Vocal Synth",
-      "category": "Vocals - Pop and Indie"
+      "category": "Vocals - Pop and Indie",
+      "retired": true
     },
     {
       "id": "factory.7cd9df238807b71b",
       "name": "Dream Pop Vocal Synth - Afterglow",
-      "category": "Vocals - Pop and Indie"
+      "category": "Vocals - Pop and Indie",
+      "retired": true
     },
     {
       "id": "factory.bec96e7429346c0c",
       "name": "Female-Range Pop Vocal Synth",
-      "category": "Vocals - Pop and Indie"
+      "category": "Vocals - Pop and Indie",
+      "retired": true
     },
     {
       "id": "factory.61a4b62a48b9ba5c",
       "name": "Female-Range Pop Vocal Synth - Afterglow",
-      "category": "Vocals - Pop and Indie"
+      "category": "Vocals - Pop and Indie",
+      "retired": true
     },
     {
       "id": "factory.163721c08b2ca7d9",
       "name": "Retro Pop Vocal Synth",
-      "category": "Vocals - Pop and Indie"
+      "category": "Vocals - Pop and Indie",
+      "retired": true
     },
     {
       "id": "factory.8f44a1eee3677911",
       "name": "Retro Pop Vocal Synth - Afterglow",
-      "category": "Vocals - Pop and Indie"
+      "category": "Vocals - Pop and Indie",
+      "retired": true
     },
     {
       "id": "factory.ea8064cec3ce890c",
       "name": "Synth Pop Vocal Texture",
-      "category": "Vocals - Pop and Indie"
+      "category": "Vocals - Pop and Indie",
+      "retired": true
     },
     {
       "id": "factory.81cd6324ca97c4da",
       "name": "Synth Pop Vocal Texture - Afterglow",
-      "category": "Vocals - Pop and Indie"
+      "category": "Vocals - Pop and Indie",
+      "retired": true
     },
     {
       "id": "factory.3ca1512eb9b83356",
       "name": "Alternative Indie Vocal Texture",
-      "category": "Vocals - Pop and Indie"
+      "category": "Vocals - Pop and Indie",
+      "retired": true
     },
     {
       "id": "factory.96eefdad124e0245",
       "name": "Alternative Indie Vocal Texture - Afterglow",
-      "category": "Vocals - Pop and Indie"
+      "category": "Vocals - Pop and Indie",
+      "retired": true
     },
     {
       "id": "factory.4c6eba566ea3c6a4",
@@ -1316,72 +1332,86 @@
     {
       "id": "factory.8740184f4e416268",
       "name": "90s Memphis Vocal-Style Synth",
-      "category": "Vocals - Southern and West Coast"
+      "category": "Vocals - Southern and West Coast",
+      "retired": true
     },
     {
       "id": "factory.f9481de01eab5469",
       "name": "90s Memphis Vocal-Style Synth - Afterglow",
-      "category": "Vocals - Southern and West Coast"
+      "category": "Vocals - Southern and West Coast",
+      "retired": true
     },
     {
       "id": "factory.2b9d4bedb4a0b749",
       "name": "2000s Memphis Vocal-Style Synth",
-      "category": "Vocals - Southern and West Coast"
+      "category": "Vocals - Southern and West Coast",
+      "retired": true
     },
     {
       "id": "factory.8fe2f63d0a92e801",
       "name": "2000s Memphis Vocal-Style Synth - Afterglow",
-      "category": "Vocals - Southern and West Coast"
+      "category": "Vocals - Southern and West Coast",
+      "retired": true
     },
     {
       "id": "factory.d1a2eea72e837d70",
       "name": "Dark Southern Chant Synth",
-      "category": "Vocals - Southern and West Coast"
+      "category": "Vocals - Southern and West Coast",
+      "retired": true
     },
     {
       "id": "factory.9d1c8ddbb778086a",
       "name": "Dark Southern Chant Synth - Afterglow",
-      "category": "Vocals - Southern and West Coast"
+      "category": "Vocals - Southern and West Coast",
+      "retired": true
     },
     {
       "id": "factory.aedeafa8c42a4c28",
       "name": "Underground Horror Vocal Synth",
-      "category": "Vocals - Southern and West Coast"
+      "category": "Vocals - Southern and West Coast",
+      "retired": true
     },
     {
       "id": "factory.a356c98a0cf27f07",
       "name": "Underground Horror Vocal Synth - Afterglow",
-      "category": "Vocals - Southern and West Coast"
+      "category": "Vocals - Southern and West Coast",
+      "retired": true
     },
     {
       "id": "factory.d2918a25add8c94f",
       "name": "Retro Crunk Vocal Synth",
-      "category": "Vocals - Southern and West Coast"
+      "category": "Vocals - Southern and West Coast",
+      "retired": true
     },
     {
       "id": "factory.49deca5ad00dbc72",
       "name": "Retro Crunk Vocal Synth - Afterglow",
-      "category": "Vocals - Southern and West Coast"
+      "category": "Vocals - Southern and West Coast",
+      "retired": true
     },
     {
       "id": "factory.59492c2948e271cb",
       "name": "West Coast Party Vocal Synth",
-      "category": "Vocals - Southern and West Coast"
+      "category": "Vocals - Southern and West Coast",
+      "retired": true
     },
     {
       "id": "factory.0231f058ac2c6cef",
       "name": "West Coast Party Vocal Synth - Afterglow",
-      "category": "Vocals - Southern and West Coast"
+      "category": "Vocals - Southern and West Coast",
+      "retired": true
     },
     {
       "id": "factory.cc185c4537c90348",
       "name": "Vintage Tape Vocal Texture",
-      "category": "Vocals - Southern and West Coast"
+      "category": "Vocals - Southern and West Coast",
+      "retired": true
     },
     {
       "id": "factory.6f63d5b5bab3d16a",
       "name": "Vintage Tape Vocal Texture - Afterglow",
-      "category": "Vocals - Southern and West Coast"
+      "category": "Vocals - Southern and West Coast",
+      "retired": true
     },
     {
       "id": "factory.10db7a49af8b6dd4",

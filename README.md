@@ -1,16 +1,10 @@
-# G BOY ADVANCE 2 — 0.16.0
+# G BOY ADVANCE 2 — 0.16.1
 
-**120 additional factory presets, 650 total:** twenty Detroit piano-style keys, twenty-four Chicago Drill sounds, twenty-four Funk sounds, twenty-four Japan-inspired sounds focused on city pop/anime/retro games, and twenty-eight ’80s Pop sounds. Open START → Factory and choose the category. Detroit now contains sixty presets, including thirty piano-tagged sounds.
+**620 factory presets across 22 categories.** Vocals - Pop and Indie and Vocals - Southern and West Coast have been removed, including their thirty factory patches. All remaining sounds, calibrated levels and identities are unchanged. The Detroit, Chicago Drill, Funk, Japan Inspired and 80s Pop additions remain available.
 
-The original 530 patches, their IDs and host program order are preserved exactly. Each new sound has its own complete synthesis recipe; no recorded instruments or audio assets are bundled. Eight-voice polyphonic patches and one-voice basses/solos retain the existing efficient DSP. See [0.16.0 release details](docs/RELEASE_0_16.md) and [factory audit](docs/FACTORY_LIBRARY.md).
+Saved projects retain their explicit synthesis settings, including sounds from the removed categories. Thirty old host program numbers are reserved to keep every surviving program number stable; explicitly selecting a reserved slot loads Dream Pad. Reserved slots are separate from the 620 active factory presets. Existing user presets are retained.
 
-All twenty skins, nonrepeating launch colours, optional fixed project skin, ROM Hacks SF2 loading, drag/drop, default/custom SoundFont folder and last-bank recall remain available. Saved projects take precedence over startup bank recall.
-
-[Download the 0.16.0 Windows installer ZIP](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39265210389/artifacts/12193942690) · [Portable/manual archive](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39265210389/artifacts/12193558215) · [Source](https://github.com/treezysosa/G-Boy-Advance-2/tree/feature/groove-presets-0160). Close FL Studio and standalone, extract the installer ZIP into a new folder, run `G-Boy-Advance-2-Setup-x64.exe`, then reopen FL64. User presets, SoundFont banks and preferences are retained by the installer.
-
-[Windows/Ubuntu run 39265210389](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39265210389) passed nine Ubuntu DSP suites and twelve Windows CTest suites: 632,474 native DSP/preset checks, 1,445 Windows application checks (332 library / 164 SoundFont), both actual-bundle test hosts (267/268 checks), pluginval strictness 10, Steinberg 47 passed / 0 failed and six installer lifecycle checks. The synthetic FL-named host is not FL Studio.
-
-All 650 presets clear both numerical sound-difference screens. The fresh all-pair audit contains 7,800 dry/wet renders and 210,925 pairs, with zero duplicate candidates and zero close-pair review flags. Audio matches 0.15.0 byte for byte with identical current patch arrays. Actual FL Studio, physical audio/DPI and human listening acceptance remain manual checks. These prepared builds are unsigned; the owner’s licensing decision remains deferred.
+All twenty skins, launch colours, ROM Hacks SF2 drag/drop, library folders and recall, and the existing DSP optimizations remain available. See [current release details](docs/RELEASE_0_16_1.md). Build and validation results for this update are being prepared; the preceding verified version is documented in [0.16.0](docs/RELEASE_0_16.md).
 
 ![G Boy Advance 2 Phase 2 native JUCE editor](docs/images/phase2-main.png)
 
@@ -21,12 +15,12 @@ Actual Phase 2 Windows JUCE component render at 1280×646 from [passing CI run 3
 Install Visual Studio 2022 with **Desktop development with C++**, a Windows SDK, CMake 3.24+, and Git. In PowerShell:
 
 ```powershell
-git clone --branch feature/groove-presets-0160 https://github.com/treezysosa/G-Boy-Advance-2.git
+git clone --branch feature/remove-vocal-categories-0161 https://github.com/treezysosa/G-Boy-Advance-2.git
 cd G-Boy-Advance-2
 powershell -ExecutionPolicy Bypass -File scripts/build-windows.ps1
 ```
 
-You can also use [Build and validate in GitHub Actions](https://github.com/treezysosa/G-Boy-Advance-2/actions?query=branch%3Afeature%2Fgroove-presets-0160). Factory/vocal and retro audition files are separate test outputs and are never installed or loaded by the instrument.
+You can also use [Build and validate in GitHub Actions](https://github.com/treezysosa/G-Boy-Advance-2/actions?query=branch%3Afeature%2Fremove-vocal-categories-0161). Factory/vocal and retro audition files are separate test outputs and are never installed or loaded by the instrument.
 
 The first local build downloads the pinned JUCE 8.0.6 source. For an offline build, supply an existing checkout:
 
@@ -66,7 +60,7 @@ Close your DAW, copy the entire `.vst3` directory into `C:\Program Files\Common 
 - Sine, harmonic-limited triangle, PolyBLEP saw / square / pulse, and noise; resonant low-pass, high-pass, band-pass, notch, and formant filters.
 - Two ADSRs, two routable LFOs, vibrato, tremolo, velocity, 16-channel MIDI pitch bend / modulation / sustain, 1–32 voices, stealing, mono / legato, glide.
 - Reverb, delay, chorus, phaser, flanger, saturation, distortion, bitcrusher, tape wow / flutter, low / high shelves, and stereo width.
-- 650 original factory patches across 24 categories, explicit named-instrument, vocal and retro profiles, calibrated levels and stable program identities. Vocal patches are synthesized vowel-like timbres and contain no recorded voices or speech.
+- 620 original factory patches across 22 categories, explicit named-instrument, vocal and retro profiles, calibrated levels and stable program identities. Vocal patches are synthesized vowel-like timbres and contain no recorded voices or speech.
 - Reference-based vector UI, playable keyboard, spring-return pitch wheel, functional D-pad, preview A / stop B, START browser, SELECT advanced editor, assignable A–D controls.
 - Twenty colour skins with nonrepeating launch colours or a fixed project choice; SoundFont drag and drop; host-visible parameters, project state, user preset Save As / import / export / rename / delete, favorites / recent patches, category search, tags, keyboard navigation.
 - Windows CI, portable packaging and Inno Setup installer script, DSP and JUCE integration tests.

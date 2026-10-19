@@ -57,6 +57,9 @@ function Check-Installed {
     foreach($name in @('USER_MANUAL.md','FL_STUDIO.md','collect-windows-diagnostics.ps1','LICENSING.md','Factory Presets/factory.json','Third-party notices/manifest.json','unins000.exe')) {
         if (-not (Test-Path -LiteralPath (Join-Path $app $name))) { throw "Installed file missing: $name" }
     }
+    $factory=Get-Content -LiteralPath (Join-Path $app 'Factory Presets/factory.json') -Raw | ConvertFrom-Json
+    $categories=@($factory.presets.category | Sort-Object -Unique)
+    if($factory.presets.Count -ne 620 -or $categories.Count -ne 22 -or $categories -contains 'Vocals - Pop and Indie' -or $categories -contains 'Vocals - Southern and West Coast') {throw 'Installed factory bank did not remove the requested vocal categories.'}
     if ((Get-FileHash -LiteralPath $sentinel).Hash -ne $sentinelHash) { throw 'Installer changed user preset data.' }
     if ((Get-FileHash -LiteralPath $audioSentinel).Hash -ne $audioSentinelHash) { throw 'Installer changed personal audio data.' }
     if ((Get-FileHash -LiteralPath $sfSentinel).Hash -ne $sfSentinelHash) { throw 'Installer changed the SoundFont cache.' }
@@ -70,14 +73,14 @@ try {
         Run-Setup $previous @('/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART','/SP-',"/DIR=`"$app`"","/LOG=`"$(Join-Path $logs 'install-previous.txt')`"")
         $installed=$true
         if(-not (Test-Path -LiteralPath (Join-Path $vst 'Contents/x86_64-win/G Boy Advance 2.vst3'))) {throw 'Previous-version VST3 was not installed.'}
-        if((Get-ItemProperty $key).DisplayVersion -ne '0.15.0') {throw 'Upgrade test requires the pinned 0.15.0 installer.'}
+        if((Get-ItemProperty $key).DisplayVersion -ne '0.16.0') {throw 'Upgrade test requires the pinned 0.16.0 installer.'}
         if ((Get-FileHash -LiteralPath $sentinel).Hash -ne $sentinelHash) {throw 'Previous installer changed user data.'}
-        $report.Add('PASS pinned 0.15.0 installation before upgrade, default VST3 path and user-data preservation')
+        $report.Add('PASS pinned 0.16.0 installation before upgrade, default VST3 path and user-data preservation')
     }
     Run-Setup $Installer @('/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART','/SP-',"/DIR=`"$app`"","/LOG=`"$(Join-Path $logs 'install.txt')`"")
     $installed=$true;Check-Installed
-    if((Get-ItemProperty $key).DisplayVersion -ne '0.16.0') {throw 'Installed registry version does not match the release candidate.'}
-    $kind=if($PreviousInstaller){'0.15.0-to-0.16.0 upgrade'}else{'clean install'}
+    if((Get-ItemProperty $key).DisplayVersion -ne '0.16.1') {throw 'Installed registry version does not match the release candidate.'}
+    $kind=if($PreviousInstaller){'0.16.0-to-0.16.1 upgrade'}else{'clean install'}
     $report.Add('PASS silent '+$kind+': default common VST3 path, standalone, manual, factory bank, binary hashes')
     $diagnostics=Join-Path $logs 'diagnostics-smoke.txt'
     & (Join-Path $app 'collect-windows-diagnostics.ps1') -OutputPath $diagnostics

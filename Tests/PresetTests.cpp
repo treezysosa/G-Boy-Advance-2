@@ -77,7 +77,7 @@ int main(int argc,char** argv){try{
         }
         if(++rendered%64==0)std::cout<<"Audited "<<rendered<<" factory patches\n"<<std::flush;
     }
-    check(gba::factoryPatches.size()==650&&categories.size()==24,"Factory coverage is incomplete");
+    check(gba::factoryPatches.size()==620&&categories.size()==22,"Factory coverage is incomplete");
     if(!levelsOnly){std::ofstream pairs("factory-similarity.csv");pairs<<"id,nearestId,dryAudioDistance\n";int close=0;
         for(std::size_t i=0;i<signatures.size();++i){double best=100;std::size_t nearest=i;for(std::size_t j=0;j<signatures.size();++j)if(i!=j&&signatures[i].note==signatures[j].note){const double d=distance(signatures[i],signatures[j]);if(d<best){best=d;nearest=j;}}pairs<<signatures[i].id<<","<<signatures[nearest].id<<","<<best<<"\n";if(best<.025)++close;}
         std::vector<int> parent(signatures.size());std::iota(parent.begin(),parent.end(),0);
@@ -86,7 +86,7 @@ int main(int argc,char** argv){try{
         std::set<int> groups;for(std::size_t i=0;i<parent.size();++i)groups.insert(root(int(i)));
         check(groups.size()==signatures.size(),"Factory dry spectral/envelope near-duplicates found; inspect factory-similarity.csv");
         std::set<int> regionalGroups;
-        for(std::size_t i=410;i<530;++i) {
+        for(std::size_t i=380;i<500;++i) {
             regionalGroups.insert(root(int(i)));
             double nearest=100;
             for(std::size_t j=0;j<i;++j)if(signatures[i].note==signatures[j].note)nearest=std::min(nearest,distance(signatures[i],signatures[j]));
@@ -106,7 +106,7 @@ int main(int argc,char** argv){try{
         std::filesystem::create_directories("preset-auditions");std::set<std::string> done;std::ofstream index("preset-auditions/README.txt");index<<"Original synthesized audit renders. Never loaded by the instrument. Human listening acceptance remains pending.\n";int number=0;
         for(const auto& p:gba::factoryPatches)if(done.insert(p.category).second)excerpt(p,"preset-auditions",++number,index);
         std::filesystem::create_directories("vocal-auditions");std::ofstream vocalIndex("vocal-auditions/README.txt");vocalIndex<<"Original synthesized vowel textures, not speech or identifiable voices. Never loaded by the instrument. Human listening acceptance pending. Six-second excerpts may truncate tails.\n";number=0;
-        for(std::string_view name:{"Smooth R&B Vocal Pad","Modern Pop Vocal Synth","Japanese City Pop Vocal Synth","Middle Eastern Pop-Inspired Vocal Synth","Dark Southern Chant Synth","Ghost Whisper Synth","Haunted Choir","16-Bit Vocal Synth","Children's Choir-Style Synth","Synthetic Vocal Chop","Dark Formant Bass","Angelic Choir Synth"}){
+        for(std::string_view name:{"Smooth R&B Vocal Pad","Japanese City Pop Vocal Synth","Middle Eastern Pop-Inspired Vocal Synth","Ghost Whisper Synth","Haunted Choir","16-Bit Vocal Synth","Children's Choir-Style Synth","Synthetic Vocal Chop","Dark Formant Bass","Angelic Choir Synth"}){
             auto it=std::find_if(gba::factoryPatches.begin(),gba::factoryPatches.end(),[&](const auto& p){return p.name==name;});if(it==gba::factoryPatches.end())throw std::runtime_error("Missing audition preset");excerpt(*it,"vocal-auditions",++number,vocalIndex);
         }
         std::filesystem::create_directories("retro-auditions");std::ofstream retroIndex("retro-auditions/README.txt");retroIndex<<"Original mathematical synthesis, not commercial game audio. No instrument reads these test WAVs. Human listening acceptance pending; six-second excerpts may truncate tails.\n";number=0;
@@ -117,7 +117,7 @@ int main(int argc,char** argv){try{
             const auto directory=std::filesystem::path("groove-auditions")/category;
             std::filesystem::create_directories(directory);std::ofstream grooveIndex(directory/"README.txt");number=0;
             grooveIndex<<"Original synthesis test renders for the 0.16.0 additions. Not installed or read by the plugin. Human listening acceptance pending.\n";
-            for(std::size_t i=530;i<gba::factoryPatches.size();++i)if(std::string_view(gba::factoryPatches[i].category)==category)excerpt(gba::factoryPatches[i],directory,++number,grooveIndex);
+            for(std::size_t i=500;i<gba::factoryPatches.size();++i)if(std::string_view(gba::factoryPatches[i].category)==category)excerpt(gba::factoryPatches[i],directory,++number,grooveIndex);
         }
 
     }

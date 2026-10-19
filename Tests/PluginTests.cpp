@@ -1,5 +1,7 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
+#include "FactoryData.h"
+#include "RemovedVocalStates.h"
 #include <iostream>
 #include <set>
 #include <stdexcept>
@@ -30,6 +32,44 @@ juce::MouseEvent mouse(juce::Component& component,juce::Point<float> point) {
     return {juce::Desktop::getInstance().getMainMouseSource(),point,juce::ModifierKeys::leftButtonModifier,1,0,0,0,0,&component,&component,now,point,now,1,false};
 }
 #endif
+void removedVocalProjects(const juce::File& root) {
+    const auto fixtures=removedVocalStateFixtures();const auto* projects=fixtures["projects"].getArray();
+    check(projects&&projects->size()==30,"Missing actual old vocal project fixtures");
+    auto p=std::make_unique<GbaProcessor>(root.getChildFile("RemovedVocals"));
+    p->setRateAndBufferSizeDetails(48000,256);p->prepareToPlay(48000,256);
+    const auto defaultSettings=p->snapshot();
+    check(p->presets.all().size()==620&&p->presets.categories().size()==22,"Retired categories remain in the factory browser");
+    for(const char* name:{"Vocals - Pop and Indie","Vocals - Southern and West Coast"}) {
+        PresetManager::Filter f;f.category=name;check(p->presets.filtered(f).empty()&&!p->presets.categories().contains(name),"Removed category remains selectable");
+    }
+    for(const auto& patch:gba::factoryPatches)check(p->getProgramName(patch.program)==patch.name,"Surviving factory host program number moved");
+    for(const auto& record:*projects) {
+        const auto id=record["id"].toString();const int program=int(record["program"]);
+        check(!p->presets.find(id)&&!p->presets.load(id),"Removed factory patch can still be loaded from the library");
+        check(p->getProgramName(program).startsWith("Reserved "),"Removed host slot still advertises the deleted sound");
+        juce::MemoryBlock state;check(state.fromBase64Encoding(record["state"].toString()),"Invalid old state fixture");
+        p->setStateInformation(state.getData(),int(state.getSize()));
+        check(p->presetId()==id&&p->presetName()==record["name"].toString()&&p->getCurrentProgram()==program,"Old project identity/program was lost");
+        check(p->presetCategory()=="Saved Project"&&p->stateNotice().contains("saved in your project was restored"),"Restored project recreates a removed category or lacks its notice");
+        const auto* expected=record["parameters"].getArray();check(expected&&expected->size()==int(gba::parameterCount),"Old fixture lost synthesis parameters");
+        const auto settings=p->snapshot();bool matches=true;
+        // These fixtures were exported on Linux; tolerate only host float
+        // normalization precision when restoring them on Windows.
+        for(std::size_t i=0;i<gba::parameterCount;++i)matches&=std::abs(settings.values[i]-float((*expected)[int(i)]))<=std::max(.0000001f,(gba::specs[i].max-gba::specs[i].min)*4*std::numeric_limits<float>::epsilon());
+        check(matches,"Removed-category project no longer restores its edited sound settings");
+        juce::AudioBuffer<float> audio(2,256);p->reset();juce::MidiBuffer note;note.addEvent(juce::MidiMessage::noteOn(1,60,.8f),0);p->processBlock(audio,note);render(*p,audio,32);
+        check(audio.getMagnitude(0,256)>.00001f,"Restored removed-category project is silent");p->panic();render(*p,audio,1);
+        juce::MemoryBlock saved;p->getStateInformation(saved);p->presets.restoreDefault(false);p->setStateInformation(saved.getData(),int(saved.getSize()));
+        check(p->snapshot().values==settings.values&&p->getCurrentProgram()==program,"Resaving an old vocal project changed its sound or program");
+        p->setCurrentProgram(program);p->servicePendingProgram();
+        check(p->getCurrentProgram()==program&&p->presetName()==p->getProgramName(program)&&p->snapshot().values==defaultSettings.values,"Reserved host slot failed to select the documented default");
+    }
+    juce::MemoryBlock lastProject;check(lastProject.fromBase64Encoding(projects->getLast()["state"].toString()),"Last old project fixture is invalid");p->setStateInformation(lastProject.getData(),int(lastProject.getSize()));
+    const auto kept=p->snapshot();check(p->presets.saveAs("Kept Project Sound").wasOk(),"Could not keep a restored sound as a user preset");
+    const auto userId=p->presetId();p->presets.restoreDefault(false);check(p->presets.load(userId)&&p->snapshot().values==kept.values,"User preset no longer reloads independently of removed factory categories");
+    for(int i=0;i<22;++i){p->presets.stepCategory(1);check(p->presetCategory()!="Vocals - Pop and Indie"&&p->presetCategory()!="Vocals - Southern and West Coast","D-pad category navigation reaches a removed category");}
+    std::cout<<"PASS 30 actual 0.16.0 removed-vocal projects: edited settings, audible notes, resave, reserved host slots, surviving program numbers and 22 browser categories\n";
+}
 void launchAppearance(const juce::File& root) {
     for(int previous=0;previous<int(gba_ui::skins.size());++previous) {
         std::array<bool,gba_ui::skins.size()> reached{};
@@ -108,6 +148,7 @@ int main(int argc,char** argv) {
     }
     auto root=juce::File::getSpecialLocation(juce::File::tempDirectory).getChildFile("gba2-tests-"+juce::Uuid().toString());
     try {
+        removedVocalProjects(root);
         launchAppearance(root);
         checks+=runLibraryTests();
         checks+=runSoundFontTests();

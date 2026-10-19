@@ -2043,16 +2043,6 @@
     }
   },
   "compatibilityRefinements": {
-    "Retro Crunk Vocal Synth": {
-      "Vowel": 1.8,
-      "FormantShift": -3,
-      "Syllable": 0.9,
-      "Attack": 0.004,
-      "Decay": 0.16,
-      "Sustain": 0.12,
-      "CrusherBits": 8,
-      "FilterEnv": 2
-    },
     "Retro Racing Synth": {
       "Engine": 6,
       "Wave1": 4,
