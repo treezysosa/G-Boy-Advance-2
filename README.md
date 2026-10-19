@@ -6,9 +6,9 @@
 
 The engine reuses exact repeated modulation/filter calculations across matching chord voices, lists active voices once per render segment and skips unused effect reads while retaining warm histories. Existing patch settings, full-rate modulation, polyphony limits and 16-sample latency are retained. The 650-scene comparison using all 530 current patches was byte-identical against version 0.13.1. Matched Windows notes/chords/retrigger profiles measured processing-time reductions ranging from 12.2% to 20.3% across one-, four- and eight-voice workload groups. These are native measurements on a shared runner, not FL Studio CPU percentages or physical-driver deadline guarantees.
 
-**0.14.1 validation is in progress.** [Previous 0.14.0 Windows/Ubuntu run 39196086290](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39196086290) passed eight Ubuntu DSP suites and eleven Windows CTest suites, including 622,854 native DSP/preset checks, 546 Windows application checks (121 library and 55 SoundFont checks), ten skin/state snapshots, two actual-bundle test hosts, pluginval strictness 10, Steinberg 47/0 and six installer lifecycle checks. The synthetic FL-named test host is not FL Studio.
+[Windows/Ubuntu run 39246825673](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39246825673) passed eight Ubuntu DSP suites and eleven Windows CTest suites, including 774 Windows application checks (121 library and 164 SoundFont checks), three separate OS-process colour launches, native JUCE peer drag/drop dispatch, default/custom folder and last-bank restart checks, two actual-bundle test hosts, pluginval strictness 10, Steinberg 47/0 and six installer lifecycle checks. The synthetic FL-named test host is not FL Studio.
 
-[Previous 0.14.0 Windows installer ZIP](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39196086290/artifacts/12162173204). Close FL Studio and standalone, extract into a new folder, run `G-Boy-Advance-2-Setup-x64.exe`, then reopen FL64. [Portable/manual installation](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39196086290/artifacts/12162158409) · [Source](https://github.com/treezysosa/G-Boy-Advance-2/tree/feature/launch-skins-sf2-drop-0141) · [Current behavior and validation](docs/RELEASE_0_14_1.md).
+[Download the 0.14.1 Windows installer ZIP](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39246825673/artifacts/12184476620). Close FL Studio and standalone, extract into a new folder, run `G-Boy-Advance-2-Setup-x64.exe`, then reopen FL64. [Portable/manual installation](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39246825673/artifacts/12184651399) · [Source](https://github.com/treezysosa/G-Boy-Advance-2/tree/feature/launch-skins-sf2-drop-0141) · [Behavior and evidence](docs/RELEASE_0_14_1.md).
 
 The licensing decision remains explicitly deferred by the owner; this is unsigned build preparation. Current-version real FL Studio/audio-device/DPI/listening and interactive-install acceptance remain pending.
 
@@ -26,7 +26,7 @@ cd G-Boy-Advance-2
 powershell -ExecutionPolicy Bypass -File scripts/build-windows.ps1
 ```
 
-You can also use [Build and validate in GitHub Actions](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39096250046). Factory/vocal and retro audition files are separate test outputs and are never installed or loaded by the instrument.
+You can also use [Build and validate in GitHub Actions](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39246825673). Factory/vocal and retro audition files are separate test outputs and are never installed or loaded by the instrument.
 
 The first local build downloads the pinned JUCE 8.0.6 source. For an offline build, supply an existing checkout:
 
