@@ -8,7 +8,11 @@
 
 ROM Hacks remains beside master volume, with single-file SF2 drag and drop, default/custom SoundFont folder, bank/instrument lists and last-bank recall. Saved projects take precedence over the startup bank. No SoundFonts or recorded audio are bundled.
 
-[Builds and installer artifacts](https://github.com/treezysosa/G-Boy-Advance-2/actions?query=branch%3Afeature%2Fskins-diversity-cpu-0150) · [Source](https://github.com/treezysosa/G-Boy-Advance-2/tree/feature/skins-diversity-cpu-0150). Close FL Studio and standalone, extract the installer ZIP into a new folder, run `G-Boy-Advance-2-Setup-x64.exe`, then reopen FL64. User presets, banks and SoundFont preferences are retained by the installer.
+[Download the 0.15.0 Windows installer ZIP](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39254648988/artifacts/12187219055) · [Portable/manual archive](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39254648988/artifacts/12187453979) · [Source](https://github.com/treezysosa/G-Boy-Advance-2/tree/feature/skins-diversity-cpu-0150). Close FL Studio and standalone, extract the installer ZIP into a new folder, run `G-Boy-Advance-2-Setup-x64.exe`, then reopen FL64. User presets, banks and SoundFont preferences are retained by the installer.
+
+[Windows/Ubuntu run 39254648988](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39254648988) passed nine Ubuntu DSP suites and twelve Windows CTest suites: 629,294 native DSP/preset checks, 1,225 Windows application checks (122 library / 164 SoundFont), twenty skin/state snapshots, two actual-bundle hosts, pluginval strictness 10, Steinberg 47 passed / 0 failed and six installer lifecycle checks. The synthetic FL-named host is not FL Studio.
+
+Matched Windows note/chord/retrigger profiles measured 9.09%–13.85% less accumulated DSP time across one-, four- and eight-voice groups versus 0.14.1. Native shared-runner measurements vary by patch and do not predict the FL Studio CPU meter.
 
 These prepared builds are unsigned; the owner has deferred the licensing decision. Automated native-host validation does not substitute for actual FL Studio, physical audio-device, DPI or human listening acceptance.
 
