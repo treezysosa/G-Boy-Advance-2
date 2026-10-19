@@ -139,6 +139,8 @@ int main(int argc,char** argv) {
             check(p->getCurrentProgram()==slot,"Actual VST3 wrapper remapped an old removed-category project");
             juce::MemoryBlock saved;p->getStateInformation(saved);auto xml=juce::AudioProcessor::getXmlFromBinary(saved.getData(),int(saved.getSize()));
             check(xml&&xml->getStringAttribute("presetId")==project["id"].toString()&&xml->getStringAttribute("presetCategory")=="Saved Project","Actual VST3 wrapper lost removed-project metadata");
+            p->setCurrentProgram(slot);pump(60);juce::MemoryBlock echoed;p->getStateInformation(echoed);
+            check(echoed==saved,"Host program echo replaced an old removed-category project's explicit sound");
         }
         // Confirm all 64 public controls are present, not just a generic host bypass.
         for(std::size_t i=0;i<gba::parameterCount;++i)check(parameter(*p,gba::Param(i))!=nullptr,"Hosted parameter missing");

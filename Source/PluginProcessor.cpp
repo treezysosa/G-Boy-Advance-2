@@ -169,6 +169,12 @@ void GbaProcessor::servicePendingProgram() {
     const int i=pendingProgram.exchange(-1);if(i<0||i>=getNumPrograms())return;
     const auto& program=gba::factoryPrograms[std::size_t(i)];
     if(program.patchIndex>=0){presets.load(program.id);return;}
+    {
+        const juce::ScopedLock lock(metadataLock);
+        // Hosts may echo the current program after restoring a project. A
+        // retired slot must not replace that project's explicit sound settings.
+        if(currentProgram.load()==i&&activePresetId==program.id&&activePresetCategory=="Saved Project")return;
+    }
     // Removed categories have no runtime recipes. Keep their host numbers reserved
     // so program automation for every surviving sound continues selecting it.
     presets.restoreDefault(false);

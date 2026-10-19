@@ -62,6 +62,9 @@ void removedVocalProjects(const juce::File& root) {
         juce::MemoryBlock saved;p->getStateInformation(saved);p->presets.restoreDefault(false);p->setStateInformation(saved.getData(),int(saved.getSize()));
         check(p->snapshot().values==settings.values&&p->getCurrentProgram()==program,"Resaving an old vocal project changed its sound or program");
         p->setCurrentProgram(program);p->servicePendingProgram();
+        check(p->snapshot().values==settings.values,"Host program echo replaced a restored removed-category project sound");
+        p->presets.restoreDefault(false);
+        p->setCurrentProgram(program);p->servicePendingProgram();
         check(p->getCurrentProgram()==program&&p->presetName()==p->getProgramName(program)&&p->snapshot().values==defaultSettings.values,"Reserved host slot failed to select the documented default");
     }
     juce::MemoryBlock lastProject;check(lastProject.fromBase64Encoding(projects->getLast()["state"].toString()),"Last old project fixture is invalid");p->setStateInformation(lastProject.getData(),int(lastProject.getSize()));
