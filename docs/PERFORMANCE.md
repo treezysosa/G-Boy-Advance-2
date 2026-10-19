@@ -1,4 +1,4 @@
-> 0.16.0 preset expansion validation is in progress. See [current evidence](RELEASE_0_16.md); the results below describe earlier releases. The 0.15.0 DSP optimizations are retained.
+> Current update: **0.16.0**, 650 presets with all 530 previous patches preserved. The Windows/Ubuntu build, full preset audits, actual-bundle validators and installer upgrade checks pass. The 770-scene audio probe is byte-identical to 0.15.0 using the same current arrays; the prior DSP optimizations are retained. This preset expansion does not claim an additional DSP speedup. [Current evidence and limits](RELEASE_0_16.md). Earlier results below retain their historical baselines.
 
 > Current measured update: **0.15.0**. Matched Windows note/chord/retrigger profiles measured 9.09%–13.85% less accumulated DSP time across one-, four- and eight-voice groups versus 0.14.1. The expanded 650-scene audio comparison is byte-identical. Histories, nonlinear quality, voice limits, full-rate modulation and 16-frame latency are retained. [Measurements, workload details and limits](RELEASE_0_15.md). Earlier entries below retain their historical baselines.
 

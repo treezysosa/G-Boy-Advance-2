@@ -1,6 +1,6 @@
 # Exact next steps
 
-Version 0.16.0 appends 120 presets while preserving all 530 prior patches. See [current release evidence](RELEASE_0_16.md). Local and Windows automated validation are in progress; the remaining manual items are listed below.
+Version 0.16.0 appends 120 presets while preserving all 530 prior patches. See [current release evidence](RELEASE_0_16.md). [Windows/Ubuntu run 39265210389](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39265210389) passed nine Ubuntu DSP suites and twelve Windows CTest suites: 632,474 native DSP/preset checks, 1,445 Windows application checks (332 library / 164 SoundFont), both actual-bundle test hosts (267/268 checks), pluginval strictness 10, Steinberg 47 passed / 0 failed and six installer lifecycle checks. The synthetic FL-named host is not FL Studio. The remaining manual items are listed below.
 
 1. Complete the remaining manual matrix in RELEASE_CHECKLIST.md on real Windows devices and the five named DAWs. Record host/Windows versions, interface/driver, sample rate, buffer, date and evidence. Source inspection and a custom host do not establish named-DAW compatibility.
 2. Profile low driver buffers with real GUI, multiple instances, note-on bursts and rapid engine/parameter requests. Investigate any actual underruns; the current shared-runner over-budget observations are recorded in RELEASE_0_13.md without assigning a cause. Revalidate/recalibrate audio if further DSP work changes timbre/levels.

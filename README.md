@@ -6,7 +6,11 @@ The original 530 patches, their IDs and host program order are preserved exactly
 
 All twenty skins, nonrepeating launch colours, optional fixed project skin, ROM Hacks SF2 loading, drag/drop, default/custom SoundFont folder and last-bank recall remain available. Saved projects take precedence over startup bank recall.
 
-The new Windows installer and validation are being prepared. The prior validated [0.15.0 release](docs/RELEASE_0_15.md) remains documented separately. Build and test results for this update will be recorded after the new checks complete.
+[Download the 0.16.0 Windows installer ZIP](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39265210389/artifacts/12193942690) · [Portable/manual archive](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39265210389/artifacts/12193558215) · [Source](https://github.com/treezysosa/G-Boy-Advance-2/tree/feature/groove-presets-0160). Close FL Studio and standalone, extract the installer ZIP into a new folder, run `G-Boy-Advance-2-Setup-x64.exe`, then reopen FL64. User presets, SoundFont banks and preferences are retained by the installer.
+
+[Windows/Ubuntu run 39265210389](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39265210389) passed nine Ubuntu DSP suites and twelve Windows CTest suites: 632,474 native DSP/preset checks, 1,445 Windows application checks (332 library / 164 SoundFont), both actual-bundle test hosts (267/268 checks), pluginval strictness 10, Steinberg 47 passed / 0 failed and six installer lifecycle checks. The synthetic FL-named host is not FL Studio.
+
+All 650 presets clear both numerical sound-difference screens. The fresh all-pair audit contains 7,800 dry/wet renders and 210,925 pairs, with zero duplicate candidates and zero close-pair review flags. Audio matches 0.15.0 byte for byte with identical current patch arrays. Actual FL Studio, physical audio/DPI and human listening acceptance remain manual checks. These prepared builds are unsigned; the owner’s licensing decision remains deferred.
 
 ![G Boy Advance 2 Phase 2 native JUCE editor](docs/images/phase2-main.png)
 

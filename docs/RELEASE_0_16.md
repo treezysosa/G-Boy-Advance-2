@@ -18,7 +18,17 @@ All sounds are original synthesis approximations of broad production characteris
 
 ## Validation
 
-Local calibration, full-bank sound-difference checks, application tests and the Windows build are in progress. Completion evidence and download links will be recorded after checks finish; this source document does not yet claim a passing Windows build.
+[Download the 0.16.0 Windows installer ZIP](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39265210389/artifacts/12193942690) · [Portable/manual archive](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39265210389/artifacts/12193558215) · [Source](https://github.com/treezysosa/G-Boy-Advance-2/tree/feature/groove-presets-0160). Close FL Studio and standalone, extract the installer ZIP into a new folder, run `G-Boy-Advance-2-Setup-x64.exe`, then reopen FL64. User presets, SoundFont banks and preferences are retained by the installer.
+
+[Windows/Ubuntu run 39265210389](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39265210389) passed nine Ubuntu DSP suites and twelve Windows CTest suites: 632,474 native DSP/preset checks, 1,445 Windows application checks (332 library / 164 SoundFont), both actual-bundle test hosts (267/268 checks), pluginval strictness 10, Steinberg 47 passed / 0 failed and six installer lifecycle checks. The synthetic FL-named host is not FL Studio.
+
+Validated application/build commit: `d1989ee1084b0ff735b69e56b00c6fd49f2efb76`. The downloaded installer, portable archive and full Windows artifact pass SHA256 and ZIP integrity checks. Both runtime binaries are AMD64 PE files. The shipped factory JSON matches the generated source exactly, includes 650 working patches, and retains the previous 530 dictionaries unchanged. Twenty main/advanced skin snapshots and nineteen pinned upstream notices are verified.
+
+All 7,598 central/register/velocity/release factory checks pass, including 650 dry signature groups with zero near-neighbor flags. The separate fresh multi-register audit reports 0 duplicate candidates, 0 review flags, minimum dry distance 0.060104154; thresholds are unchanged. Local native tests pass 632,474 DSP/preset checks and 1,433 application checks (330 library / 159 SoundFont). Own-source ASan/UBSan passes the same 1,433 application checks; cached JUCE modules are uninstrumented and leak detection is disabled under this environment’s tracer.
+
+The Windows 770-scene audio probe matches every byte across 11,919,360 finite floats, before/after SHA256 `e35a5735d1534cb9d421e2ee94441f2406eef12da7e9fd670c9af41edbf4956c`. The independent local GCC comparison is also byte-identical, SHA256 `735172f49c157f4e6e8aa85ad59d0f4dd913b48662f8ee836f12157053702d60`. The native playing benchmark passes all 612 note/chord/retrigger scenes with the previous and current DSP. This release retains the 0.15.0 engine optimizations; adding presets does not establish an additional DSP speedup.
+
+The installer acceptance run verifies a pinned 0.15.0-to-0.16.0 upgrade, installed hashes, diagnostics, reinstall, standalone process liveness and uninstall while preserving user data. Standalone process liveness does not certify physical audio playback. Original synthesized listening renders for every new patch are separate bank-specific workflow artifacts; none are installed or loaded by the instrument.
 
 The sound-difference test removes gain and effects, renders identical notes 48, 60 and 72 at velocities 0.4 and 0.9, and compares all 210,925 pairs from 7,800 dry/wet fixtures. Existing thresholds remain 0.025 for duplicate candidates and 0.06 for close-pair review. The central-note test also checks headroom, velocity, register and release behavior. These numerical screens do not replace listening.
 
