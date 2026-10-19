@@ -15,7 +15,29 @@ New skins: Crimson Red, Emerald Green, Midnight Blue, Gold and Rose Pink. The or
 
 The native 650-scene comparison rendered 10,444,800 float samples byte-identically against the 0.13.1 DSP with identical patch arrays, including staggered notes, filter and effect automation, engine changes, sustain/release and sample-rate reinitialization. Final arrays are rechecked before shipping. Three interleaved native stress profiles showed median processing-time reductions of 9.11% at eight voices and 17.01% at 32 voices. Three matched passes of 432 ordinary note/chord/retrigger scenes showed median reductions between 15.56% and 21.52% depending on workload. These are native measurements on the build machine, not FL Studio CPU percentages or physical audio-driver deadline guarantees.
 
-The full native factory audit passed 6,218 checks: 530 distinct dry spectral/envelope groups, 120/120 regional groups, no near-neighbor flags, and playable levels/registers/releases. Native application and own-source ASan/UBSan passed 539 checks including ten skin choices/restores, new region/category/tag browsing and factory project-state restore. Cached JUCE modules were uninstrumented and leak detection was disabled for the environment tracer. The seven additional native suites passed MIDI, all synthesis engines, modulation, effects, allocation-free render, vocals/retro and 612,986 SF2 checks. Windows validators/installer tests are being completed. No current Windows download is claimed until those finish. See FACTORY_LIBRARY.md for numerical level and similarity evidence; human listening and hardware DAW/DPI/device acceptance remain manual. Licensing is deferred by the owner; unsigned build preparation continues.
+The full native factory audit passed 6,218 checks: 530 distinct dry spectral/envelope groups, all 120 new regional voicings separated at the configured threshold, zero near-neighbor flags, playable levels/registers/releases and velocity response. This numerical measure is not a perceptual uniqueness certificate. Native application and own-source ASan/UBSan passed 539 checks; cached JUCE modules were uninstrumented and leak detection was disabled for the environment tracer. Twelve SoundFont publications completed during concurrent audio in normal and sanitizer runs. Previous 410 factory dictionaries are unchanged.
+
+## Verified Windows build
+
+[Windows/Ubuntu run 39196086290](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39196086290) passed eight Ubuntu DSP suites and eleven Windows CTest suites, including 622,854 native DSP/preset checks, 546 Windows application checks (121 library and 55 SoundFont checks), ten skin/state snapshots, two actual-bundle test hosts, pluginval strictness 10, Steinberg 47/0 and six installer lifecycle checks. The synthetic FL-named test host is not FL Studio.
+
+Validated application/test/build commit: `865c5ecb50efe3ec582fb8eb3cba2c2b9746fedd`; final source changes after validation are documentation only. The Windows comparison rendered 650 scenes / 10,444,800 float samples byte-identical against immutable 0.13.1 DSP, with identical current factory arrays and event drivers. Matched Windows notes/chords/retrigger profiles measured processing-time reductions ranging from 12.2% to 20.3% across one-, four- and eight-voice workload groups. These are native measurements on a shared runner, not FL Studio CPU percentages or physical-driver deadline guarantees.
+
+| Voices | Workload | Measured processing-time reduction |
+|---:|---|---:|
+| 1 | held-chord | 18.86% |
+| 1 | retrigger | 20.32% |
+| 4 | held-chord | 14.84% |
+| 4 | retrigger | 14.94% |
+| 8 | held-chord | 12.55% |
+| 8 | retrigger | 12.15% |
+
+The 8-/32-voice stress profiles, full per-callback CSVs, timers and audio hashes are retained in the [Windows validation artifact](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39196086290/artifacts/12162725473). They are observations on one machine and do not certify every callback deadline. Current 32-voice stress observations: 2/10142 over budget, worst ratio 1.037700. No automatic quality/polyphony reduction was added.
+
+Six installer checks cover the pinned 0.13.1 baseline, 0.13.1-to-0.14.0 upgrade/default VST3 path and exact binary hashes, installed diagnostics, same-version reinstall, standalone process liveness and uninstall preserving preset/personal-audio/SoundFont-cache bytes. The launch smoke test does not test an audio device. Ten native skin snapshots and state restore pass; physical DPI and the owner's actual DAW/audio-device/listening checks remain manual. Owner licensing remains deferred; these are unsigned prepared builds.
+
+[Windows installer ZIP](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39196086290/artifacts/12162173204) · [portable files](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39196086290/artifacts/12162158409) · [source branch](https://github.com/treezysosa/G-Boy-Advance-2/tree/feature/regional-bank-skins-cpu-0140). Close FL Studio/standalone, extract into a new folder and run Setup, then reopen FL64. New built-in presets: START → Hip-Hop category; skins: SELECT → SKIN. ROM Hacks remains available for user SoundFonts. No bank/audio is bundled. Setup EXE SHA256: `c7746a92f9913fa12ee0a0ff1814d609ef64d52d8b540e0a954da123fdcc8699`.
+
 
 ## Build
 
