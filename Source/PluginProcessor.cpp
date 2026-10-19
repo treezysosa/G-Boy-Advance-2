@@ -64,7 +64,7 @@ GbaProcessor::GbaProcessor(juce::File dataRoot)
       state(*this,nullptr,"GBA2_STATE",createLayout()),presets(*this,dataRoot),romHacks(presets.userFolder().getParentDirectory()),engine(std::make_unique<gba::SynthEngine>()) {
     for(std::size_t i=0;i<raw.size();++i) raw[i]=state.getRawParameterValue(juce::String(gba::specs[i].id.data()));
     setLatencySamples(gba::SynthEngine::latencySamples);
-    keyboard.addListener(this);presets.restoreDefault(false);startTimerHz(20);
+    keyboard.addListener(this);presets.restoreDefault(false);romHacks.armStartupRecall();startTimerHz(20);
 }
 GbaProcessor::~GbaProcessor() {stopTimer();keyboard.removeListener(this);}
 double GbaProcessor::getTailLengthSeconds() const {
@@ -77,7 +77,7 @@ double GbaProcessor::getTailLengthSeconds() const {
     const double room=s[gba::Param::Reverb]>0?.045*(1+repeats(.5+.46*s[gba::Param::ReverbSize])):0;
     return (romHacks.enabled()?std::max(30.0,double(s[gba::Param::Release])):double(s[gba::Param::Release]))+echo+room+.1;
 }
-void GbaProcessor::prepareToPlay(double sr,int) {engine->setSettings(snapshot());engine->prepare(sr);romHacks.prepare(sr);soundFontMode=romHacks.enabled();modeFade=0;lastLeft=lastRight=0;}
+void GbaProcessor::prepareToPlay(double sr,int) {engine->setSettings(snapshot());engine->prepare(sr);romHacks.prepare(sr);romHacks.startLibrary();soundFontMode=romHacks.enabled();modeFade=0;lastLeft=lastRight=0;}
 void GbaProcessor::releaseResources() {reset();}
 void GbaProcessor::reset() {engine->reset();if(auto* sf=romHacks.beginBlock(snapshot()))sf->reset();romHacks.endBlock();active=0;level=0;lastLeft=lastRight=0;}
 bool GbaProcessor::isBusesLayoutSupported(const BusesLayout& layout) const {
@@ -247,5 +247,5 @@ void GbaProcessor::setStateInformation(const void* data,int bytes) {
     for(std::size_t i=0;i<gba::factoryPatches.size();++i)if(restored.getProperty("presetId").toString()==gba::factoryPatches[i].id){currentProgram.store(int(i));break;}
     panicRequested.store(true);
 }
-juce::AudioProcessorEditor* GbaProcessor::createEditor() {initializeEditorAppearance();return new GbaEditor(*this);}
+juce::AudioProcessorEditor* GbaProcessor::createEditor() {initializeEditorAppearance();romHacks.startLibrary();return new GbaEditor(*this);}
 juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter() {return new GbaProcessor();}

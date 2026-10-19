@@ -48,3 +48,5 @@ Choose a source/distribution license and applicable JUCE terms; satisfy obligati
 - ROM Hacks: choose real SF2 banks, switch instruments/banks, play MIDI/keyboard/preview, test sustain/bend/glide/effects and automation, save/reopen immediately/offline, remove original bank after caching, relink missing bank, use multiple instances, return to synthesis, test file-dialog cancellation and skins/DPI. Record real-bank compatibility, loading memory, driver deadlines and layered voice counts.
 
 - SF2 drag and drop from actual Explorer: single .sf2/.SF2 over controls/panels/piano, Unicode names, hover/exit, repeated/replacement banks, malformed files and unsupported/multiple-file rejection; manual LOAD SF2 remains functional. Test normal/elevated process restrictions and actual host behavior.
+
+- SoundFont library: default/custom directory and bank list, refresh after external edits, last bank/instrument across FL64 and standalone restarts, missing original/cache, saved synth/SF2 project precedence, recall switch, library/cache/preference backups and user-data preservation during upgrade/uninstall.

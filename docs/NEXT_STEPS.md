@@ -15,3 +15,5 @@ Version 0.14.1 adds launch colours and SF2 drag and drop; current validation is 
 10. Verify the owner's actual SoundFonts in FL64: instruments/banks, keyboard/MIDI/sustain/bend/glide, shared controls, cache backups/relinking and immediate/offline project reload. Profile loaded banks/voice layers and test native dialogs/cancellation, instances and 10 skins/DPI.
 
 11. On the owner’s actual FL64, drop a real SF2 from Explorer over main controls, ROM Hacks and the other panels; verify hover feedback, instrument selection/audio, invalid-file errors, privilege-level behavior, repeated drops and manual LOAD SF2. Reload the plugin and DAW/standalone for nonrepeating launch colours, then disable NEW COLOUR ON LOAD and verify fixed-colour project restore.
+
+12. On the owner’s actual FL64/standalone, populate SoundFont Library, refresh/select banks and instruments, change the folder, restart for last-bank recall, verify opt-out and saved synth/SF2 project precedence, and back up the library/cache/preferences. Test real large/removable/network folders with the documented scan limits.

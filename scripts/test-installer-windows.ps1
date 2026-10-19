@@ -30,6 +30,15 @@ $appearance=Join-Path (Split-Path $bank -Parent) 'appearance.json'
 $createdAppearance=-not (Test-Path -LiteralPath $appearance)
 if($createdAppearance) { [IO.File]::WriteAllText($appearance,'{"format":"gba2.appearance","schemaVersion":1,"lastSkin":"gold"}') }
 $appearanceHash=(Get-FileHash -LiteralPath $appearance -Algorithm SHA256).Hash
+$libraryFolder=Join-Path (Split-Path $bank -Parent) 'SoundFont Library'
+New-Item -ItemType Directory -Force $libraryFolder | Out-Null
+$libraryBank=Join-Path $libraryFolder ('installer-test-'+[guid]::NewGuid().ToString()+'.sf2')
+[IO.File]::WriteAllBytes($libraryBank,[byte[]](82,73,70,70,4,0,0,0,115,102,98,107))
+$libraryBankHash=(Get-FileHash -LiteralPath $libraryBank -Algorithm SHA256).Hash
+$libraryPreferences=Join-Path (Split-Path $bank -Parent) 'soundfont-library.json'
+$createdLibraryPreferences=-not (Test-Path -LiteralPath $libraryPreferences)
+if($createdLibraryPreferences) { [IO.File]::WriteAllText($libraryPreferences,'{"format":"gba2.soundfont-library","version":1,"rememberLast":false}') }
+$libraryPreferencesHash=(Get-FileHash -LiteralPath $libraryPreferences -Algorithm SHA256).Hash
 $report=[System.Collections.Generic.List[string]]::new()
 function Run-Setup([string]$Exe,[string[]]$SetupArguments) {
     $p=Start-Process -FilePath $Exe -ArgumentList $SetupArguments -Wait -PassThru
@@ -52,6 +61,7 @@ function Check-Installed {
     if ((Get-FileHash -LiteralPath $audioSentinel).Hash -ne $audioSentinelHash) { throw 'Installer changed personal audio data.' }
     if ((Get-FileHash -LiteralPath $sfSentinel).Hash -ne $sfSentinelHash) { throw 'Installer changed the SoundFont cache.' }
     if ((Get-FileHash -LiteralPath $appearance).Hash -ne $appearanceHash) { throw 'Installer changed launch appearance preferences.' }
+    if ((Get-FileHash -LiteralPath $libraryBank).Hash -ne $libraryBankHash -or (Get-FileHash -LiteralPath $libraryPreferences).Hash -ne $libraryPreferencesHash) { throw 'Installer changed the default SoundFont folder or library preferences.' }
 }
 $installed=$false
 try {
@@ -96,7 +106,8 @@ try {
     if ((Get-FileHash -LiteralPath $audioSentinel).Hash -ne $audioSentinelHash) { throw 'Uninstall changed personal audio data.' }
     if ((Get-FileHash -LiteralPath $sfSentinel).Hash -ne $sfSentinelHash) { throw 'Uninstall changed the SoundFont cache.' }
     if ((Get-FileHash -LiteralPath $appearance).Hash -ne $appearanceHash) { throw 'Uninstall changed launch appearance history.' }
-    $report.Add('PASS silent uninstall: product binaries/registry removed, old sample preset, personal audio, SoundFont cache preserved; launch appearance history preserved')
+    if ((Get-FileHash -LiteralPath $libraryBank).Hash -ne $libraryBankHash -or (Get-FileHash -LiteralPath $libraryPreferences).Hash -ne $libraryPreferencesHash) { throw 'Uninstall changed the default SoundFont folder or library preferences.' }
+    $report.Add('PASS silent uninstall: product binaries/registry removed, old sample preset, personal audio, SoundFont cache preserved; launch appearance history preserved; default SoundFont library and preferences preserved')
 } finally {
     if($installed -and (Test-Path -LiteralPath (Join-Path $app 'unins000.exe'))) {
         Run-Setup (Join-Path $app 'unins000.exe') @('/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART')
@@ -105,6 +116,8 @@ try {
     Remove-Item -LiteralPath $audioSentinel -Force
     Remove-Item -LiteralPath $sfSentinel -Force
     if($createdAppearance) { Remove-Item -LiteralPath $appearance -Force }
+    Remove-Item -LiteralPath $libraryBank -Force
+    if($createdLibraryPreferences) { Remove-Item -LiteralPath $libraryPreferences -Force }
     $report | Set-Content -Encoding utf8 (Join-Path $logs 'installer-acceptance.txt')
 }
 $report | Write-Host

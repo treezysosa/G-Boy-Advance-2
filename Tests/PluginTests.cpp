@@ -97,6 +97,14 @@ int main(int argc,char** argv) {
         std::unique_ptr<juce::AudioProcessorEditor> editor(processor.createEditor());
         return 20+processor.editorSkin.load();
     }
+    if(argc==3&&juce::String(argv[1])=="--soundfont-startup-probe") {
+        GbaProcessor processor{juce::File(juce::String::fromUTF8(argv[2]))};
+        processor.setRateAndBufferSizeDetails(48000,256);processor.prepareToPlay(48000,256);
+        if(!processor.romHacks.waitUntilIdle(10000)||!processor.romHacks.enabled())return 2;
+        juce::AudioBuffer<float> audio(2,256);juce::MidiBuffer midi;midi.addEvent(juce::MidiMessage::noteOn(1,69,.8f),0);processor.processBlock(audio,midi);
+        float peak=0;for(int i=0;i<64;++i){midi.clear();processor.processBlock(audio,midi);peak=std::max(peak,audio.getMagnitude(0,256));}
+        return peak>.0001f?50+processor.romHacks.view().selected:3;
+    }
     auto root=juce::File::getSpecialLocation(juce::File::tempDirectory).getChildFile("gba2-tests-"+juce::Uuid().toString());
     try {
         launchAppearance(root);

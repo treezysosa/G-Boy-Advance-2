@@ -78,12 +78,17 @@ private:ParameterGrid grid;juce::Viewport viewport;
 class SoundFontPanel final : public juce::Component,private juce::Timer {
 public:
     SoundFontPanel(GbaProcessor& p,std::function<void()> close):processor(p){
-        setName("ROM Hacks browser");setWantsKeyboardFocus(true);
-        for(auto* c:std::initializer_list<juce::Component*>{&load,&back,&instruments,&file,&status,&preview,&stop,&synth,&enable})addAndMakeVisible(c);
-        instruments.setName("SoundFont instrument");file.setName("SoundFont file");status.setName("SoundFont status");
-        file.setFont(font(17,true));status.setFont(font(15));
-        load.onClick=[this]{choose();};back.onClick=[this,close]{asyncClose(this,close);};
+        setName("ROM Hacks browser");setWantsKeyboardFocus(true);processor.romHacks.startLibrary();
+        for(auto* c:std::initializer_list<juce::Component*>{&load,&back,&instruments,&file,&status,&preview,&stop,&synth,&enable,&bankFiles,&folder,&openFolder,&chooseFolder,&refreshFolder,&remember,&libraryStatus})addAndMakeVisible(c);
+        instruments.setName("SoundFont instrument");file.setName("SoundFont file");status.setName("SoundFont status");bankFiles.setName("SoundFont bank");folder.setName("SoundFont folder");libraryStatus.setName("SoundFont library status");remember.setName("Remember last SoundFont");
+        file.setFont(font(16,true));status.setFont(font(14));folder.setFont(font(12));libraryStatus.setFont(font(12));
+        load.onClick=[this]{choose(false);};back.onClick=[this,close]{asyncClose(this,close);};
         instruments.onChange=[this]{processor.romHacks.select(instruments.getSelectedId()-1);refresh();};
+        bankFiles.onChange=[this]{const int index=bankFiles.getSelectedId()-1;if(index>=0&&index<shownFiles.size())processor.romHacks.loadFile(juce::File(shownFiles[index]));refresh();};
+        openFolder.onClick=[this]{processor.romHacks.libraryView().folder.revealToUser();};
+        chooseFolder.onClick=[this]{choose(true);};refreshFolder.onClick=[this]{processor.romHacks.refreshLibrary();refresh();};
+        remember.setTooltip("Restore the last loaded bank and instrument in new instances. Saved DAW projects keep their own selection.");
+        remember.onClick=[this]{processor.romHacks.setRememberLast(remember.getToggleState());};
         preview.onClick=[this]{processor.preview();};stop.onClick=[this]{processor.stopPreview();};
         synth.onClick=[this]{processor.romHacks.useSoundFont(false);processor.panic();refresh();};
         enable.onClick=[this]{processor.romHacks.useSoundFont(true);refresh();};
@@ -93,32 +98,38 @@ public:
     void paint(juce::Graphics& g) override{
         panel(*this,g,getLocalBounds().toFloat(),14);caption(g,"ROM HACKS",{22,15,float(getWidth()-300),28},25);
         const float sy=float(getHeight())/455;
-        g.setColour(text.withAlpha(.8f));g.setFont(font(std::max(12.0f,16*sy)));
-        g.drawFittedText("Drop one .sf2 file anywhere on this window, or use LOAD SF2. Choose an instrument, then play MIDI or the piano.",24,int(66*sy),getWidth()-48,int(45*sy),juce::Justification::centredLeft,2);
-        g.setFont(font(std::max(11.0f,13*sy)));g.drawFittedText("Imported banks are copied to your SoundFonts folder. Bank and instrument selection are saved with your DAW project.",24,int(273*sy),getWidth()-48,int(44*sy),juce::Justification::centredLeft,2);
-        g.drawFittedText("Synth oscillator controls belong to synthesis presets. SoundFont limits and project backup instructions are in the manual.",24,int(412*sy),getWidth()-48,int(28*sy),juce::Justification::centredLeft,2);
+        g.setColour(text.withAlpha(.8f));g.setFont(font(std::max(12.0f,15*sy)));
+        g.drawFittedText("Choose a bank from your SoundFont folder, drop one .sf2 anywhere, or use LOAD SF2.",24,int(57*sy),getWidth()-48,int(31*sy),juce::Justification::centredLeft,2);
     }
     void resized() override{
         const int w=getWidth();const float sy=float(getHeight())/455;
         auto place=[sy](juce::Component& c,int x,int y,int width,int height){c.setBounds(x,int(float(y)*sy),width,int(float(height)*sy));};
-        place(back,w-245,14,220,30);place(file,24,123,w-250,30);place(load,w-205,123,180,34);
-        place(instruments,24,174,w-48,38);place(preview,24,227,135,30);place(stop,170,227,105,30);place(enable,300,227,185,30);place(synth,w-245,227,220,30);place(status,24,330,w-48,70);
+        place(back,w-245,14,220,30);place(folder,24,96,w-480,28);place(openFolder,w-445,96,130,28);place(chooseFolder,w-305,96,165,28);place(refreshFolder,w-130,96,105,28);
+        place(bankFiles,24,140,w-250,34);place(load,w-205,140,180,34);place(file,24,183,w-48,28);place(instruments,24,220,w-48,34);
+        place(preview,24,270,135,30);place(stop,170,270,105,30);place(enable,300,270,185,30);place(synth,w-245,270,220,30);
+        place(remember,24,315,w-48,28);place(status,24,353,w-48,58);place(libraryStatus,24,419,w-48,24);
     }
 private:
-    GbaProcessor& processor;juce::TextButton load{"LOAD SF2"},back{"BACK / ROM HACKS"},preview{"A  PREVIEW"},stop{"B  STOP"},synth{"RETURN TO SYNTH"},enable{"USE SOUNDFONT"};
-    juce::ComboBox instruments;juce::Label file,status;juce::StringArray shown;std::unique_ptr<juce::FileChooser> chooser;
-    void choose(){
-        chooser=std::make_unique<juce::FileChooser>("Load a SoundFont 2 bank",juce::File::getSpecialLocation(juce::File::userDocumentsDirectory),"*.sf2",true);
+    GbaProcessor& processor;juce::TextButton load{"LOAD SF2"},back{"BACK / ROM HACKS"},preview{"A  PREVIEW"},stop{"B  STOP"},synth{"RETURN TO SYNTH"},enable{"USE SOUNDFONT"},openFolder{"OPEN FOLDER"},chooseFolder{"CHOOSE FOLDER"},refreshFolder{"REFRESH"};
+    juce::ComboBox instruments,bankFiles;juce::Label file,status,folder,libraryStatus;juce::ToggleButton remember{"REMEMBER LAST BANK"};juce::StringArray shown,shownFiles;std::unique_ptr<juce::FileChooser> chooser;
+    void choose(bool directory){
+        const auto initial=processor.romHacks.libraryView().folder;
+        chooser=std::make_unique<juce::FileChooser>(directory?"Choose your SoundFont folder":"Load a SoundFont 2 bank",initial,directory?"":"*.sf2",true);
         juce::Component::SafePointer<SoundFontPanel> safe(this);
-        chooser->launchAsync(juce::FileBrowserComponent::openMode|juce::FileBrowserComponent::canSelectFiles,[safe](const juce::FileChooser& dialog){if(safe!=nullptr&&dialog.getResult()!=juce::File()){safe->processor.romHacks.loadFile(dialog.getResult());safe->refresh();}});
+        chooser->launchAsync(juce::FileBrowserComponent::openMode|(directory?juce::FileBrowserComponent::canSelectDirectories:juce::FileBrowserComponent::canSelectFiles),[safe,directory](const juce::FileChooser& dialog){if(safe!=nullptr&&dialog.getResult()!=juce::File()){if(directory)safe->processor.romHacks.setLibraryFolder(dialog.getResult());else safe->processor.romHacks.loadFile(dialog.getResult());safe->refresh();}});
     }
     void timerCallback() override{refresh();}
-    void refresh(){const auto info=processor.romHacks.view();
+    void refresh(){const auto info=processor.romHacks.view();const auto library=processor.romHacks.libraryView();
         if(shown!=info.instruments){shown=info.instruments;instruments.clear(juce::dontSendNotification);instruments.addItemList(shown,1);}
+        if(shownFiles!=library.files){shownFiles=library.files;bankFiles.clear(juce::dontSendNotification);bankFiles.addItemList(library.names,1);}
+        const int selected=library.files.indexOf(library.source);bankFiles.setSelectedId(info.enabled&&selected>=0?selected+1:0,juce::dontSendNotification);
+        bankFiles.setTextWhenNothingSelected(library.scanning?"Scanning SoundFont folder...":"Choose a bank from your SoundFont folder");bankFiles.setEnabled(!library.scanning&&!library.files.isEmpty());
+        folder.setText(library.folder.getFullPathName(),juce::dontSendNotification);folder.setTooltip(folder.getText());libraryStatus.setText(library.status,juce::dontSendNotification);libraryStatus.setTooltip(library.status);
+        remember.setToggleState(library.rememberLast,juce::dontSendNotification);refreshFolder.setEnabled(!library.scanning);
         instruments.setSelectedId(shown.isEmpty()?0:info.selected+1,juce::dontSendNotification);
         instruments.setTextWhenNothingSelected("Load an .sf2 file to see its instruments");instruments.setEnabled(!info.loading&&!shown.isEmpty());load.setEnabled(!info.loading);
         file.setText(info.fileName.isEmpty()?"No SoundFont loaded":info.fileName,juce::dontSendNotification);
-        status.setText(info.status.isEmpty()?"Drop one .sf2 bank here, or click LOAD SF2.":info.status,juce::dontSendNotification);status.setTooltip(status.getText());
+        status.setText(info.status.isEmpty()?"Choose a bank, drop one .sf2 here, or click LOAD SF2.":info.status,juce::dontSendNotification);status.setTooltip(status.getText());
         preview.setEnabled(info.enabled&&!info.loading&&!shown.isEmpty());enable.setEnabled(!info.loading&&!shown.isEmpty()&&!info.enabled);synth.setEnabled(info.enabled||info.loading);
     }
 };

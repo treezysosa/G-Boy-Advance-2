@@ -1,4 +1,4 @@
-> Current version: **0.14.1: a new skin on plugin load and SF2 drag and drop**, retaining 530 factory presets, ten skins and optional ROM Hacks SF2 instruments. [Current behavior and validation](RELEASE_0_14_1.md) · [CPU update](RELEASE_0_14.md) · [SoundFont limitations](RELEASE_0_13.md).
+> Current version: **0.14.1: launch skins, SF2 drag and drop, a default SoundFont folder and last-bank recall**, retaining 530 factory presets, ten skins and optional ROM Hacks SF2 instruments. [Current behavior and validation](RELEASE_0_14_1.md) · [CPU update](RELEASE_0_14.md) · [SoundFont limitations](RELEASE_0_13.md).
 
 
 Older 0.12.0 projects restore their synthesis parameters and skin, show `SYNTH ONLY:` in the display and a removal notice in START, and discard embedded audio from newly saved state. Sample sounds no longer play. Original project, audio and preset files are left unchanged; preserve the original project if its sample content is still needed. Sample-containing presets are rejected/skipped. Schema 1 synthesis `.gba2preset` import/export continues to work.
@@ -106,6 +106,16 @@ EXPORT SOUND saves the currently loaded sound, including unsaved edits and the n
 
 Maize Sampler `.mse` instruments bundle samples and need their compatible sample player. They are not playable or converted here. ROM Hacks supports SF2 SoundFonts separately. `.chl` is not an identified synthesis format here and is unsupported. Changing an extension does not convert an instrument.
 
+
+## SoundFont folder and automatic startup
+
+ROM Hacks creates a default folder at `%APPDATA%\Treezy Audio\G Boy Advance 2\SoundFont Library`. Click OPEN FOLDER to access it, put your `.sf2` files there, and click REFRESH. Choose a bank from the upper list and an instrument from the lower list; no file picker is needed. LOAD SF2 also starts in this folder. CHOOSE FOLDER sets another directory, remembered for new plugin instances. Scanning runs on the background worker, lists regular .sf2/.SF2 files directly in that directory (not subfolders), and is bounded to 512 banks / 4096 visited entries. The footer reports unavailable folders, scan limits and persistence errors.
+
+REMEMBER LAST BANK is on by default. After a successful bank load or instrument selection, the cached bank and selected instrument are saved for **new instances and standalone restarts**. This works for folder selections, manual loads and drag and drop, even if the original imported file is removed. Disable this switch to start fresh instances in synthesis mode. The setting and chosen folder are user-wide startup preferences stored in the adjacent `soundfont-library.json`, separate from a DAW project. Already open instances keep their current folder until changed; newly opened instances read the saved preference.
+
+A saved DAW project always restores its own synth/SF2 mode, bank, instrument and parameters, ahead of this global startup preference. Selecting a normal synthesis preset cancels any pending startup bank recall. Loading a project does not replace the startup bank for other new instances. A missing cached startup bank reports an error and stays silent until you load a replacement or return to synthesis. Successful manual bank/instrument choices update the startup preference; loading a bank with recall disabled still works normally.
+
+The `SoundFont Library` folder holds your browsable originals. The separate `SoundFonts` directory holds immutable UUID-named copies needed by projects and startup recall; back up both with your songs and the library preferences. The plugin does not rename/delete your original bank files. Invalid library preferences are retained and reported; back up or remove `soundfont-library.json` to reset them. Read-only or busy preferences do not prevent current playback, but unsaved changes cannot survive a restart.
 
 ## ROM Hacks SoundFonts
 
