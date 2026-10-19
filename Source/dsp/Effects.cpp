@@ -109,7 +109,10 @@ void Effects::process(float& left,float& right,const Settings& s) noexcept {
     float* channels[]{&left,&right};
     for(int c=0;c<2;++c) {
         float x=nonlinear(*channels[c],c);
-        if(crusherCounter==0)held[c]=std::round(x*quantSteps)/quantSteps;
+        // Bypass ends each sample with counter zero (rate one). Re-enabling
+        // therefore captures a fresh held value before it can be read; quantizing
+        // an inaudible bypassed value adds work without preserving audible history.
+        if(crusherCounter==0&&(s[Param::CrusherBits]<16||s[Param::CrusherRate]>1))held[c]=std::round(x*quantSteps)/quantSteps;
         if(s[Param::CrusherBits]<16||s[Param::CrusherRate]>1)x=held[c];
         const float wow=s[Param::Wow]>0?tape[c].read(sr*(.004f+wobble)):x;tape[c].push(x);
         x=std::lerp(x,wow,s[Param::Wow]);
@@ -123,7 +126,10 @@ void Effects::process(float& left,float& right,const Settings& s) noexcept {
         const float a=.12f+.72f*(.5f+.5f*sine(float(phaserPhase.phase)+.1f*float(c)));
         for(auto& state:allpass[c]){const float y=-a*ap+state;state=ap+a*y;ap=y;}
         x+=s[Param::Phaser]*.48f*ap;
-        const float echo=std::lerp(delay[c].read(delayA),delay[c].read(delayB),delayBlend);
+        // Settled heads coincide. Read once while keeping feedback, writes and
+        // the full two-head crossfade path warm during delay-time automation.
+        const float firstEcho=delay[c].read(delayA);
+        const float echo=delayA==delayB?firstEcho:std::lerp(firstEcho,delay[c].read(delayB),delayBlend);
         delay[c].push(x+echo*s[Param::DelayFeedback]);x+=echo*s[Param::Delay];
         *channels[c]=highShelf[c].next(lowShelf[c].next(x));
     }

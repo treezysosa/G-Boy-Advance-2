@@ -10,6 +10,8 @@ All 530 factory sounds receive an additional dry/wet, three-register/two-velocit
 
 The 2x nonlinear chain retains both FIR histories, the original coefficients and 16-frame latency. Known-zero odd taps on the even upsampling phase need no multiply/add; the discarded odd decimator result needs only its history write. No filter or shaping stage is bypassed. Exact-input caches avoid repeated wavetable mip logarithms, plucked-string phase-delay trigonometry, shared chord pitch exponentials and per-voice choir normalization square roots. Automation, rate changes, glide and engine transitions invalidate by input comparison; no approximation or lowered voice count is used.
 
+Bypassed crusher quantization is skipped: rate one leaves the counter at zero, so re-enabling captures a fresh value before reading it. Coincident echo heads use one read; delay feedback, writes and two-head time-change crossfades remain active. The numerical probe includes crusher depth/rate, drive and distortion automation as well as the earlier routing/engine/rate scenarios.
+
 ROM Hacks loading, drag/drop, bank cache, folder preferences, startup recall/project precedence and SF2 playback remain supported. No banks or audio assets are bundled.
 
 ## Validation

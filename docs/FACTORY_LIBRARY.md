@@ -4,11 +4,11 @@
 
 This report describes native numerical renders at 48 kHz. It does not certify perceptual uniqueness, natural acoustic realism or commercial sound quality. Human listening acceptance remains pending.
 
-Central-note maximum rolling 100 ms stereo RMS: 0.009749–0.036000 (11.35 dB spread). 474/530 patches are within 0.5 dB of their category target. 60 master gains reached 0.95; quieter articulations remain rather than changing the engine gain or adding hidden normalization.
+Central-note maximum rolling 100 ms stereo RMS: 0.009749–0.036000 (11.35 dB spread). 474/530 patches are within 0.5 dB of their category target. 59 master gains reached 0.95; quieter articulations remain rather than changing the engine gain or adding hidden normalization.
 
 | Category | Presets | Engines | Central RMS min–max |
 |---|---:|---|---:|
-| Guitars | 28 | physical modeling | 0.01434–0.02600 |
+| Guitars | 28 | physical modeling | 0.01181–0.02600 |
 | Pianos and Keys | 28 | additive, fm, modal, wavetable | 0.01453–0.02600 |
 | Bells | 20 | fm, modal | 0.02600–0.02600 |
 | Pads | 24 | additive, subtractive, wavetable | 0.01479–0.02800 |
@@ -26,7 +26,7 @@ Central-note maximum rolling 100 ms stereo RMS: 0.009749–0.036000 (11.35 dB sp
 | Vocals - Choirs and Textures | 36 | formant | 0.01425–0.02000 |
 | Retro Games | 56 | additive, chiptune, fm, formant, modal, physical modeling, wavetable | 0.00975–0.02500 |
 | Hip-Hop - Detroit | 40 | additive, fm, formant, modal, physical modeling, subtractive, wavetable | 0.01372–0.03600 |
-| Hip-Hop - West Coast | 40 | additive, fm, formant, modal, physical modeling, subtractive, wavetable | 0.01767–0.03600 |
+| Hip-Hop - West Coast | 40 | additive, fm, formant, physical modeling, subtractive, wavetable | 0.02000–0.03600 |
 | Hip-Hop - Florida | 40 | fm, formant, modal, physical modeling, subtractive, wavetable | 0.01152–0.03600 |
 
 ## Listening renders
@@ -39,6 +39,14 @@ The audit compares 32 log-frequency bands from three Hann-windowed 4096-point FF
 
 No pairs are below the configured dry spectral/envelope threshold on this audit grid. This does not establish that every listener will perceive every patch as distinct.
 
+## Multi-register all-pair audit (0.15.0)
+
+The additional `gba2-preset-diversity-tests` renders all 530 patches with and without effects at the same MIDI notes 48, 60 and 72, velocities 0.4 and 0.9, 48 kHz: 6,360 renders and 140,185 unique pairs. Each signature includes two 64-band spectra, sixteen held-envelope points and four release measurements. Spectra and envelopes are gain-normalized; dry rendering removes effects. Category names do not restrict comparisons. Renamed and gain/effects-only negative controls must be detected; a sine/saw positive control must remain distinct.
+
+Result: 0 duplicate candidates at <= 0.025; 0 close-pair review flags below 0.06. Minimum dry distance: 0.060564. CSVs record the nearest neighbor of every patch and every flagged pair. Numerical thresholds are screening tools, not perceptual guarantees.
+
+The initial screen flagged 26 closely related pairs. `Presets/diversity-refinements.json` records eighteen targeted original excitation/envelope/body revisions and their design notes. Factory IDs, names and program order remain stable. Projects and user presets retain their explicit parameters; explicitly loading a revised factory patch selects its new sound.
+
 ## Rebuilding the bank
 
-See [preset format](PRESET_FORMAT.md) for the uncalibrated render → calibration → regeneration workflow. Design recipes, level parameters and identity registry are source metadata; the runtime embeds the final parameter arrays and reads no audio files.
+See [preset format](PRESET_FORMAT.md) for the uncalibrated render → calibration → regeneration workflow. Design recipes, level parameters and identity registry are source metadata; the runtime embeds the final parameter arrays. The separate optional ROM Hacks engine reads user-supplied SF2 banks.

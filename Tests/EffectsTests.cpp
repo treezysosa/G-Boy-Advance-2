@@ -128,4 +128,21 @@ void crusherWidthAndStress(){
     std::cout<<"PASS crusher depth/rate, stereo width, extreme automation, zero allocations and block partition invariance\n";
 }
 }
-int main(){try{bypassAndLatency();nonlinear();delays();reverb();modulationAndEq();crusherWidthAndStress();std::cout<<"All "<<checks<<" Phase 5 effects checks passed.\n";return 0;}catch(const std::exception& e){trackAllocations=false;std::cerr<<"FAIL: "<<e.what()<<"\n";return 1;}}
+void crusherBypassTransitions(){
+    for(float sr:{44100.f,48000.f,96000.f})for(int phase=0;phase<4;++phase)for(int bypassFrames:{1,17}) {
+        gba::Effects fx;fx.prepare(sr);auto s=dry();
+        // Align re-enable to a coefficient tick so the known eight-bit scale
+        // is active immediately; stagger the first capture for all prior phases.
+        const int enabled=64,bypass=enabled-bypassFrames;bool correct=true;
+        for(int n=0;n<enabled+32;++n) {
+            if(n==phase){s.set(gba::Param::CrusherBits,8);s.set(gba::Param::CrusherRate,4);}
+            if(n==bypass){s.set(gba::Param::CrusherBits,16);s.set(gba::Param::CrusherRate,1);}
+            if(n==enabled){s.set(gba::Param::CrusherBits,8);s.set(gba::Param::CrusherRate,4);}
+            float l=.0037f*float(n+1)-.2f,r=-l;fx.process(l,r,s);
+            if(n>=enabled){const int captured=enabled+(n-enabled)/4*4;const float delayed=.0037f*float(captured-16+1)-.2f;const float expected=std::round(delayed*128)/128;correct&=std::abs(l-expected)<1e-6f&&std::abs(r+expected)<1e-6f;}
+        }
+        check(correct,"Crusher bypass/re-enable retained stale held audio or lost the four-frame capture timing");
+    }
+    std::cout<<"PASS crusher re-enable captures fresh latency-aligned audio after short/long bypass at all prior counter phases and three rates\n";
+}
+int main(){try{bypassAndLatency();nonlinear();delays();reverb();modulationAndEq();crusherWidthAndStress();crusherBypassTransitions();std::cout<<"All "<<checks<<" Phase 5 effects checks passed.\n";return 0;}catch(const std::exception& e){trackAllocations=false;std::cerr<<"FAIL: "<<e.what()<<"\n";return 1;}}

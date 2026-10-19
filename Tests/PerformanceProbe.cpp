@@ -33,6 +33,7 @@ int main(int argc,char** argv) {
                 s.set(gba::Param::Brightness,float(block%19)/18);s.set(gba::Param::FormantShift,float(block%25)-12);
                 s.set(gba::Param::Vowel,float(block%17)/4);s.set(gba::Param::Cutoff,400+float(block%31)*500);
                 s.set(gba::Param::Lfo1Depth,.6f);s.set(gba::Param::Lfo1Dest,float(block%6));
+                s.set(gba::Param::CrusherBits,block%8<4?16:8);s.set(gba::Param::CrusherRate,block%8<4?1:4);
                 s.set(gba::Param::FilterType,float((filter+block/16)%5));
                 s.set(gba::Param::Chorus,block<96?.45f:0);s.set(gba::Param::Flanger,block<96?.4f:0);s.set(gba::Param::Wow,block<96?.3f:0);
                 s.set(gba::Param::Drive,block<96?float(block%11)/10:0);s.set(gba::Param::Distortion,block<96?float(block%7)/6:0);
