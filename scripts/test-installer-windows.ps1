@@ -26,6 +26,10 @@ New-Item -ItemType Directory -Force $sfDirectory | Out-Null
 $sfSentinel=Join-Path $sfDirectory ('installer-test-'+[guid]::NewGuid().ToString()+'.sf2')
 [IO.File]::WriteAllBytes($sfSentinel,[byte[]](82,73,70,70,4,0,0,0,115,102,98,107))
 $sfSentinelHash=(Get-FileHash -LiteralPath $sfSentinel -Algorithm SHA256).Hash
+$appearance=Join-Path (Split-Path $bank -Parent) 'appearance.json'
+$createdAppearance=-not (Test-Path -LiteralPath $appearance)
+if($createdAppearance) { [IO.File]::WriteAllText($appearance,'{"format":"gba2.appearance","schemaVersion":1,"lastSkin":"gold"}') }
+$appearanceHash=(Get-FileHash -LiteralPath $appearance -Algorithm SHA256).Hash
 $report=[System.Collections.Generic.List[string]]::new()
 function Run-Setup([string]$Exe,[string[]]$SetupArguments) {
     $p=Start-Process -FilePath $Exe -ArgumentList $SetupArguments -Wait -PassThru
@@ -47,6 +51,7 @@ function Check-Installed {
     if ((Get-FileHash -LiteralPath $sentinel).Hash -ne $sentinelHash) { throw 'Installer changed user preset data.' }
     if ((Get-FileHash -LiteralPath $audioSentinel).Hash -ne $audioSentinelHash) { throw 'Installer changed personal audio data.' }
     if ((Get-FileHash -LiteralPath $sfSentinel).Hash -ne $sfSentinelHash) { throw 'Installer changed the SoundFont cache.' }
+    if ((Get-FileHash -LiteralPath $appearance).Hash -ne $appearanceHash) { throw 'Installer changed launch appearance preferences.' }
 }
 $installed=$false
 try {
@@ -55,14 +60,14 @@ try {
         Run-Setup $previous @('/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART','/SP-',"/DIR=`"$app`"","/LOG=`"$(Join-Path $logs 'install-previous.txt')`"")
         $installed=$true
         if(-not (Test-Path -LiteralPath (Join-Path $vst 'Contents/x86_64-win/G Boy Advance 2.vst3'))) {throw 'Previous-version VST3 was not installed.'}
-        if((Get-ItemProperty $key).DisplayVersion -ne '0.13.1') {throw 'Upgrade test requires the pinned 0.13.1 installer.'}
+        if((Get-ItemProperty $key).DisplayVersion -ne '0.14.0') {throw 'Upgrade test requires the pinned 0.14.0 installer.'}
         if ((Get-FileHash -LiteralPath $sentinel).Hash -ne $sentinelHash) {throw 'Previous installer changed user data.'}
-        $report.Add('PASS pinned 0.13.1 installation before upgrade, default VST3 path and user-data preservation')
+        $report.Add('PASS pinned 0.14.0 installation before upgrade, default VST3 path and user-data preservation')
     }
     Run-Setup $Installer @('/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART','/SP-',"/DIR=`"$app`"","/LOG=`"$(Join-Path $logs 'install.txt')`"")
     $installed=$true;Check-Installed
-    if((Get-ItemProperty $key).DisplayVersion -ne '0.14.0') {throw 'Installed registry version does not match the release candidate.'}
-    $kind=if($PreviousInstaller){'0.13.1-to-0.14.0 upgrade'}else{'clean install'}
+    if((Get-ItemProperty $key).DisplayVersion -ne '0.14.1') {throw 'Installed registry version does not match the release candidate.'}
+    $kind=if($PreviousInstaller){'0.14.0-to-0.14.1 upgrade'}else{'clean install'}
     $report.Add('PASS silent '+$kind+': default common VST3 path, standalone, manual, factory bank, binary hashes')
     $diagnostics=Join-Path $logs 'diagnostics-smoke.txt'
     & (Join-Path $app 'collect-windows-diagnostics.ps1') -OutputPath $diagnostics
@@ -71,7 +76,7 @@ try {
     if ($diagnosticText -notmatch [regex]::Escape($expectedHash)) {throw 'Installed diagnostic script did not report the installed binary hash.'}
     $report.Add('PASS installed read-only diagnostic script writes the actual VST3 hash to its local report')
     Run-Setup $Installer @('/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART','/SP-',"/DIR=`"$app`"","/LOG=`"$(Join-Path $logs 'reinstall.txt')`"")
-    Check-Installed;$report.Add('PASS same-version reinstall and user-preset preservation')
+    Check-Installed;$report.Add('PASS same-version reinstall and user-preset/launch-appearance preservation')
     # No audio device or human interaction is claimed by this liveness check.
     $standalone=Start-Process -FilePath (Join-Path $app 'G Boy Advance 2.exe') -PassThru
     try {
@@ -81,13 +86,17 @@ try {
     } finally {
         if(-not $standalone.HasExited) { Stop-Process -Id $standalone.Id -Force }
     }
+    # Opening the standalone may legitimately update lastSkin. Uninstall must
+    # preserve this new history rather than resetting it to the earlier value.
+    $appearanceHash=(Get-FileHash -LiteralPath $appearance -Algorithm SHA256).Hash
     Run-Setup (Join-Path $app 'unins000.exe') @('/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART',"/LOG=`"$(Join-Path $logs 'uninstall.txt')`"")
     $installed=$false
     if ((Test-Path -LiteralPath $vst) -or (Test-Path -LiteralPath (Join-Path $app 'G Boy Advance 2.exe')) -or (Test-Path $key)) { throw 'Uninstall left product binaries or registry entry.' }
     if ((Get-FileHash -LiteralPath $sentinel).Hash -ne $sentinelHash) { throw 'Uninstall changed user preset data.' }
     if ((Get-FileHash -LiteralPath $audioSentinel).Hash -ne $audioSentinelHash) { throw 'Uninstall changed personal audio data.' }
     if ((Get-FileHash -LiteralPath $sfSentinel).Hash -ne $sfSentinelHash) { throw 'Uninstall changed the SoundFont cache.' }
-    $report.Add('PASS silent uninstall: product binaries/registry removed, old sample preset, personal audio and SoundFont cache preserved')
+    if ((Get-FileHash -LiteralPath $appearance).Hash -ne $appearanceHash) { throw 'Uninstall changed launch appearance history.' }
+    $report.Add('PASS silent uninstall: product binaries/registry removed, old sample preset, personal audio, SoundFont cache preserved; launch appearance history preserved')
 } finally {
     if($installed -and (Test-Path -LiteralPath (Join-Path $app 'unins000.exe'))) {
         Run-Setup (Join-Path $app 'unins000.exe') @('/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART')
@@ -95,6 +104,7 @@ try {
     Remove-Item -LiteralPath $sentinel -Force
     Remove-Item -LiteralPath $audioSentinel -Force
     Remove-Item -LiteralPath $sfSentinel -Force
+    if($createdAppearance) { Remove-Item -LiteralPath $appearance -Force }
     $report | Set-Content -Encoding utf8 (Join-Path $logs 'installer-acceptance.txt')
 }
 $report | Write-Host

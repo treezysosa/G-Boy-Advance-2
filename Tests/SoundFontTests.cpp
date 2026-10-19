@@ -37,6 +37,44 @@ int runSoundFontTests(){
             editor->setSize(960,485);picture(*editor,"ui-snapshots/ROM-Hacks-960.png");editor->setSize(1920,969);picture(*editor,"ui-snapshots/ROM-Hacks-1920.png");
             buttonSf(*editor,"RETURN TO SYNTH")->onClick();ensure(!p->romHacks.enabled(),"ROM Hacks return-to-synth is inert");buttonSf(*editor,"USE SOUNDFONT")->onClick();ensure(p->romHacks.enabled(),"ROM Hacks re-enable is inert");
             editor->keyPressed(juce::KeyPress(juce::KeyPress::F3Key));ensure(namedSf(*editor,"ROM Hacks browser")==nullptr&&cart->isEnabled(),"F3 did not close ROM Hacks");
+            auto* drop=dynamic_cast<juce::FileDragAndDropTarget*>(editor.get());ensure(drop!=nullptr,"Plugin window is not a native file-drop target");
+            const auto upper=root.getChildFile("Dropped Bank \xc3\xa9.SF2");ensure(upper.replaceWithData(data.data(),data.size()),"Drop fixture write failed");
+            const juce::StringArray valid{upper.getFullPathName()};
+            ensure(drop->isInterestedInFileDrag(valid),"Uppercase SF2 drop with Unicode/spaces was rejected");
+            const auto beforeDrop=p->romHacks.saveState();
+            for(const auto& rejected:std::vector<juce::StringArray>{{},{"relative.sf2"},{root.getChildFile("bank.sf3").getFullPathName()},{root.getChildFile("bank.wav").getFullPathName()},{cached.getFullPathName(),upper.getFullPathName()}}) {
+                ensure(!drop->isInterestedInFileDrag(rejected),"Unsupported or multi-file drag was accepted");drop->filesDropped(rejected,1,1);
+                ensure(juce::JSON::toString(p->romHacks.saveState())==juce::JSON::toString(beforeDrop)&&namedSf(*editor,"ROM Hacks browser")==nullptr,"Rejected drop changed bank or opened browser");
+            }
+            editor->setSize(960,485);drop->fileDragEnter(valid,10,10);picture(*editor,"ui-snapshots/SF2-Drag-960.png");drop->fileDragExit(valid);
+            ensure(!p->romHacks.view().loading,"Drag enter/exit started a load before dropping");
+            drop->filesDropped(valid,editor->getWidth()/2,editor->getHeight()/2);
+            auto* opened=namedSf(*editor,"ROM Hacks browser");ensure(opened&&!cart->isEnabled(),"Dropping did not open ROM Hacks");
+            ensure(p->romHacks.waitUntilIdle(10000),"Dropped SoundFont load timed out");juce::MessageManager::getInstance()->runDispatchLoopUntil(120);
+            ensure(p->romHacks.enabled()&&p->romHacks.view().fileName==upper.getFileName()&&p->romHacks.view().instruments.size()==2,"Dropped bank did not activate its instruments");
+            ensure(play(*p)>.001f,"Dropped SoundFont produced no audible MIDI");
+            ensure(juce::File(p->romHacks.saveState()["path"].toString()).getParentDirectory().getFileName()=="SoundFonts","Dropped bank bypassed managed cache");
+            drop->filesDropped(valid,20,20);ensure(namedSf(*editor,"ROM Hacks browser")==opened,"Second drop closed or replaced the already-open browser");ensure(p->romHacks.waitUntilIdle(10000),"Second drop timed out");
+            const auto good=p->romHacks.saveState();drop->filesDropped(juce::StringArray{invalid.getFullPathName()},0,0);ensure(p->romHacks.waitUntilIdle(10000),"Invalid dropped bank timed out");
+            juce::MessageManager::getInstance()->runDispatchLoopUntil(120);
+            auto* error=dynamic_cast<juce::Label*>(namedSf(*editor,"SoundFont status"));
+            ensure(error&&error->getText()==p->romHacks.view().status&&error->getText().contains("SoundFont"),"Invalid dropped bank did not show an actionable error");
+            ensure(juce::JSON::toString(good)==juce::JSON::toString(p->romHacks.saveState())&&play(*p)>.001f,"Invalid drop discarded the working instrument");
+            editor->keyPressed(juce::KeyPress(juce::KeyPress::F2Key));ensure(namedSf(*editor,"Advanced tabs")!=nullptr,"Advanced panel missing before drop test");
+            drop->filesDropped(valid,40,40);ensure(namedSf(*editor,"Advanced tabs")==nullptr&&namedSf(*editor,"ROM Hacks browser")!=nullptr,"Drop over advanced panel did not open ROM Hacks");ensure(p->romHacks.waitUntilIdle(10000),"Advanced-panel drop timed out");
+#if JUCE_WINDOWS
+            // Exercise JUCE's native peer target search over child components,
+            // rather than calling only our drop callback directly.
+            editor->addToDesktop(0);editor->setVisible(true);editor->toFront(false);juce::MessageManager::getInstance()->runDispatchLoopUntil(40);
+            auto* peer=editor->getPeer();ensure(peer!=nullptr,"Drop test lacks a native peer");
+            auto* instrument=namedSf(*editor,"SoundFont instrument");ensure(instrument!=nullptr,"Drop test instrument control missing");
+            juce::ComponentPeer::DragInfo drag;drag.files=valid;drag.position=editor->getLocalPoint(instrument,instrument->getLocalBounds().getCentre());
+            ensure(peer->handleDragMove(drag),"Native drag target search over instrument combo rejected SF2");peer->handleDragExit(drag);
+            ensure(peer->handleDragMove(drag)&&peer->handleDragDrop(drag),"Native peer did not deliver the SF2 drop");
+            juce::MessageManager::getInstance()->runDispatchLoopUntil(120);ensure(p->romHacks.waitUntilIdle(10000)&&p->romHacks.view().fileName==upper.getFileName(),"Native peer drop did not publish bank");
+            editor->removeFromDesktop();
+#endif
+            editor->keyPressed(juce::KeyPress(juce::KeyPress::F3Key));
         }
         p->reset();const auto heap=gba::SoundFont::heapOperations();ensure(play(*p)>.001f,"SF2 stopped after editor closed");ensure(gba::SoundFont::heapOperations()==heap,"Processor SF2 render allocated or freed decoder memory");
         std::atomic<bool> stop{false},finite{true};std::atomic<int> blocks{0};

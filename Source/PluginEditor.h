@@ -47,11 +47,16 @@ class RomCartridgeButton final : public juce::TextButton {
 public:RomCartridgeButton():TextButton("ROM Hacks"){}
     void paintButton(juce::Graphics&,bool,bool) override;
 };
-class GbaEditor final : public juce::AudioProcessorEditor,private juce::Timer {
+class GbaEditor final : public juce::AudioProcessorEditor,public juce::FileDragAndDropTarget,private juce::Timer {
 public:
     explicit GbaEditor(GbaProcessor&);
     ~GbaEditor() override;
     void paint(juce::Graphics&) override;
+    void paintOverChildren(juce::Graphics&) override;
+    bool isInterestedInFileDrag(const juce::StringArray&) override;
+    void fileDragEnter(const juce::StringArray&,int,int) override;
+    void fileDragExit(const juce::StringArray&) override;
+    void filesDropped(const juce::StringArray&,int,int) override;
     void resized() override;
     bool keyPressed(const juce::KeyPress&) override;
     void parentHierarchyChanged() override;
@@ -72,6 +77,7 @@ private:
     std::array<int,4> mapping {{-1,-1,-1,-1}};
     std::unique_ptr<juce::Component> overlay;
     bool signalLed=false;
+    bool soundFontDrag=false;
     juce::Image housingCache;
     float housingScale=0;
     int housingSkin=-1;

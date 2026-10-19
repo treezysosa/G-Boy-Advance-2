@@ -15,4 +15,10 @@ inline int skinIndex(std::string_view id) noexcept {
     return 0;
 }
 inline int validSkin(int index) noexcept {return index>=0&&index<int(skins.size())?index:0;}
+// Map a uniform draw in [0, skin count - 2] to every colour except the last one.
+inline int differentSkin(int previous,int draw) noexcept {
+    previous=validSkin(previous);
+    draw=draw>=0&&draw<int(skins.size())-1?draw:0;
+    return draw>=previous?draw+1:draw;
+}
 }

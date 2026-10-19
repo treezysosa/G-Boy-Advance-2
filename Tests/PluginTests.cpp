@@ -29,11 +29,77 @@ juce::MouseEvent mouse(juce::Component& component,juce::Point<float> point) {
     return {juce::Desktop::getInstance().getMainMouseSource(),point,juce::ModifierKeys::leftButtonModifier,1,0,0,0,0,&component,&component,now,point,now,1,false};
 }
 #endif
+void launchAppearance(const juce::File& root) {
+    for(int previous=0;previous<int(gba_ui::skins.size());++previous) {
+        std::array<bool,gba_ui::skins.size()> reached{};
+        for(int draw=0;draw<int(gba_ui::skins.size())-1;++draw) {
+            const int selected=gba_ui::differentSkin(previous,draw);
+            check(selected>=0&&selected<int(reached.size())&&selected!=previous&&!reached[std::size_t(selected)],"Launch colour mapping repeats or skips a colour");
+            reached[std::size_t(selected)]=true;
+        }
+    }
+    const auto folder=root.getChildFile("LaunchColours"),file=folder.getChildFile("appearance.json");
+    auto first=std::make_unique<GbaProcessor>(folder);
+    check(first->newSkinOnLaunch&&!file.exists(),"Fresh instances must enable launch colours without writing during scanning");
+    juce::MemoryBlock automatic;first->getStateInformation(automatic);
+    check(!file.exists(),"State serialization initialized the appearance file");
+    std::unique_ptr<juce::AudioProcessorEditor> editor(first->createEditor());
+    const int original=first->editorSkin.load();
+    const auto contents=file.loadFileAsString();
+    check(original>=0&&original<int(gba_ui::skins.size())&&juce::JSON::parse(contents)["lastSkin"].toString()==gba_ui::skins[std::size_t(original)].id.data(),"First launch colour was not persisted");
+    editor.reset();editor.reset(first->createEditor());
+    check(first->editorSkin==original&&file.loadFileAsString()==contents,"Reopening the same window rerolled or rewrote its colour");
+    first->presets.step(1);check(first->editorSkin==original,"Changing a preset rerolled the skin");
+    first->getStateInformation(automatic);
+    auto next=std::make_unique<GbaProcessor>(folder);next->setStateInformation(automatic.getData(),int(automatic.getSize()));
+    check(file.loadFileAsString()==contents,"DAW restore performed launch appearance I/O");
+    std::unique_ptr<juce::AudioProcessorEditor> nextEditor(next->createEditor());
+    const int nextColour=next->editorSkin.load();
+    check(next->newSkinOnLaunch&&nextColour!=original,"New plugin load restored the previous launch colour");
+    check(next->snapshot().values==first->snapshot().values,"Launch colour changed the project sound");
+    next->setStateInformation(automatic.getData(),int(automatic.getSize()));
+    check(next->editorSkin==nextColour,"State refresh rerolled a visible instance");
+    nextEditor->keyPressed(juce::KeyPress(juce::KeyPress::F2Key));
+    auto* toggle=dynamic_cast<juce::ToggleButton*>(named(*nextEditor,"New colour on load"));
+    check(toggle&&toggle->getToggleState(),"Advanced launch-colour switch is missing or off by default");
+    StateListener listener;next->addListener(&listener);
+    toggle->setToggleState(false,juce::dontSendNotification);toggle->onClick();
+    check(!next->newSkinOnLaunch&&listener.appearanceChanges==1,"Launch-colour switch did not change project preference and notify host");
+    next->setEditorSkin(7);juce::MemoryBlock fixed;next->getStateInformation(fixed);
+    auto pinned=std::make_unique<GbaProcessor>(folder);pinned->setStateInformation(fixed.getData(),int(fixed.getSize()));
+    std::unique_ptr<juce::AudioProcessorEditor> pinnedEditor(pinned->createEditor());
+    check(!pinned->newSkinOnLaunch&&pinned->editorSkin==7&&dynamic_cast<ConsoleLook&>(pinnedEditor->getLookAndFeel()).skin()==7,"Fixed project colour did not restore");
+    next->removeListener(&listener);
+    pinnedEditor.reset();pinned.reset();nextEditor.reset();next.reset();editor.reset();first.reset();
+    int last=7;
+    for(int i=0;i<3;++i) {
+        juce::ChildProcess process;
+        check(process.start(juce::StringArray{juce::File::getSpecialLocation(juce::File::currentExecutableFile).getFullPathName(),"--skin-launch-probe",folder.getFullPathName()}),"Could not start launch persistence probe");
+        const bool finished=process.waitForProcessToFinish(10000);if(!finished)process.kill();
+        check(finished,"Launch persistence probe timed out");
+        const int colour=int(process.getExitCode())-20;
+        check(colour>=0&&colour<int(gba_ui::skins.size())&&colour!=last,"Launch colour repeated after a new OS process");
+        check(juce::JSON::parse(file)["lastSkin"].toString()==gba_ui::skins[std::size_t(colour)].id.data(),"Child process did not persist its launch colour");last=colour;
+    }
+    check(file.replaceWithText("corrupt appearance preference"),"Could not write invalid appearance fixture");
+    {auto p=std::make_unique<GbaProcessor>(folder);std::unique_ptr<juce::AudioProcessorEditor> e(p->createEditor());
+        check(p->editorSkin>=0&&p->editorSkin<int(gba_ui::skins.size())&&juce::JSON::parse(file)["format"].toString()=="gba2.appearance","Invalid preference prevented launch or safe repair");}
+    const auto blocked=root.getChildFile("BlockedAppearance");check(blocked.getChildFile("appearance.json").createDirectory().wasOk(),"Could not create blocked preference fixture");
+    {auto p=std::make_unique<GbaProcessor>(blocked);std::unique_ptr<juce::AudioProcessorEditor> e(p->createEditor());
+        check(e&&blocked.getChildFile("appearance.json").isDirectory(),"Unwritable preferences prevented UI creation or replaced a directory");}
+    std::cout<<"PASS launch colours: nonrepeat mapping, project/fixed mode, window reopen and three separate OS process launches\n";
 }
-int main() {
+}
+int main(int argc,char** argv) {
     juce::ScopedJuceInitialiser_GUI gui;
+    if(argc==3&&juce::String(argv[1])=="--skin-launch-probe") {
+        GbaProcessor processor{juce::File(juce::String::fromUTF8(argv[2]))};
+        std::unique_ptr<juce::AudioProcessorEditor> editor(processor.createEditor());
+        return 20+processor.editorSkin.load();
+    }
     auto root=juce::File::getSpecialLocation(juce::File::tempDirectory).getChildFile("gba2-tests-"+juce::Uuid().toString());
     try {
+        launchAppearance(root);
         checks+=runLibraryTests();
         checks+=runSoundFontTests();
         auto processor=std::make_unique<GbaProcessor>(root);auto& p=*processor;
@@ -187,9 +253,11 @@ int main() {
             auto* synthTabs=dynamic_cast<juce::TabbedComponent*>(named(*editor,"Advanced tabs"));
             check(synthTabs&&synthTabs->getNumTabs()==4&&!synthTabs->getTabNames().contains("SAMPLES"),"Sample playback controls remain in the editor");
             auto* skin=dynamic_cast<juce::ComboBox*>(named(*editor,"UI skin"));check(skin&&skin->getNumItems()==10,"Ten-skin selector missing");
+            auto* autoSkin=dynamic_cast<juce::ToggleButton*>(named(*editor,"New colour on load"));check(autoSkin!=nullptr,"Launch-colour preference is missing");
+            autoSkin->setToggleState(false,juce::dontSendNotification);autoSkin->onClick();p.setEditorSkin(0);juce::MessageManager::getInstance()->runDispatchLoopUntil(60);
             const auto sound=p.snapshot();const auto presetId=p.presetId();
             StateListener listener;p.addListener(&listener);
-            auto isolated=std::make_unique<GbaProcessor>(root.getChildFile("IsolatedSkin"));std::unique_ptr<juce::AudioProcessorEditor> other(isolated->createEditor());
+            auto isolated=std::make_unique<GbaProcessor>(root.getChildFile("IsolatedSkin"));isolated->setNewSkinOnLaunch(false);isolated->setEditorSkin(0);std::unique_ptr<juce::AudioProcessorEditor> other(isolated->createEditor());
             for(std::size_t i=0;i<gba_ui::skins.size();++i){
                 skin->setSelectedId(int(i)+1,juce::sendNotificationSync);
                 check(p.editorSkin==int(i)&&dynamic_cast<ConsoleLook&>(editor->getLookAndFeel()).skin()==int(i),"Skin selection did not update the editor");

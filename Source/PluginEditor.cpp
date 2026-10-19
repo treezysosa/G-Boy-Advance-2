@@ -94,7 +94,7 @@ public:
         panel(*this,g,getLocalBounds().toFloat(),14);caption(g,"ROM HACKS",{22,15,float(getWidth()-300),28},25);
         const float sy=float(getHeight())/455;
         g.setColour(text.withAlpha(.8f));g.setFont(font(std::max(12.0f,16*sy)));
-        g.drawFittedText("Load a SoundFont 2 (.sf2) bank, choose an instrument, then play MIDI or the piano.",24,int(66*sy),getWidth()-48,int(45*sy),juce::Justification::centredLeft,2);
+        g.drawFittedText("Drop one .sf2 file anywhere on this window, or use LOAD SF2. Choose an instrument, then play MIDI or the piano.",24,int(66*sy),getWidth()-48,int(45*sy),juce::Justification::centredLeft,2);
         g.setFont(font(std::max(11.0f,13*sy)));g.drawFittedText("Imported banks are copied to your SoundFonts folder. Bank and instrument selection are saved with your DAW project.",24,int(273*sy),getWidth()-48,int(44*sy),juce::Justification::centredLeft,2);
         g.drawFittedText("Synth oscillator controls belong to synthesis presets. SoundFont limits and project backup instructions are in the manual.",24,int(412*sy),getWidth()-48,int(28*sy),juce::Justification::centredLeft,2);
     }
@@ -118,7 +118,7 @@ private:
         instruments.setSelectedId(shown.isEmpty()?0:info.selected+1,juce::dontSendNotification);
         instruments.setTextWhenNothingSelected("Load an .sf2 file to see its instruments");instruments.setEnabled(!info.loading&&!shown.isEmpty());load.setEnabled(!info.loading);
         file.setText(info.fileName.isEmpty()?"No SoundFont loaded":info.fileName,juce::dontSendNotification);
-        status.setText(info.status.isEmpty()?"Ready to load your SoundFont bank.":info.status,juce::dontSendNotification);status.setTooltip(status.getText());
+        status.setText(info.status.isEmpty()?"Drop one .sf2 bank here, or click LOAD SF2.":info.status,juce::dontSendNotification);status.setTooltip(status.getText());
         preview.setEnabled(info.enabled&&!info.loading&&!shown.isEmpty());enable.setEnabled(!info.loading&&!shown.isEmpty()&&!info.enabled);synth.setEnabled(info.enabled||info.loading);
     }
 };
@@ -127,10 +127,12 @@ public:
     AdvancedPanel(GbaProcessor& p,std::function<void()> close,std::function<void()> skinChanged):processor(p),tabs(juce::TabbedButtonBar::TabsAtTop) {
         using P=gba::Param;
         skinLabel.setText("SKIN",juce::dontSendNotification);skinLabel.setFont(font(13));
-        skin.setName("UI skin");skin.setTooltip("Console colour. Saved with this plugin instance in your project.");
+        skin.setName("UI skin");skin.setTooltip("Console colour for this instance. Turn off NEW COLOUR ON LOAD to keep it when reopening your project.");
         for(std::size_t i=0;i<gba_ui::skins.size();++i)skin.addItem(gba_ui::skins[i].name.data(),int(i)+1);
         syncSkin();skin.onChange=[this,skinChanged]{processor.setEditorSkin(skin.getSelectedId()-1);skinChanged();};
-        addAndMakeVisible(skinLabel);addAndMakeVisible(skin);
+        automaticSkin.setName("New colour on load");automaticSkin.setTooltip("Choose a different colour on the next plugin load. Reopening this window or changing presets keeps the current colour. Turn off to save a fixed project colour.");
+        automaticSkin.onClick=[this]{processor.setNewSkinOnLaunch(automaticSkin.getToggleState());};
+        syncSkin();addAndMakeVisible(skinLabel);addAndMakeVisible(skin);addAndMakeVisible(automaticSkin);
         tabs.setName("Advanced tabs");addAndMakeVisible(tabs);addAndMakeVisible(back);back.onClick=[this,close]{asyncClose(this,close);};
         tabs.addTab("OSCILLATORS",uiColour(*this,0xff131c61),new ParameterPage(p,{P::Engine,P::Wave1,P::Wave2,P::OscMix,P::Detune,P::Coarse,P::PulseWidth,P::Brightness,P::FmRatio,P::FmIndex,P::Harmonics,P::Wavetable,P::StringDamping,P::Vowel,P::FormantShift,P::Breath,P::Choir,P::Syllable}),true);
         tabs.addTab("FILTER & ENVELOPES",uiColour(*this,0xff131c61),new ParameterPage(p,{P::Cutoff,P::Resonance,P::FilterType,P::FilterEnv,P::FilterAttack,P::FilterDecay,P::FilterSustain,P::FilterRelease,P::Attack,P::Decay,P::Sustain,P::Release}),true);
@@ -138,13 +140,13 @@ public:
         tabs.addTab("EFFECTS & MACROS",uiColour(*this,0xff131c61),new ParameterPage(p,{P::Reverb,P::ReverbSize,P::Delay,P::DelayTime,P::DelayFeedback,P::Chorus,P::Phaser,P::Flanger,P::Drive,P::Distortion,P::CrusherBits,P::CrusherRate,P::Wow,P::EqLow,P::EqHigh,P::Width,P::MacroA,P::MacroB,P::MacroC,P::MacroD}),true);
         setWantsKeyboardFocus(true);
     }
-    void paint(juce::Graphics& g) override {panel(*this,g,getLocalBounds().toFloat(),14);caption(g,"ADVANCED SYNTHESIS",{20,12,float(getWidth()-570),28},22);}
-    void resized() override {skinLabel.setBounds(getWidth()-540,12,60,30);skin.setBounds(getWidth()-475,12,295,30);back.setBounds(getWidth()-165,12,145,30);tabs.setBounds(16,56,getWidth()-32,getHeight()-70);}
-    void syncSkin() {skin.setSelectedId(gba_ui::validSkin(processor.editorSkin.load())+1,juce::dontSendNotification);}
+    void paint(juce::Graphics& g) override {panel(*this,g,getLocalBounds().toFloat(),14);caption(g,"ADVANCED SYNTHESIS",{20,12,float(getWidth()-210),28},22);}
+    void resized() override {skinLabel.setBounds(20,49,50,28);skin.setBounds(72,49,juce::jmin(280,getWidth()/3),28);automaticSkin.setBounds(82+skin.getWidth(),49,juce::jmin(300,getWidth()-skin.getWidth()-102),28);back.setBounds(getWidth()-165,12,145,30);tabs.setBounds(16,88,getWidth()-32,getHeight()-102);}
+    void syncSkin() {skin.setSelectedId(gba_ui::validSkin(processor.editorSkin.load())+1,juce::dontSendNotification);automaticSkin.setToggleState(processor.newSkinOnLaunch.load(),juce::dontSendNotification);}
     void lookAndFeelChanged() override {
         for(int i=0;i<tabs.getNumTabs();++i)tabs.setTabBackgroundColour(i,uiColour(*this,0xff131c61));
     }
-private:GbaProcessor& processor;juce::TabbedComponent tabs;juce::ComboBox skin;juce::Label skinLabel;juce::TextButton back {"BACK / SELECT"};
+private:GbaProcessor& processor;juce::TabbedComponent tabs;juce::ComboBox skin;juce::Label skinLabel;juce::ToggleButton automaticSkin {"NEW COLOUR ON LOAD"};juce::TextButton back {"BACK / SELECT"};
 };
 class BrowserPanel final : public juce::Component,private juce::ListBoxModel,private juce::KeyListener,private juce::Timer {
 public:
@@ -500,7 +502,7 @@ void ConsoleKeyboard::drawBlackNote(int,juce::Graphics& g,juce::Rectangle<float>
 GbaEditor::GbaEditor(GbaProcessor& p):AudioProcessorEditor(p),processor(p),keyboard(p.keyboard) {
     look.setSkin(processor.editorSkin.load());setLookAndFeel(&look);setOpaque(true);setWantsKeyboardFocus(true);
     for(auto* c:std::initializer_list<juce::Component*>{&keyboard,&previous,&next,&presetDisplay,&start,&select,&aButton,&bButton,&dpad,&romCartridge,&volume,&glide,&pitch})addAndMakeVisible(c);
-    romCartridge.setName("ROM Hacks cartridge");romCartridge.setTooltip("ROM Hacks: load and play .sf2 SoundFonts (F3)");romCartridge.onClick=[this]{showSoundFonts();};
+    romCartridge.setName("ROM Hacks cartridge");romCartridge.setTooltip("ROM Hacks: drop one .sf2 file anywhere on this window, or click to load (F3)");romCartridge.onClick=[this]{showSoundFonts();};
     rotary(volume,"Master volume");rotary(glide,"Glide");
     volume.setTooltip("Master output volume");glide.setTooltip("Glide / portamento time. Voice mode is under SELECT.");
     for(std::size_t i=0;i<macros.size();++i){rotary(macros[i],"Macro "+juce::String::charToString(char('A'+i)));addAndMakeVisible(macros[i]);}
@@ -679,6 +681,7 @@ void GbaEditor::applySkin() {
 }
 void GbaEditor::timerCallback() {
     if(look.skin()!=gba_ui::validSkin(processor.editorSkin.load()))applySkin();
+    if(auto* advanced=dynamic_cast<AdvancedPanel*>(overlay.get()))advanced->syncSkin();
     const auto sf=processor.romHacks.view();
     if(sf.enabled){presetDisplay.setButtonText(sf.instruments.isEmpty()?"SF2: LOAD BANK":sf.instruments[sf.selected].fromFirstOccurrenceOf("  ",false,false).toUpperCase());presetDisplay.setTooltip(sf.fileName+" / Click for ROM Hacks");}
     else {presetDisplay.setButtonText(processor.presetName().toUpperCase());presetDisplay.setTooltip(processor.presetCategory()+" / "+processor.presetName()+" / Click to browse");}updateMacros();
@@ -702,6 +705,26 @@ void GbaEditor::showSoundFonts(){
     overlay=std::make_unique<SoundFontPanel>(processor,[this]{closeOverlay();});addAndMakeVisible(*overlay);setMainControlsEnabled(false);resized();overlay->toFront(true);
 }
 void GbaEditor::closeOverlay() {overlay.reset();setMainControlsEnabled(true);grabKeyboardFocus();}
+bool GbaEditor::isInterestedInFileDrag(const juce::StringArray& files) {
+    return files.size()==1&&juce::File::isAbsolutePath(files[0])&&juce::File(files[0]).hasFileExtension("sf2");
+}
+void GbaEditor::fileDragEnter(const juce::StringArray& files,int,int) {soundFontDrag=isInterestedInFileDrag(files);repaint();}
+void GbaEditor::fileDragExit(const juce::StringArray&) {soundFontDrag=false;repaint();}
+void GbaEditor::filesDropped(const juce::StringArray& files,int,int) {
+    soundFontDrag=false;repaint();
+    if(!isInterestedInFileDrag(files))return;
+    // Same bounded, asynchronous loader/cache as LOAD SF2. Invalid banks retain
+    // the working instrument and report their error inside the ROM Hacks panel.
+    processor.romHacks.loadFile(juce::File(files[0]));
+    if(!dynamic_cast<SoundFontPanel*>(overlay.get()))showSoundFonts();
+}
+void GbaEditor::paintOverChildren(juce::Graphics& g) {
+    if(!soundFontDrag)return;
+    auto bounds=getLocalBounds().toFloat().reduced(10);
+    g.setColour(juce::Colours::black.withAlpha(.68f));g.fillRoundedRectangle(bounds,18);
+    g.setColour(uiColour(*this,0xffb792ff));g.drawRoundedRectangle(bounds.reduced(2),16,3);
+    caption(g,"DROP SF2 TO LOAD ROM HACKS",bounds.withSizeKeepingCentre(bounds.getWidth()-30,50),float(getWidth())/42);
+}
 bool GbaEditor::keyPressed(const juce::KeyPress& key) {
     if(key==juce::KeyPress::escapeKey&&overlay){closeOverlay();return true;}
     if(key==juce::KeyPress::F1Key){showBrowser();return true;}if(key==juce::KeyPress::F2Key){showAdvanced();return true;}

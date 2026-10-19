@@ -2,6 +2,48 @@
 #include "UiSkins.h"
 #include "PluginEditor.h"
 #include "FactoryData.h"
+#include <map>
+
+namespace {
+// Only editor creation enters this path. Scanning, state restore and audio
+// callbacks do not touch the appearance file. Serialize separate DAW processes
+// too, so two windows opened at once do not both choose the previous colour.
+int launchSkin(const juce::File& root,bool automatic,int fixed) {
+    static juce::CriticalSection io;
+    static std::map<juce::String,int> previousInProcess;
+    const juce::ScopedLock guard(io);
+    const auto key=root.getFullPathName();
+    juce::InterProcessLock processLock("GBA2-appearance-"+juce::String::toHexString(key.toLowerCase().hashCode64()));
+    const bool locked=processLock.enter(250);
+    auto found=previousInProcess.find(key);
+    int previous=found==previousInProcess.end()?-1:found->second;
+    const auto preferences=root.getChildFile("appearance.json");
+    if(locked&&preferences.getSize()<=4096) {
+        const auto saved=juce::JSON::parse(preferences);
+        if(saved["format"].toString()=="gba2.appearance"&&int(saved["schemaVersion"])==1) {
+            const auto id=saved["lastSkin"].toString();
+            for(std::size_t i=0;i<gba_ui::skins.size();++i)if(id==gba_ui::skins[i].id.data())previous=int(i);
+        }
+    }
+    auto& random=juce::Random::getSystemRandom();
+    const int selected=automatic?(previous<0?random.nextInt(int(gba_ui::skins.size())):
+        gba_ui::differentSkin(previous,random.nextInt(int(gba_ui::skins.size())-1))):gba_ui::validSkin(fixed);
+    previousInProcess[key]=selected;
+    if(locked) {
+        if(!preferences.isSymbolicLink()&&(!preferences.exists()||preferences.existsAsFile())&&root.createDirectory().wasOk()) {
+            auto* object=new juce::DynamicObject();juce::var saved(object);
+            object->setProperty("format","gba2.appearance");object->setProperty("schemaVersion",1);
+            object->setProperty("lastSkin",gba_ui::skins[std::size_t(selected)].id.data());
+            juce::TemporaryFile temporary(preferences);
+            if(temporary.getFile().replaceWithText(juce::JSON::toString(saved)))
+                temporary.overwriteTargetFileWithTemporary();
+        }
+        processLock.exit();
+    }
+    // Read-only app data or a busy external process never prevents UI creation.
+    return selected;
+}
+}
 
 juce::AudioProcessorValueTreeState::ParameterLayout GbaProcessor::createLayout() {
     juce::AudioProcessorValueTreeState::ParameterLayout layout;
@@ -149,11 +191,22 @@ void GbaProcessor::setEditorSkin(int index) {
     if(editorSkin.exchange(selected)!=selected)
         updateHostDisplay(juce::AudioProcessorListener::ChangeDetails{}.withNonParameterStateChanged(true));
 }
+void GbaProcessor::setNewSkinOnLaunch(bool enabled) {
+    if(newSkinOnLaunch.exchange(enabled)!=enabled)
+        updateHostDisplay(juce::AudioProcessorListener::ChangeDetails{}.withNonParameterStateChanged(true));
+}
+void GbaProcessor::initializeEditorAppearance() {
+    const juce::ScopedLock lock(metadataLock);
+    if(editorAppearanceInitialized)return;
+    editorSkin.store(launchSkin(presets.userFolder().getParentDirectory(),newSkinOnLaunch.load(),editorSkin.load()));
+    editorAppearanceInitialized=true;
+}
 void GbaProcessor::renameCurrentPreset(const juce::String& name) {const juce::ScopedLock lock(metadataLock);activePresetName=name;}
 void GbaProcessor::getStateInformation(juce::MemoryBlock& destination) {
     const juce::ScopedLock lock(metadataLock);
     auto copy=state.copyState();copy.setProperty("presetId",activePresetId,nullptr);copy.setProperty("presetName",activePresetName,nullptr);copy.setProperty("presetCategory",activePresetCategory,nullptr);copy.setProperty("schemaVersion",1,nullptr);copy.setProperty("editorWidth",editorWidth.load(),nullptr);
     copy.setProperty("editorSkin",juce::String(gba_ui::skins[std::size_t(gba_ui::validSkin(editorSkin.load()))].id.data()),nullptr);
+    copy.setProperty("newSkinOnLaunch",newSkinOnLaunch.load(),nullptr);
     copy.removeProperty("sampleData",nullptr);
     auto rom=romHacks.saveState();if(rom.isVoid())copy.removeProperty("romHacks",nullptr);else copy.setProperty("romHacks",juce::JSON::toString(rom),nullptr);
     if(removedSamplePlayback)copy.setProperty("samplePlaybackRemoved",true,nullptr);else copy.removeProperty("samplePlaybackRemoved",nullptr);
@@ -184,10 +237,15 @@ void GbaProcessor::setStateInformation(const void* data,int bytes) {
     activePresetId=restored.getProperty("presetId").toString();activePresetName=restored.getProperty("presetName","Custom patch").toString();activePresetCategory=restored.getProperty("presetCategory","User").toString();
     if(removed&&!activePresetName.startsWith("SYNTH ONLY: "))activePresetName="SYNTH ONLY: "+activePresetName;
     editorWidth.store(juce::jlimit(960,1920,int(restored.getProperty("editorWidth",1280))));
-    editorSkin.store(gba_ui::skinIndex(restored.getProperty("editorSkin","purple").toString().toStdString()));
+    const bool automatic=bool(restored.getProperty("newSkinOnLaunch",true));
+    newSkinOnLaunch.store(automatic);
+    // A newly loaded instance chooses once when its first window opens. State
+    // refresh/undo and reopening that same window must never reroll its colour.
+    if(!automatic||!editorAppearanceInitialized)
+        editorSkin.store(gba_ui::skinIndex(restored.getProperty("editorSkin","purple").toString().toStdString()));
     currentProgram.store(0);
     for(std::size_t i=0;i<gba::factoryPatches.size();++i)if(restored.getProperty("presetId").toString()==gba::factoryPatches[i].id){currentProgram.store(int(i));break;}
     panicRequested.store(true);
 }
-juce::AudioProcessorEditor* GbaProcessor::createEditor() {return new GbaEditor(*this);}
+juce::AudioProcessorEditor* GbaProcessor::createEditor() {initializeEditorAppearance();return new GbaEditor(*this);}
 juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter() {return new GbaProcessor();}

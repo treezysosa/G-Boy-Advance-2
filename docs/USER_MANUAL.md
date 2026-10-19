@@ -1,4 +1,4 @@
-> Current version: **0.14.0, 530 factory presets and ten skins, plus optional ROM Hacks SF2 instruments**. [Current additions and CPU behavior](RELEASE_0_14.md) · [SoundFont paths and limitations](RELEASE_0_13.md). Earlier release records below remain historical.
+> Current version: **0.14.1: a new skin on plugin load and SF2 drag and drop**, retaining 530 factory presets, ten skins and optional ROM Hacks SF2 instruments. [Current behavior and validation](RELEASE_0_14_1.md) · [CPU update](RELEASE_0_14.md) · [SoundFont limitations](RELEASE_0_13.md).
 
 
 Older 0.12.0 projects restore their synthesis parameters and skin, show `SYNTH ONLY:` in the display and a removal notice in START, and discard embedded audio from newly saved state. Sample sounds no longer play. Original project, audio and preset files are left unchanged; preserve the original project if its sample content is still needed. Sample-containing presets are rejected/skipped. Schema 1 synthesis `.gba2preset` import/export continues to work.
@@ -96,7 +96,7 @@ Third-party notice files are included with portable and installed builds. The ow
 
 ## Skins and custom instruments (0.11.0)
 
-Press SELECT and choose SKIN in the header: Purple, Glacier Blue, Black, White, Spice Orange, Crimson Red, Emerald Green, Midnight Blue, Gold or Rose Pink. Each plugin instance keeps its own colour. Save the DAW project to retain it. Standalone state also retains the choice on normal shutdown. Preset changes keep the chosen skin. Old projects open in Purple. The sound and automation parameters are independent of appearance.
+Press SELECT and choose SKIN in the header: Purple, Glacier Blue, Black, White, Spice Orange, Crimson Red, Emerald Green, Midnight Blue, Gold or Rose Pink. By default, each newly loaded plugin/standalone instance chooses a colour different from the last opened instance. This also applies when reopening a saved DAW project, including older projects. Reopening the same plugin window, hiding/resizing it, changing presets, and state refresh keep its current colour. To keep a specific colour, uncheck NEW COLOUR ON LOAD, choose SKIN, and save your project (or close standalone normally). The switch and fixed colour are per-instance project preferences, separate from audio and automation. The last launch colour is remembered in the adjacent `appearance.json` in application data. Read-only app data cannot prevent the UI from opening; the no-repeat history across separate application restarts requires this file to be writable.
 
 To design a custom instrument, select an engine and adjust oscillators, filters, envelopes, modulation and effects in SELECT. Use START → SAVE AS to add it to the User library. Save As stores synthesis patches. For SoundFont instruments, use the ROM Hacks cartridge → LOAD SF2, choose the bank instrument, and save the DAW project. General WAV/AIFF import and sample mapping are unavailable.
 
@@ -109,7 +109,9 @@ Maize Sampler `.mse` instruments bundle samples and need their compatible sample
 
 ## ROM Hacks SoundFonts
 
-Press the cartridge beside the master volume knob, above macros A and B, or F3, then LOAD SF2. Choose the bank/program instrument and play MIDI or the piano. A previews; B releases preview notes. RETURN TO SYNTH or selecting a normal preset restores synthesis. While SoundFonts are active, the main arrows/D-pad left/right change instruments; D-pad up/down changes banks.
+Drag **one `.sf2` file from Windows File Explorer onto any part of the plugin window**, including the ROM Hacks cartridge, piano, preset browser or advanced panel. A highlighted overlay appears while hovering; dropping opens ROM Hacks and loads the bank in the background. Both `.sf2` and `.SF2`, spaces and Unicode filenames are supported. Multiple files, SF3 and other formats are ignored. Alternatively, press the cartridge beside the master volume knob, above macros A and B, or F3, then LOAD SF2. Choose the bank/program instrument and play MIDI or the piano. A previews; B releases preview notes. RETURN TO SYNTH or selecting a normal preset restores synthesis. While SoundFonts are active, the main arrows/D-pad left/right change instruments; D-pad up/down changes banks.
+
+A malformed, missing or unsupported dropped bank shows an error inside ROM Hacks and retains the current working instrument. You can drop another bank while ROM Hacks is open; this keeps the panel open and selects the new bank’s first instrument on success. Dragging without dropping does not start a load. Windows requires File Explorer and the DAW to run at the same privilege level for shell drag and drop; normally run both without “Run as administrator”. LOAD SF2 remains available if the host blocks external drops.
 
 Imported banks are copied to `%APPDATA%\Treezy Audio\G Boy Advance 2\SoundFonts`; back up that folder with songs. DAW state stores the cached bank path/instrument and shared settings, without embedding audio. Missing banks show an error and stay silent until you load a replacement. Save As/Export in the ordinary browser are reserved for synthesis presets.
 

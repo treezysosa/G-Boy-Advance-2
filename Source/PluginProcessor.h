@@ -31,6 +31,7 @@ public:
     gba::Settings snapshot() const noexcept;
     void applyPreset(const GbaPreset&);
     void setEditorSkin(int);
+    void setNewSkinOnLaunch(bool);
     void renameCurrentPreset(const juce::String&);
     juce::String presetId() const;
     juce::String presetName() const;
@@ -44,7 +45,8 @@ public:
     int voiceCount() const noexcept {return active.load();}
     float outputLevel() const noexcept {return level.load();}
     std::atomic<int> editorWidth {1280};
-    std::atomic<int> editorSkin {0}; // Non-automatable, per-instance project preference.
+    std::atomic<int> editorSkin {0}; // Appearance settings never change audio parameters.
+    std::atomic<bool> newSkinOnLaunch {true};
     juce::AudioProcessorValueTreeState state;
     juce::MidiKeyboardState keyboard;
     PresetManager presets;
@@ -64,6 +66,8 @@ private:
     mutable juce::CriticalSection metadataLock;
     juce::String activePresetId,activePresetName {"Custom patch"},activePresetCategory {"User"};
     bool removedSamplePlayback=false;
+    bool editorAppearanceInitialized=false;
+    void initializeEditorAppearance();
     bool soundFontMode=false;int modeFade=0;float lastLeft=0,lastRight=0,modeLeft=0,modeRight=0;
     std::uint64_t soundFontRevision=0;
     void enqueue(Command) noexcept;
