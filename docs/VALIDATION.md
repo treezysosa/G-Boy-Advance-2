@@ -242,3 +242,10 @@ The matched 530-scene audio probe is byte-identical. Native Windows timing versu
 [Windows/Ubuntu run 39096250046](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39096250046) passed all ten Windows suites: 8,007 DSP/preset checks, 398 application checks (including 103 library checks), 265/266 actual-bundle synthetic-host checks, pluginval strictness 10, Steinberg 47/0 and six installer lifecycle checks. The FL-named host harness is not FL Studio.
 
 Local ASan/UBSan application checks: 391. Old embedded-audio state migration, sample-file rejection without modification, four-tab editor, five skins and synthesis patch import/export passed. Audio is byte-identical across 530 scenes. The 0.12.0-to-0.12.1 installer test preserves old sample preset and personal-audio fixture bytes. See [complete current evidence and limitations](RELEASE_0_12_1.md).
+
+
+## ROM Hacks 0.13.0
+
+[Windows/Ubuntu run 39188459523](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39188459523) passed eleven Windows CTest suites: 620,993 native DSP/preset checks (612,986 SoundFont checks plus 8,007 existing), 453 application checks including 55 SoundFont and 103 library checks, 265/266 actual-bundle synthetic-host checks, pluginval strictness 10, Steinberg 47/0 and six installer lifecycle checks. The FL-named host harness is not FL Studio.
+
+Twelve SoundFont publications processed 2571 concurrent Windows blocks. State restores cached bank/instrument after the original file is removed, reports/silences missing banks, and keeps instances independent. Measured pitch/glide/attack/filter, 256 structured bank mutations and mono-mode coverage are included. Local own-source ASan/UBSan application: 446 checks; SoundFont DSP: 612,986; JUCE modules uninstrumented, LSan disabled for tracer. Source/ZIP/binary/notices checks passed. Original synthesis output remains byte-identical. [Full evidence and limitations](RELEASE_0_13.md).

@@ -148,3 +148,10 @@ This GUI change does not promise another reduction in chord DSP time. Continue u
 ## 0.12.1 synthesis-only restoration
 
 The exact tested 0.11.0 synthesis DSP is restored. The sample worker, playback/interpolation path and embedded-audio instrument authoring are removed. The 530-scene comparison is byte-identical on both platforms. Windows native 32-voice timing observed 7/10142 over-budget calls, worst ratio 1.484138; this is one shared-runner observation, not a DAW CPU or physical deadline guarantee. See [current evidence](RELEASE_0_12_1.md).
+
+
+## ROM Hacks 0.13.0
+
+Bank decode/cache and reclamation run off the callback. A hazard pointer protects a single audio consumer; voices, 17 channels (including preview) and effects are prepared before publication. Native render/MIDI/reset observe zero decoder heap operations. Import uses a lazy worker; it sleeps when no job or retired bank needs work. The bank view/list is UI-thread metadata. Twelve Windows publications processed 2571 finite concurrent audio blocks. Complex/layered banks consume more of the 32 sample-voice budget and loader memory.
+
+The old synthesis DSP/effects and factory calibration are unchanged; the 530-scene comparison is byte-identical. Its 32-voice shared-runner profile observed 0/10142 over-budget calls, worst ratio 0.835050. That profile excludes SoundFont mode and real DAW/device load. Measure actual banks at the owner's buffer size; no SF2 CPU percentage or physical deadline guarantee is inferred. [Evidence and limits](RELEASE_0_13.md).

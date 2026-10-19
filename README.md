@@ -4,7 +4,11 @@ Native Windows x64 VST3 and standalone hybrid synthesizer with optional **ROM Ha
 
 SoundFonts are copied into the application-data SoundFonts folder; DAW state saves the bank reference and instrument. Back up that folder with projects. Missing banks are reported visibly and stay silent until loaded again. General WAV/AIFF import remains unavailable. No game ROM or third-party SoundFont/audio is bundled. TinySoundFont is pinned and included under MIT terms.
 
-Fresh Windows build/validators/installer validation are pending. See [0.13.0 behavior, compatibility and limits](docs/RELEASE_0_13.md). The owner's licensing decision remains deferred; this is unsigned build preparation.
+[Windows/Ubuntu run 39188459523](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39188459523) passed eleven Windows CTest suites: 620,993 native DSP/preset checks (612,986 SoundFont checks plus 8,007 existing), 453 application checks including 55 SoundFont and 103 library checks, 265/266 actual-bundle synthetic-host checks, pluginval strictness 10, Steinberg 47/0 and six installer lifecycle checks. The FL-named host harness is not FL Studio.
+
+[Download the tested Windows installer ZIP](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39188459523/artifacts/12158923159). Close FL Studio and the standalone app, extract it into a new folder, run `G-Boy-Advance-2-Setup-x64.exe`, then open FL64. Press ROM Hacks → LOAD SF2 → select an instrument. [Portable/manual installation](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39188459523/artifacts/12158658811) · [Source](https://github.com/treezysosa/G-Boy-Advance-2/tree/feature/rom-hacks-sf2-0130) · [Behavior, evidence and limits](docs/RELEASE_0_13.md).
+
+The licensing decision remains explicitly deferred by the owner; this is unsigned build preparation. Current-version real FL Studio/audio-device/DPI/listening and interactive-install acceptance remain pending.
 
 ![G Boy Advance 2 Phase 2 native JUCE editor](docs/images/phase2-main.png)
 
