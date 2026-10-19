@@ -85,7 +85,7 @@ void SoundFont::noteOn(int channel,int key,float velocity,bool preview) noexcept
     const int midiVelocity=int(velocity*127);
     for(int r=0;r<preset.regionNum;++r){const auto& zone=preset.regions[r];if(key>=zone.lokey&&key<=zone.hikey&&midiVelocity>=zone.lovel&&midiVelocity<=zone.hivel)++wanted;}
     wanted=std::min(wanted,limit);if(!wanted)return;
-    if(int(d.target[Param::Mode])>0&&!preview){for(int v=0;v<d.font->voiceNum;++v)if(d.font->voices[v].playingChannel==c)tsf_voice_kill(&d.font->voices[v]);d.transition();}
+    if(int(d.target[Param::Mode])>0&&!preview){for(int v=0;v<d.font->voiceNum;++v)if(d.font->voices[v].playingPreset>=0&&d.font->voices[v].playingChannel==c)tsf_voice_kill(&d.font->voices[v]);d.transition();}
     while(tsf_active_voice_count(d.font)>limit-wanted){tsf_voice* oldest=nullptr;
         for(int v=0;v<d.font->voiceNum;++v){auto& voice=d.font->voices[v];if(voice.playingPreset>=0&&(!oldest||voice.playIndex<oldest->playIndex))oldest=&voice;}
         if(!oldest)break;

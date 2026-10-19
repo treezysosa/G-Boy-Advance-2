@@ -8,7 +8,17 @@
 namespace {int checks=0;void check(bool ok,const char* m){++checks;if(!ok)throw std::runtime_error(m);}
 gba::Settings settings(){gba::Settings s;s.set(gba::Param::Cutoff,20000);s.set(gba::Param::Resonance,0);s.set(gba::Param::Attack,.001f);s.set(gba::Param::Reverb,0);s.set(gba::Param::Delay,0);s.set(gba::Param::Chorus,0);s.set(gba::Param::Volume,.7f);return s;}
 double render(gba::SoundFont& f,int frames){std::array<float,256> l{},r{};double sum=0;while(frames>0){int n=std::min(256,frames);f.render(l.data(),r.data(),n);for(int i=0;i<n;++i){check(std::isfinite(l[std::size_t(i)])&&std::isfinite(r[std::size_t(i)]),"Non-finite SF2 audio");sum+=l[std::size_t(i)]*l[std::size_t(i)]+r[std::size_t(i)]*r[std::size_t(i)];}frames-=n;}return sum;}}
-int main(){try{const auto bytes=sf2fixture::bank();std::string error;
+struct Observation {double energy=0;float hz=0;};
+Observation observe(gba::SoundFont& f,int frames){std::array<float,256> l{},r{};Observation o;int crosses=0;float last=0;while(frames>0){int n=std::min(256,frames);f.render(l.data(),r.data(),n);for(int i=0;i<n;++i){o.energy+=l[i]*l[i]+r[i]*r[i];if(last<=0&&l[i]>0)++crosses;last=l[i];}frames-=n;}o.hz=float(crosses);return o;}
+void expression(){auto data=sf2fixture::bank();std::string e;gba::SoundFont f;if(!f.load(data.data(),data.size(),e))throw std::runtime_error(e);gba::Settings s;s.set(gba::Param::Volume,.8f);s.set(gba::Param::Cutoff,20000);s.set(gba::Param::Resonance,0);s.set(gba::Param::Attack,.001f);s.set(gba::Param::Reverb,0);s.set(gba::Param::Delay,0);s.set(gba::Param::Chorus,0);s.set(gba::Param::Drive,0);s.set(gba::Param::BendRange,12);f.setSettings(s);f.prepare(48000);f.noteOn(1,69,.9f);observe(f,4800);auto base=observe(f,4800);f.pitchWheel(1,16383);observe(f,4800);auto bend=observe(f,4800);
+if(!(base.hz>=98&&base.hz<=102&&bend.hz>=198&&bend.hz<=202))throw std::runtime_error("Bend frequency measurement failed");
+s.set(gba::Param::Mode,1);s.set(gba::Param::Glide,.5f);f.setSettings(s);f.prepare(48000);f.noteOn(1,69,.9f);observe(f,4800);f.noteOn(1,81,.9f);observe(f,480);auto early=observe(f,2400);observe(f,72000);auto late=observe(f,4800);if(!(early.hz<65&&late.hz>190))throw std::runtime_error("Glide frequency measurement failed");
+s.set(gba::Param::Glide,0);s.set(gba::Param::Attack,.5f);f.setSettings(s);f.prepare(48000);f.noteOn(1,69,.9f);auto attackStart=observe(f,2400);observe(f,21600);auto attackEnd=observe(f,2400);if(!(attackEnd.energy>attackStart.energy*20))throw std::runtime_error("Attack energy measurement failed");
+s.set(gba::Param::Attack,.001f);s.set(gba::Param::Cutoff,20000);f.setSettings(s);f.prepare(48000);f.select(1);f.noteOn(1,69,.9f);observe(f,4800);auto open=observe(f,4800);s.set(gba::Param::Cutoff,300);f.setSettings(s);observe(f,4800);auto closed=observe(f,4800);if(!(closed.energy<open.energy*.1))throw std::runtime_error("Cutoff energy measurement failed");
+std::cout<<"PASS measured SF2 expression: root "<<base.hz*10<<" Hz, full bend "<<bend.hz*10<<" Hz; glide "<<early.hz*20<<" -> "<<late.hz*10<<" Hz; attack energy ratio "<<attackEnd.energy/attackStart.energy<<"; closed/open filter energy "<<closed.energy/open.energy<<"\n";
+}
+
+int main(){try{expression();const auto bytes=sf2fixture::bank();std::string error;
     check(gba::validateSf2(bytes.data(),bytes.size(),error),"Original fixture is not a valid SF2 bank");
     for(double rate:{44100.,48000.,96000.}){gba::SoundFont f;check(f.load(bytes.data(),bytes.size(),error),error.c_str());check(f.instruments().size()==2&&f.instruments()[1].bank==2&&f.instruments()[1].program==10,"SF2 instrument/bank names missing");f.setSettings(settings());f.prepare(rate);
         const auto heap=gba::SoundFont::heapOperations();f.noteOn(1,69,.8f);check(render(f,int(rate*.1))>.05,"SF2 MIDI produced no audio");
@@ -18,6 +28,8 @@ int main(){try{const auto bytes=sf2fixture::bank();std::string error;
         f.select(1);f.noteOn(16,81,.8f);check(render(f,4096)>.01,"Second SF2 instrument/channel 16 was silent");f.pitchWheel(16,16383);f.controller(16,1,127);f.controller(16,10,10);render(f,512);f.controller(16,123,0);render(f,int(rate*.5));check(f.activeVoices()==0,"SF2 all-notes-off failed");
         for(int i=0;i<80;++i){f.noteOn(1,40+i%50,.8f);render(f,32);check(f.activeVoices()<=32,"SF2 voice budget exceeded");}check(f.activeVoices()>0,"SF2 exhausted voices and stopped playing");f.reset();
         auto silent=settings();silent.set(gba::Param::Volume,0);f.setSettings(silent);render(f,int(rate*.2));f.noteOn(1,69,.8f);check(render(f,int(rate*.1))<1e-7,"SF2 master volume zero leaked audio");f.reset();
+        auto mono=settings();mono.set(gba::Param::Mode,1);mono.set(gba::Param::Glide,.2f);f.setSettings(mono);f.prepare(rate);f.noteOn(1,69,.8f);render(f,64);f.noteOn(1,81,.8f);
+        check(f.activeVoices()==1,"SF2 mono mode retained an older voice");check(render(f,256)>.001,"SF2 mono/glide was silent");
         check(gba::SoundFont::heapOperations()==heap,"SF2 audio/MIDI/reset allocated or freed heap memory");
     }
     for(std::size_t n:{std::size_t(0),std::size_t(11),bytes.size()-1})check(!gba::validateSf2(bytes.data(),n,error),"Truncated SF2 was accepted");
