@@ -1,3 +1,5 @@
+> Current CPU work: 0.14.0 shares exact modulation/filter calculations across matching chord voices and skips unused work without changing existing patch settings. [Current implementation and native measurements](RELEASE_0_14.md). Earlier results below describe their recorded builds.
+
 > Current version: **0.13.0, synthesis plus optional ROM Hacks SF2 instruments**. [SoundFont behavior, project paths and limitations](RELEASE_0_13.md). Earlier release records below remain historical.
 
 

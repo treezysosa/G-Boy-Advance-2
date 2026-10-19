@@ -9,6 +9,10 @@ struct VocalEngine {
     std::array<float,3> tilt{};
     float lowerPhase=0,airLow=0,tiltCoefficient=.3f,airCoefficient=.02f;
     void reset() noexcept {for(auto& f:bands)f.clear();tilt={};lowerPhase=0;airLow=0;}
+    void copyTuningFrom(const VocalEngine& other) noexcept {
+        for(std::size_t i=0;i<bands.size();++i)bands[i].copyTuningFrom(other.bands[i]);
+        tiltCoefficient=other.tiltCoefficient;airCoefficient=other.airCoefficient;
+    }
     static std::array<float,5> frequencies(float vowel,float shift) noexcept {
         constexpr float vowels[5][5]{{800,1150,2900,3900,4950},{400,1700,2600,3500,4500},
             {300,2200,3000,3800,4900},{500,800,2600,3500,4500},{350,600,2400,3400,4400}};

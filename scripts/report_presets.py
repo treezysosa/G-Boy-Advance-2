@@ -7,7 +7,7 @@ from generate_presets import ROOT,ENGINE_NAMES
 def main():
     parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('audit_dir',type=Path);parser.add_argument('--output',type=Path,default=ROOT/'docs/FACTORY_LIBRARY.md');args=parser.parse_args()
     patches=json.loads((ROOT/'Presets/factory.json').read_text())['presets'];by_id={p['id']:p for p in patches}
-    rows=list(csv.DictReader((args.audit_dir/'factory-audit.csv').open()));central=[r for r in rows if float(r['velocity'])==.9 and int(r['note'])==(48 if r['category']=='Bass' else 60)]
+    rows=list(csv.DictReader((args.audit_dir/'factory-audit.csv').open()));central=[r for r in rows if float(r['velocity'])==.9 and int(r['note'])==(48 if r['category']=='Bass' or 'bass' in by_id[r['id']]['tags'] else 60)]
     assert len(rows)==len(patches)*4 and len(central)==len(patches)
     levels=json.loads((ROOT/'Presets/factory-levels.json').read_text());groups=collections.defaultdict(list)
     for row in central:groups[row['category']].append(row)
@@ -17,8 +17,8 @@ def main():
         if float(row['dryAudioDistance'])>=.025:continue
         pair=tuple(sorted((row['id'],row['nearestId'])))
         if pair not in seen:flags.append((pair,float(row['dryAudioDistance'])));seen.add(pair)
-    within=sum(abs(20*math.log10(float(r['max100msStereoRms'])/levels['targets'][r['category']]))<=.5 for r in central)
-    text=['# Factory library audit','',f'{len(patches)} parameter-only presets across {len(groups)} categories. The 102 named instrument designs, 75 named vocal designs and 28 named retro designs each have an active Afterglow voicing. All legacy IDs and host program indices are frozen by `Presets/factory-index.json`.','',
+    within=sum(abs(20*math.log10(float(r['max100msStereoRms'])/levels.get('presetTargets',{}).get(r['id'],levels['targets'][r['category']])))<=.5 for r in central)
+    text=['# Factory library audit','',f'{len(patches)} parameter-only presets across {len(groups)} categories. The 102 named instrument designs, 75 named vocal designs, 28 named retro designs and 60 regional hip-hop designs each have an active Afterglow voicing. All legacy IDs and host program indices are frozen by `Presets/factory-index.json`.','',
           'This report describes native numerical renders at 48 kHz. It does not certify perceptual uniqueness, natural acoustic realism or commercial sound quality. Human listening acceptance remains pending.','',
           f'Central-note maximum rolling 100 ms stereo RMS: {min(values):.6f}–{max(values):.6f} ({20*math.log10(max(values)/min(values)):.2f} dB spread). {within}/{len(patches)} patches are within 0.5 dB of their category target. {len(levels["gainCeilingIds"])} master gains reached 0.95; quieter articulations remain rather than changing the engine gain or adding hidden normalization.','',
           '| Category | Presets | Engines | Central RMS min–max |','|---|---:|---|---:|']

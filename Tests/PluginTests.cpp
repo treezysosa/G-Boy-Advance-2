@@ -51,13 +51,17 @@ int main() {
         auto factoryReload=std::make_unique<GbaProcessor>(root);factoryReload->setStateInformation(factoryState.getData(),int(factoryState.getSize()));
         check(factoryReload->presetId()==factoryId,"Factory project identity did not survive state reload");
         check(std::abs(factoryReload->snapshot()[gba::Param::Cutoff]-4321)<.1f&&std::abs(factoryReload->snapshot()[gba::Param::Volume]-.371f)<.0001f,"Factory state was replaced by current library values on project reload");
-        check(p.getNumPrograms()==410,"Expanded factory host-program count is wrong");
+        check(p.getNumPrograms()==530,"Expanded factory host-program count is wrong");
         p.setCurrentProgram(409);p.servicePendingProgram();
         check(p.getCurrentProgram()==409&&p.presetName()=="Handheld Pulse Motion - Afterglow","Appended retro host program is unreachable");
         set(p,"volume",.43f);juce::MemoryBlock retroState;p.getStateInformation(retroState);
         factoryReload->setStateInformation(retroState.getData(),int(retroState.getSize()));
         check(factoryReload->getCurrentProgram()==409&&factoryReload->presetId()==p.presetId(),"Appended retro program identity did not restore");
         check(factoryReload->snapshot()[gba::Param::Engine]==6&&factoryReload->snapshot()[gba::Param::Coarse]==-12&&std::abs(factoryReload->snapshot()[gba::Param::Volume]-.43f)<.0001f,"Appended retro settings did not restore");
+        p.setCurrentProgram(529);p.servicePendingProgram();
+        check(p.getCurrentProgram()==529&&p.presetName()=="Florida High Night Whistle - Afterglow","Final regional program is unreachable");
+        juce::MemoryBlock regionalState;p.getStateInformation(regionalState);factoryReload->setStateInformation(regionalState.getData(),int(regionalState.getSize()));
+        check(factoryReload->getCurrentProgram()==529&&factoryReload->snapshot().values==p.snapshot().values,"Regional factory project state did not restore");
         p.presets.restoreDefault();
         juce::AudioBuffer<float> audio(2,256);juce::MidiBuffer midi;
         // Verify the host wrapper splits rendering at MIDI sample offsets.
@@ -168,7 +172,8 @@ int main() {
             auto* search=dynamic_cast<juce::TextEditor*>(named(*editor,"Preset search"));auto* categoryFilter=dynamic_cast<juce::ComboBox*>(named(*editor,"Preset category"));auto* sourceFilter=dynamic_cast<juce::ComboBox*>(named(*editor,"Preset source"));auto* presetList=dynamic_cast<juce::ListBox*>(named(*editor,"Presets"));auto* presetName=dynamic_cast<juce::TextEditor*>(named(*editor,"Preset name"));auto* presetTags=dynamic_cast<juce::TextEditor*>(named(*editor,"Preset tags"));
             check(search&&categoryFilter&&sourceFilter&&presetList&&presetName&&presetTags,"Browser controls are missing accessible names");
             auto rows=[&]{return presetList->getListBoxModel()->getNumRows();};auto query=[&](const juce::String& value){search->setText(value);juce::MessageManager::getInstance()->runDispatchLoopUntil(30);};
-            sourceFilter->setSelectedId(2,juce::sendNotificationSync);categoryFilter->setText("Retro Games",juce::sendNotificationSync);check(rows()==56,"Factory/category browser intersection failed");
+            sourceFilter->setSelectedId(2,juce::sendNotificationSync);categoryFilter->setText("Hip-Hop - Detroit",juce::sendNotificationSync);check(rows()==40,"Regional browser category is incomplete");query("piano");check(rows()==10,"Regional piano tag search failed");query("vox");check(rows()==6,"Regional vox tag search failed");query("");
+            categoryFilter->setText("Retro Games",juce::sendNotificationSync);check(rows()==56,"Factory/category browser intersection failed");
             auto beforeBrowse=p.presetId();presetList->selectRow(0);check(p.presetId()==beforeBrowse,"Keyboard browsing changes the loaded sound");presetList->keyPressed(juce::KeyPress(juce::KeyPress::downKey));check(presetList->getSelectedRow()==1&&p.presetId()==beforeBrowse,"List arrow navigation loads a patch or fails to move");presetList->keyPressed(juce::KeyPress(juce::KeyPress::returnKey));check(p.presetCategory()=="Retro Games","Enter did not load the selected preset");render(p,audio,8);check(p.voiceCount()>0,"Browser Enter did not preview real audio");button(*editor,"B  STOP")->onClick();p.panic();render(p,audio,1);
             presetName->setText("Browser User");presetTags->setText("custom azure keys");button(*editor,"SAVE AS")->onClick();auto browserUser=p.presetId();
             check(p.presetCategory()=="User"&&p.presets.find(browserUser)->tags=="custom azure keys","Browser Save As lost custom tags");check(sourceFilter->getSelectedId()==2&&categoryFilter->getText()=="Retro Games","Save As reset browser filters");check(!button(*editor,"A  PREVIEW")->isEnabled()&&!button(*editor,"FAVORITE")->isEnabled(),"Hidden active patch leaves browser actions enabled");
@@ -181,7 +186,7 @@ int main() {
             auto* select=button(*editor,"SELECT");select->onClick();check(button(*editor,"BACK / SELECT")!=nullptr,"SELECT did not open advanced editor");
             auto* synthTabs=dynamic_cast<juce::TabbedComponent*>(named(*editor,"Advanced tabs"));
             check(synthTabs&&synthTabs->getNumTabs()==4&&!synthTabs->getTabNames().contains("SAMPLES"),"Sample playback controls remain in the editor");
-            auto* skin=dynamic_cast<juce::ComboBox*>(named(*editor,"UI skin"));check(skin&&skin->getNumItems()==5,"Five-skin selector missing");
+            auto* skin=dynamic_cast<juce::ComboBox*>(named(*editor,"UI skin"));check(skin&&skin->getNumItems()==10,"Ten-skin selector missing");
             const auto sound=p.snapshot();const auto presetId=p.presetId();
             StateListener listener;p.addListener(&listener);
             auto isolated=std::make_unique<GbaProcessor>(root.getChildFile("IsolatedSkin"));std::unique_ptr<juce::AudioProcessorEditor> other(isolated->createEditor());
@@ -196,7 +201,7 @@ int main() {
                 editor->keyPressed(juce::KeyPress(juce::KeyPress::F2Key));snapshot(*editor,"ui-snapshots/Skin-"+juce::String(gba_ui::skins[i].id.data())+".png");
                 editor->keyPressed(juce::KeyPress(juce::KeyPress::F2Key));skin=dynamic_cast<juce::ComboBox*>(named(*editor,"UI skin"));
             }
-            check(listener.appearanceChanges==4,"Skin changes did not notify the host about unsaved state");p.removeListener(&listener);
+            check(listener.appearanceChanges==9,"Skin changes did not notify the host about unsaved state");p.removeListener(&listener);
             other.reset();isolated.reset();
             skin->setSelectedId(1,juce::sendNotificationSync);
             snapshot(*editor,"ui-snapshots/Advanced-960.png");

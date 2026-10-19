@@ -6,16 +6,17 @@ New-Item -ItemType Directory -Force $logs | Out-Null
 $baseline=Join-Path $root 'build/cpu-baseline-source'
 $baselineBuild=Join-Path $root 'build/cpu-baseline-build'
 $archive=Join-Path $root 'build/cpu-baseline.tar'
-$baselineCommit='901538f3158d7925da8d5bc5dc6983c11e1cd2f5'
+$baselineCommit='a9969966e116d5b7aa1ff88991f97405b9a7e956'
 git fetch --no-tags --depth=1 origin $baselineCommit
-if ($LASTEXITCODE -ne 0) {throw 'Could not fetch the immutable 0.10.2 comparison baseline.'}
+if ($LASTEXITCODE -ne 0) {throw 'Could not fetch the immutable 0.13.1 comparison baseline.'}
 git archive --format=tar --output=$archive $baselineCommit
 if ($LASTEXITCODE -ne 0) {throw 'Could not export the comparison baseline.'}
 New-Item -ItemType Directory -Force $baseline | Out-Null
 tar -xf $archive -C $baseline
 if ($LASTEXITCODE -ne 0) {throw 'Could not extract the comparison baseline.'}
 # Use identical drivers with both DSP versions: only the engine under test differs.
-Copy-Item (Join-Path $root 'Tests/PerformanceProbe.cpp'),(Join-Path $root 'Tests/Benchmark.cpp') (Join-Path $baseline 'Tests')
+Copy-Item (Join-Path $root 'Tests/PerformanceProbe.cpp'),(Join-Path $root 'Tests/Benchmark.cpp'),(Join-Path $root 'Tests/PlayBenchmark.cpp') (Join-Path $baseline 'Tests')
+Copy-Item (Join-Path $root 'Source/FactoryData.h') (Join-Path $baseline 'Source/FactoryData.h')
 @'
 cmake_minimum_required(VERSION 3.24)
 project(GBA2PreviousDsp LANGUAGES CXX)
@@ -30,12 +31,14 @@ add_executable(gba2-benchmark Tests/Benchmark.cpp)
 target_link_libraries(gba2-benchmark PRIVATE gba_dsp)
 add_executable(gba2-performance-probe Tests/PerformanceProbe.cpp)
 target_link_libraries(gba2-performance-probe PRIVATE gba_dsp)
+add_executable(gba2-play-benchmark Tests/PlayBenchmark.cpp)
+target_link_libraries(gba2-play-benchmark PRIVATE gba_dsp)
 '@ | Set-Content -LiteralPath (Join-Path $baseline 'CMakeLists.txt')
 # The old full project returns early with plugin builds disabled. A small driver
 # project uses the same Release compiler/runtime flags and the untouched old DSP.
 cmake -S $baseline -B $baselineBuild -G 'Visual Studio 17 2022' -A x64
 if ($LASTEXITCODE -ne 0) {throw 'Baseline configure failed.'}
-cmake --build $baselineBuild --config $Configuration --parallel 2 --target gba2-benchmark gba2-performance-probe
+cmake --build $baselineBuild --config $Configuration --parallel 2 --target gba2-benchmark gba2-performance-probe gba2-play-benchmark
 if ($LASTEXITCODE -ne 0) {throw 'Baseline build failed.'}
 $before=Join-Path $baselineBuild $Configuration
 $after=Join-Path $root "build/$Configuration"
@@ -50,6 +53,10 @@ foreach($voices in @(8,32)) {
     & (Join-Path $after 'gba2-benchmark.exe') (Join-Path $logs $name) $voices
     if ($LASTEXITCODE -ne 0) {throw 'New profile produced invalid audio.'}
 }
+& (Join-Path $before 'gba2-play-benchmark.exe') (Join-Path $logs 'play-before.csv')
+if ($LASTEXITCODE -ne 0) {throw 'Baseline notes/chords profile produced invalid audio.'}
+& (Join-Path $after 'gba2-play-benchmark.exe') (Join-Path $logs 'play-after.csv')
+if ($LASTEXITCODE -ne 0) {throw 'New notes/chords profile produced invalid audio.'}
 try {
     python (Join-Path $root 'scripts/compare-cpu.py') $logs
     if ($LASTEXITCODE -ne 0) {throw 'CPU/audio comparison failed.'}

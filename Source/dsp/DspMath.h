@@ -74,6 +74,16 @@ struct LfoPhase {
     void advance(double hz,double sr) noexcept {advanceIncrement(hz/sr);}
     float value() const noexcept {return float(std::sin(2*std::numbers::pi_v<double>*phase));}
 };
+// Chord voices often have identical modulation phases. Reuse the exact sine
+// result for matching inputs; each voice still advances its own full-rate clock.
+struct LfoValueCache {
+    double phase=-1;
+    float value=0;
+    float read(const LfoPhase& clock) noexcept {
+        if(clock.phase!=phase){phase=clock.phase;value=clock.value();}
+        return value;
+    }
+};
 // Fixed-size, interruptible linear crossfade. Retargeting starts at the current
 // blend; reset/prepare starts directly on the selected choice.
 template<std::size_t Count> struct ChoiceFade {
@@ -109,6 +119,7 @@ struct SVF {
     };
     float s1=0,s2=0,g=0.1f,k=1;
     float normalization=1/(1+g*(g+k));
+    void copyTuningFrom(const SVF& other) noexcept {g=other.g;k=other.k;normalization=other.normalization;}
     void tuning(float newG,float newK) noexcept {
         g=newG;k=newK;normalization=1/(1+g*(g+k));
     }

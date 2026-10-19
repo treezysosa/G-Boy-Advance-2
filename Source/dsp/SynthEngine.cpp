@@ -19,6 +19,7 @@ void SynthEngine::reset() noexcept {
     engineFade.reset(int(target[Param::Engine]));
     lfo1Route.reset(int(target[Param::Lfo1Dest]));lfo2Route.reset(int(target[Param::Lfo2Dest]));
     cachedGlide=-1;cachedOscillatorInterval=1000;cachedBrightness=-1;
+    cachedFilterBase=cachedFilterHz=-1;cachedFormantVowel=cachedVocalVowel=-100;
 }
 void SynthEngine::setSettings(const Settings& s) noexcept {
     for(std::size_t p=0;p<parameterCount;++p) {
@@ -164,12 +165,20 @@ void SynthEngine::updateFormants(Voice& v,float vowel) noexcept {
     vowel=std::clamp(vowel,0.0f,4.0f);int a=int(vowel),b=std::min(a+1,4);float t=vowel-float(a);
     const float shift=current[Param::FormantShift];
     if(!v.formantsReady||v.formantVowel!=vowel||v.formantShift!=shift) {
-        const float scale=std::exp2(shift/12);
-        for(int i=0;i<3;++i)v.formants[i].coefficients(std::lerp(vowels[a][i],vowels[b][i],t)*scale,0.87f,sampleRate);
+        if(cachedFormantVowel!=vowel||cachedFormantShift!=shift) {
+            const float scale=std::exp2(shift/12);
+            for(int i=0;i<3;++i)formantTuning[i].coefficients(std::lerp(vowels[a][i],vowels[b][i],t)*scale,0.87f,sampleRate);
+            cachedFormantVowel=vowel;cachedFormantShift=shift;
+        }
+        for(int i=0;i<3;++i)v.formants[i].copyTuningFrom(formantTuning[i]);
         v.formantVowel=vowel;v.formantShift=shift;v.formantsReady=true;
     }
     if(engineFade.weights[5]>0&&(!v.vocalReady||v.vocalVowel!=vowel||v.vocalShift!=shift||v.vocalBrightness!=current[Param::Brightness])) {
-        v.vocal.configure(vowel,shift,current[Param::Brightness],sampleRate);
+        if(cachedVocalVowel!=vowel||cachedVocalShift!=shift||cachedVocalBrightness!=current[Param::Brightness]) {
+            vocalTuning.configure(vowel,shift,current[Param::Brightness],sampleRate);
+            cachedVocalVowel=vowel;cachedVocalShift=shift;cachedVocalBrightness=current[Param::Brightness];
+        }
+        v.vocal.copyTuningFrom(vocalTuning);
         v.vocalVowel=vowel;v.vocalShift=shift;v.vocalBrightness=current[Param::Brightness];v.vocalReady=true;
     }
 }
@@ -244,8 +253,8 @@ float SynthEngine::voiceSample(Voice& v) noexcept {
     v.lfo1.advanceIncrement(lfo1Increment);v.lfo2.advanceIncrement(lfo2Increment);
     v.vibrato.advanceIncrement(vibratoIncrement);v.tremolo.advanceIncrement(tremoloIncrement);v.syllable.advanceIncrement(syllableIncrement);
     // Keep both clocks advancing, but zero depth needs no sine evaluation.
-    const float lfo1=s[Param::Lfo1Depth]>0?v.lfo1.value():0;
-    const float lfo2=s[Param::Lfo2Depth]>0?v.lfo2.value():0;
+    const float lfo1=s[Param::Lfo1Depth]>0?lfo1Value.read(v.lfo1):0;
+    const float lfo2=s[Param::Lfo2Depth]>0?lfo2Value.read(v.lfo2):0;
     float modPitch=0,modFilter=0,modAmp=0,modVowel=0;
     const auto route=[&](int destination,float amount) {
         switch(destination) {case 1:modPitch+=amount*2;break;case 2:modFilter+=amount*3;break;case 3:modAmp+=amount*0.45f;break;case 4:modVowel+=amount*2;break;default:break;}
@@ -257,7 +266,7 @@ float SynthEngine::voiceSample(Voice& v) noexcept {
     applyRoute(lfo1Route,lfo1*s[Param::Lfo1Depth]);applyRoute(lfo2Route,lfo2*s[Param::Lfo2Depth]);
     v.panMod=lfo1*s[Param::Lfo1Depth]*.45f*lfo1Route.weights[5]+lfo2*s[Param::Lfo2Depth]*.45f*lfo2Route.weights[5];
     const float vibrato=s[Param::Vibrato]+wheel[v.channel-1]*0.6f;
-    if(vibrato>0)modPitch+=v.vibrato.value()*vibrato*0.6f;
+    if(vibrato>0)modPitch+=vibratoValue.read(v.vibrato)*vibrato*0.6f;
     v.frequency+=(v.targetFrequency-v.frequency)*glideStep;
     const float pitch=bend[v.channel-1]*s[Param::BendRange]+modPitch;
     float frequency=std::clamp(pitch==0?v.frequency:v.frequency*std::exp2(pitch/12),8.0f,sampleRate*0.4f);
@@ -266,11 +275,20 @@ float SynthEngine::voiceSample(Voice& v) noexcept {
     v.p1=wrap(v.p1+dt);v.p2=wrap(v.p2+dt2);
     float env=v.amp.nextSteps(ampRates.attackStep,ampRates.decayStep,s[Param::Sustain]);
     float fenv=v.filterEnv.nextSteps(filterRates.attackStep,filterRates.decayStep,s[Param::FilterSustain]);
-    const float syllableMotion=s[Param::Syllable]>0?v.syllable.value():0;
+    const float syllableMotion=s[Param::Syllable]>0?syllableValue.read(v.syllable):0;
     if(v.controlCounter==0||(engineFade.weights[4]>0&&!v.stringActive)) {
-        const float cutoff=std::clamp(s[Param::Cutoff]*std::exp2(fenv*s[Param::FilterEnv]+modFilter),15.0f,sampleRate*.44f);
+        const float octaves=fenv*s[Param::FilterEnv]+modFilter;
+        if(cachedFilterBase!=s[Param::Cutoff]||cachedFilterOctaves!=octaves) {
+            cachedCutoff=std::clamp(s[Param::Cutoff]*std::exp2(octaves),15.0f,sampleRate*.44f);
+            cachedFilterBase=s[Param::Cutoff];cachedFilterOctaves=octaves;
+        }
+        const float cutoff=cachedCutoff;
         if(!v.filterReady||v.filterCutoff!=cutoff||v.filterResonance!=s[Param::Resonance]) {
-            v.filter.coefficients(cutoff,s[Param::Resonance],sampleRate);
+            if(cachedFilterHz!=cutoff||cachedFilterResonance!=s[Param::Resonance]) {
+                filterTuning.coefficients(cutoff,s[Param::Resonance],sampleRate);
+                cachedFilterHz=cutoff;cachedFilterResonance=s[Param::Resonance];
+            }
+            v.filter.copyTuningFrom(filterTuning);
             v.filterCutoff=cutoff;v.filterResonance=s[Param::Resonance];v.filterReady=true;
         }
         updateFormants(v,s[Param::Vowel]+modVowel+s[Param::Syllable]*syllableMotion*0.8f);
@@ -298,13 +316,18 @@ float SynthEngine::voiceSample(Voice& v) noexcept {
     else x=filtered.low*filterFade.weights[0]+filtered.high*filterFade.weights[1]+filtered.band*filterFade.weights[2]+filtered.notch*filterFade.weights[3]+formant*filterFade.weights[4];
     float syllable=1-s[Param::Syllable]*0.6f*(0.5f+0.5f*syllableMotion);
     float velocity=std::lerp(1.0f,v.velocityRoot,s[Param::Velocity]);
-    const float tremolo=s[Param::Tremolo]>0?s[Param::Tremolo]*(0.5f+0.5f*v.tremolo.value()):0;
+    const float tremolo=s[Param::Tremolo]>0?s[Param::Tremolo]*(0.5f+0.5f*tremoloValue.read(v.tremolo)):0;
     x*=env*velocity*std::max(0.0f,1+modAmp-tremolo)*syllable*0.16f;
     if(std::abs(v.tail)>std::abs(v.tailStep)) {x+=v.tail;v.tail-=v.tailStep;} else v.tail=0;
     v.last=x;return x;
 }
 void SynthEngine::render(float* left,float* right,int samples) noexcept {
     if(!prepared) {std::fill_n(left,samples,0.0f);std::fill_n(right,samples,0.0f);return;}
+    // MIDI starts voices between render segments. Collect the current voices
+    // once per segment, in the original summation order, using fixed stack storage.
+    std::array<Voice*,maxVoices> sounding;
+    int soundingCount=0;
+    for(auto& v:voices)if(v.amp.stage!=Envelope::Off)sounding[std::size_t(soundingCount++)]=&v;
     for(int i=0;i<samples;++i) {
         for(std::size_t item=0;item<movingCount;) {
             const auto p=movingParameters[item];
@@ -342,7 +365,7 @@ void SynthEngine::render(float* left,float* right,int samples) noexcept {
         }
         if(previewSamples>0 && --previewSamples==0) stopPreview();
         float l=0,r=0;
-        for(auto& v:voices) if(v.amp.stage!=Envelope::Off) {
+        for(int voice=0;voice<soundingCount;++voice)if(auto& v=*sounding[std::size_t(voice)];v.amp.stage!=Envelope::Off) {
             float x=voiceSample(v);
             if(v.panMod==0) {l+=x*v.panLeft;r+=x*v.panRight;}
             else {

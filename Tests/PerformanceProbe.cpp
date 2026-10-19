@@ -33,6 +33,8 @@ int main(int argc,char** argv) {
                 s.set(gba::Param::Brightness,float(block%19)/18);s.set(gba::Param::FormantShift,float(block%25)-12);
                 s.set(gba::Param::Vowel,float(block%17)/4);s.set(gba::Param::Cutoff,400+float(block%31)*500);
                 s.set(gba::Param::Lfo1Depth,.6f);s.set(gba::Param::Lfo1Dest,float(block%6));
+                s.set(gba::Param::FilterType,float((filter+block/16)%5));
+                s.set(gba::Param::Chorus,block<96?.45f:0);s.set(gba::Param::Flanger,block<96?.4f:0);s.set(gba::Param::Wow,block<96?.3f:0);
                 s.set(gba::Param::EqLow,float(block%25)-12);s.set(gba::Param::EqHigh,12-float(block%25));
                 s.set(gba::Param::Glide,float(block%9)*.1f);s.set(gba::Param::Detune,float(block%71)-35);
                 s.set(gba::Param::Attack,.001f+float(block%17)*.01f);s.set(gba::Param::Decay,.01f+float(block%13)*.02f);
@@ -41,6 +43,9 @@ int main(int argc,char** argv) {
                 if(block%16==0)s.set(gba::Param::Engine,float((engine+block/16)%8));
             }
             if(block==128){s.set(gba::Param::Lfo1Depth,0);s.set(gba::Param::Engine,float(engine));e->controller(1,64,127);}
+            if(block==20)e->noteOn(2,70,.65f);
+            if(block==32)e->controller(2,1,96);
+            if(block==100)e->noteOff(2,70);
             if(block==136)e->pitchWheel(2,11000);
             if(block==144)for(int n=0;n<8;++n)e->noteOff(n%2+1,48+n*3);
             if(block==160)e->noteOn(1,72,.7f);

@@ -84,7 +84,7 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           name: G-Boy-Advance-2-Installer-x64
-          run-id: 39188459523
+          run-id: 39191191366
           github-token: ${{ github.token }}
           path: build/previous-installer
       - name: Exercise install, upgrade, reinstall, standalone launch and uninstall
@@ -123,6 +123,7 @@ jobs:
             build/vocal-auditions/**
             build/factory-audit.csv
             build/factory-similarity.csv
+            build/hiphop-auditions/**
       - uses: actions/upload-artifact@v4
         if: always()
         with:

@@ -65,8 +65,17 @@ private:
     EngineFade engineFade;
     float glideStep=1,oscillator2Ratio=1;
     float cachedGlide=-1,cachedOscillatorInterval=1000,cachedBrightness=-1;
+    // Exact last-input caches share coefficient math across chord voices.
+    // Delay/filter histories remain private to each voice.
+    float cachedFilterBase=-1,cachedFilterOctaves=0,cachedCutoff=0,cachedFilterHz=-1,cachedFilterResonance=-1;
+    float cachedFormantVowel=-100,cachedFormantShift=0;
+    float cachedVocalVowel=-100,cachedVocalShift=0,cachedVocalBrightness=0;
+    SVF filterTuning;
+    std::array<SVF,3> formantTuning;
+    VocalEngine vocalTuning;
     Envelope::Rates ampRates,filterRates;
     double lfo1Increment=0,lfo2Increment=0,vibratoIncrement=0,tremoloIncrement=0,syllableIncrement=0;
+    LfoValueCache lfo1Value,lfo2Value,vibratoValue,tremoloValue,syllableValue;
     std::array<Voice,maxVoices> voices{};
     std::array<float,16> bend{},wheel{};
     std::array<bool,16> sustain{};

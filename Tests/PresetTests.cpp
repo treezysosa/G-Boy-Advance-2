@@ -19,7 +19,7 @@ void check(bool ok,const std::string& message){++checks;if(!ok)throw std::runtim
 struct Audio {std::vector<float> l,r;explicit Audio(int n):l(std::size_t(n)),r(std::size_t(n)) {}};
 struct Metrics {double rms=0,peak=0,dc=0;bool finite=true;std::size_t at=0;};
 struct Signature {std::string id,name,category;int note;std::array<double,32> spectrum{};std::array<double,8> envelope{};};
-int middle(const gba::FactoryPatch& patch){return std::string_view(patch.category)=="Bass"?48:60;}
+int middle(const gba::FactoryPatch& patch){return std::string_view(patch.category)=="Bass"||std::string_view(patch.tags).find(" bass ")!=std::string_view::npos?48:60;}
 std::unique_ptr<gba::SynthEngine> engine(const gba::SynthEngine& prototype,const gba::Settings& settings){
     // Analysis runs off the audio thread. Copying a prepared, unused prototype
     // gives every patch the same noise seed without regenerating mathematical tables.
@@ -77,7 +77,7 @@ int main(int argc,char** argv){try{
         }
         if(++rendered%64==0)std::cout<<"Audited "<<rendered<<" factory patches\n"<<std::flush;
     }
-    check(gba::factoryPatches.size()>=300&&categories.size()==17,"Factory coverage is incomplete");
+    check(gba::factoryPatches.size()==530&&categories.size()==20,"Factory coverage is incomplete");
     if(!levelsOnly){std::ofstream pairs("factory-similarity.csv");pairs<<"id,nearestId,dryAudioDistance\n";int close=0;
         for(std::size_t i=0;i<signatures.size();++i){double best=100;std::size_t nearest=i;for(std::size_t j=0;j<signatures.size();++j)if(i!=j&&signatures[i].note==signatures[j].note){const double d=distance(signatures[i],signatures[j]);if(d<best){best=d;nearest=j;}}pairs<<signatures[i].id<<","<<signatures[nearest].id<<","<<best<<"\n";if(best<.025)++close;}
         std::vector<int> parent(signatures.size());std::iota(parent.begin(),parent.end(),0);
@@ -85,6 +85,15 @@ int main(int argc,char** argv){try{
         for(std::size_t i=0;i<signatures.size();++i)for(std::size_t j=0;j<i;++j)if(signatures[i].note==signatures[j].note&&distance(signatures[i],signatures[j])<.025)parent[std::size_t(root(int(i)))]=root(int(j));
         std::set<int> groups;for(std::size_t i=0;i<parent.size();++i)groups.insert(root(int(i)));
         check(groups.size()>=300,"Fewer than 300 distinguishable dry spectral/envelope groups on the audit grid");
+        std::set<int> regionalGroups;
+        for(std::size_t i=410;i<signatures.size();++i) {
+            regionalGroups.insert(root(int(i)));
+            double nearest=100;
+            for(std::size_t j=0;j<i;++j)if(signatures[i].note==signatures[j].note)nearest=std::min(nearest,distance(signatures[i],signatures[j]));
+            check(nearest>.025,"Regional dry synthesis is too close to an existing patch: "+signatures[i].name);
+        }
+        check(regionalGroups.size()==120,"Regional bank has fewer than 120 dry spectral/envelope groups");
+        std::cout<<"Regional dry spectral/envelope groups: "<<regionalGroups.size()<<" of 120 presets\n";
         for(std::size_t i=0;i+1<signatures.size();i+=2)check(distance(signatures[i],signatures[i+1])>.025,"Afterglow differs only weakly in dry excitation/envelope: "+signatures[i].name);
         std::cout<<"Dry spectral/envelope groups at 0.025 threshold: "<<groups.size()<<"\n";
         std::cout<<"Dry-spectrum/envelope near-neighbor flags (<0.025): "<<close<<" (listening review, not a perceptual certificate)\n";
@@ -102,6 +111,8 @@ int main(int argc,char** argv){try{
         }
         std::filesystem::create_directories("retro-auditions");std::ofstream retroIndex("retro-auditions/README.txt");retroIndex<<"Original mathematical synthesis, not commercial game audio. No instrument reads these test WAVs. Human listening acceptance pending; six-second excerpts may truncate tails.\n";number=0;
         for(const auto& p:gba::factoryPatches)if(std::string_view(p.category)=="Retro Games"&&std::string_view(p.name).find(" - Afterglow")==std::string_view::npos)excerpt(p,"retro-auditions",++number,retroIndex);
+        std::filesystem::create_directories("hiphop-auditions");std::ofstream hiphopIndex("hiphop-auditions/README.txt");hiphopIndex<<"Original Detroit, West Coast and Florida synthesis examples. Not samples for the instrument. Human listening acceptance pending.\n";number=0;
+        for(const auto& p:gba::factoryPatches)if(std::string_view(p.category).starts_with("Hip-Hop - ")&&std::string_view(p.name).find(" - Afterglow")==std::string_view::npos)excerpt(p,"hiphop-auditions",++number,hiphopIndex);
 
     }
     std::cout<<"Central-note max-100ms stereo RMS range: "<<quietest<<" to "<<loudest<<" ("<<20*std::log10(loudest/quietest)<<" dB); peak "<<largestPeak<<"\n";

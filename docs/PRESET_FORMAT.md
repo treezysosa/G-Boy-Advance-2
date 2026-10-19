@@ -73,3 +73,10 @@ The exported sound includes current parameter edits. External files remain indep
 ## ROM Hacks project reference (0.13.0)
 
 The project root schema remains 1. Optional `romHacks` is a JSON string with `{ "format":"gba2.soundfont", "version":1, "path":"<absolute cached SF2 path>", "preset":0, "name":"bank.sf2" }`. The instrument index refers to TinySoundFont's bank/program-sorted list. This does not alter the 64 parameter IDs or embed bank audio. Synthesis `.gba2preset` schema remains 1 and does not contain a SoundFont; SoundFont selections are saved with the DAW project instead. Imported copies use UUID `.sf2` names in the application-data SoundFonts folder, retained across installer upgrades/uninstall.
+
+
+## Regional recipes and preserving released gains
+
+Presets/hiphop-designs.json supplies 60 authored base designs, their alternate overrides, regional categories, family tags and design notes. The generator appends their 120 identities to the existing registry. All 410 previous factory dictionaries remain unchanged. The current factory contains 530 presets in 20 categories.
+
+For an appended bank, scripts/calibrate_presets.py measurements.csv --preserve-existing path/to/previous/factory-levels.json preserves the previous IDs' exact master gains while calibrating added patches. presetTargets stores per-patch targets for mixed regional families. Regenerate uncalibrated data, render measurements using the native audit, calibrate, regenerate the final JSON/header, then run the full audit. Audio is test output only and is never embedded in preset files.

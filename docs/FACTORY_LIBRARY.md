@@ -1,10 +1,10 @@
 # Factory library audit
 
-410 parameter-only presets across 17 categories. The 102 named instrument designs, 75 named vocal designs and 28 named retro designs each have an active Afterglow voicing. All legacy IDs and host program indices are frozen by `Presets/factory-index.json`.
+530 parameter-only presets across 20 categories. The 102 named instrument designs, 75 named vocal designs, 28 named retro designs and 60 regional hip-hop designs each have an active Afterglow voicing. All legacy IDs and host program indices are frozen by `Presets/factory-index.json`.
 
 This report describes native numerical renders at 48 kHz. It does not certify perceptual uniqueness, natural acoustic realism or commercial sound quality. Human listening acceptance remains pending.
 
-Central-note maximum rolling 100 ms stereo RMS: 0.009749–0.036000 (11.35 dB spread). 366/410 patches are within 0.5 dB of their category target. 48 master gains reached 0.95; quieter articulations remain rather than changing the engine gain or adding hidden normalization.
+Central-note maximum rolling 100 ms stereo RMS: 0.009749–0.036000 (11.35 dB spread). 474/530 patches are within 0.5 dB of their category target. 60 master gains reached 0.95; quieter articulations remain rather than changing the engine gain or adding hidden normalization.
 
 | Category | Presets | Engines | Central RMS min–max |
 |---|---:|---|---:|
@@ -25,6 +25,9 @@ Central-note maximum rolling 100 ms stereo RMS: 0.009749–0.036000 (11.35 dB sp
 | Vocals - Cartoon and Gaming | 28 | formant | 0.02000–0.02000 |
 | Vocals - Choirs and Textures | 36 | formant | 0.01425–0.02000 |
 | Retro Games | 56 | additive, chiptune, fm, formant, modal, physical modeling, wavetable | 0.00975–0.02500 |
+| Hip-Hop - Detroit | 40 | additive, fm, formant, modal, physical modeling, subtractive, wavetable | 0.01372–0.03600 |
+| Hip-Hop - West Coast | 40 | additive, fm, formant, modal, physical modeling, subtractive, wavetable | 0.01767–0.03600 |
+| Hip-Hop - Florida | 40 | fm, formant, modal, physical modeling, subtractive, wavetable | 0.01152–0.03600 |
 
 ## Listening renders
 

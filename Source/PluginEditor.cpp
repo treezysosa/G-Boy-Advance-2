@@ -191,7 +191,8 @@ private:
                                  :(juce::FileBrowserComponent::openMode|juce::FileBrowserComponent::canSelectFiles);
         juce::Component::SafePointer<BrowserPanel> safe(this);
         chooser->launchAsync(flags,[safe,exporting](const juce::FileChooser& dialog){
-            if(safe==nullptr)return;auto file=dialog.getResult();if(file==juce::File())return;
+            if(safe==nullptr)return;
+            auto file=dialog.getResult();if(file==juce::File())return;
             if(exporting){safe->result(safe->processor.presets.exportCurrent(file,safe->name.getText(),safe->tags.getText()),"Sound exported.");}
             else safe->result(safe->processor.presets.importPreset(file),"Synthesis preset imported.",true);
         });
@@ -250,9 +251,9 @@ ConsoleLook::ConsoleLook() {setSkin(0);}
 juce::Colour ConsoleLook::colour(juce::Colour source) const {
     if(currentSkin==0)return source;
     // Recolour the existing vector palette, keeping its original shading and contrast.
-    const float hue=currentSkin==4?.065f:(currentSkin==1?.535f:.565f);
-    return juce::Colour::fromHSV(hue,source.getSaturation()*(currentSkin==4?1.0f:.72f),
-                                  source.getBrightness(),source.getFloatAlpha());
+    const auto& skin=gba_ui::skins[std::size_t(currentSkin)];
+    return juce::Colour::fromHSV(skin.hue,source.getSaturation()*skin.saturation,
+                                  source.getBrightness()*skin.brightness,source.getFloatAlpha());
 }
 juce::Colour ConsoleLook::shell(juce::Colour source,bool body) const {
     if(currentSkin==0)return source;

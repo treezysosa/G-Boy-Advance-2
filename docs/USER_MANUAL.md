@@ -1,4 +1,4 @@
-> Current version: **0.13.1, synthesis plus optional ROM Hacks SF2 instruments**. [SoundFont behavior, project paths and limitations](RELEASE_0_13.md). Earlier release records below remain historical.
+> Current version: **0.14.0, 530 factory presets and ten skins, plus optional ROM Hacks SF2 instruments**. [Current additions and CPU behavior](RELEASE_0_14.md) · [SoundFont paths and limitations](RELEASE_0_13.md). Earlier release records below remain historical.
 
 
 Older 0.12.0 projects restore their synthesis parameters and skin, show `SYNTH ONLY:` in the display and a removal notice in START, and discard embedded audio from newly saved state. Sample sounds no longer play. Original project, audio and preset files are left unchanged; preserve the original project if its sample content is still needed. Sample-containing presets are rejected/skipped. Schema 1 synthesis `.gba2preset` import/export continues to work.
@@ -57,7 +57,7 @@ This development version passes Windows compilation, automated tests and pluginv
 
 ## Factory bank revision 0.6
 
-The bank retains all 382 legacy factory names/IDs and program positions, with 28 new retro entries appended (410 total). Named instruments have explicit synthesis profiles and Afterglow variants change active excitation/envelope controls. Factory levels are calibrated using a 100 ms stereo RMS metric; quieter articulations remain quieter when the master knob reaches its gain ceiling. This is not perceptual loudness normalization.
+The bank retains all 410 previous factory names/IDs and program positions, with 120 regional hip-hop entries appended (530 total across 20 categories). Named instruments have explicit synthesis profiles and Afterglow variants change active excitation/envelope controls. Factory levels are calibrated using a 100 ms stereo RMS metric; quieter articulations remain quieter when the master knob reaches its gain ceiling. This is not perceptual loudness normalization.
 
 Saved projects restore their actual parameter values, even when their factory ID also exists in the revised bank. Loading the factory preset again selects its new voicing. User presets remain independent. Optional category audition WAVs are original test renders for listening review; they are never loaded by the instrument.
 
@@ -96,7 +96,7 @@ Third-party notice files are included with portable and installed builds. The ow
 
 ## Skins and custom instruments (0.11.0)
 
-Press SELECT and choose SKIN in the header: Purple, Glacier Blue, Black, White or Spice Orange. Each plugin instance keeps its own colour. Save the DAW project to retain it. Standalone state also retains the choice on normal shutdown. Preset changes keep the chosen skin. Old projects open in Purple. The sound and automation parameters are independent of appearance.
+Press SELECT and choose SKIN in the header: Purple, Glacier Blue, Black, White, Spice Orange, Crimson Red, Emerald Green, Midnight Blue, Gold or Rose Pink. Each plugin instance keeps its own colour. Save the DAW project to retain it. Standalone state also retains the choice on normal shutdown. Preset changes keep the chosen skin. Old projects open in Purple. The sound and automation parameters are independent of appearance.
 
 To design a custom instrument, select an engine and adjust oscillators, filters, envelopes, modulation and effects in SELECT. Use START → SAVE AS to add it to the User library. Save As stores synthesis patches. For SoundFont instruments, use the ROM Hacks cartridge → LOAD SF2, choose the bank instrument, and save the DAW project. General WAV/AIFF import and sample mapping are unavailable.
 
@@ -114,3 +114,12 @@ Press the cartridge beside the master volume knob, above macros A and B, or F3, 
 Imported banks are copied to `%APPDATA%\Treezy Audio\G Boy Advance 2\SoundFonts`; back up that folder with songs. DAW state stores the cached bank path/instrument and shared settings, without embedding audio. Missing banks show an error and stay silent until you load a replacement. Save As/Export in the ordinary browser are reserved for synthesis presets.
 
 Shared master volume, filter, minimum attack, glide, vibrato, bend/sustain and effects apply. SF2 envelopes/loops/zones come from the bank; synth oscillator controls belong to synth patches. SF2 only, 128 MiB/file; no SF3, ROM files, general audio import or Maize/CHL decoding. Advanced SF2 modulation tables are unsupported. See RELEASE_0_13.md for full limitations.
+
+
+## Regional hip-hop bank (0.14.0)
+
+Press START and select Hip-Hop - Detroit, Hip-Hop - West Coast or Hip-Hop - Florida. Each contains 40 built-in synthesis presets. Search combines region and instrument tags: try Detroit piano, West Coast bass, Florida bell or vox. A previews the selected sound; the piano and MIDI play it normally. Each base design has an Afterglow alternate that changes its active synthesis/envelope configuration. No SoundFont import or external sound bank is required.
+
+Detroit emphasizes offbeat keys, icy bells, short plucks, dark layers and vowel stabs. West Coast adds warm electric-style keys, elastic bass and whistle-like leads. Florida adds club plucks, dark chimes, sustained oscillator bass and airy formants. These are original broad production-inspired patches; vox are synthesized melodic vowels, without recorded artists or phrases.
+
+New polyphonic patches default to eight voices with restrained effects; mono bass and leads use one. Existing patches keep their saved settings and all 32 voices remain available in SELECT. The CPU update caches exact repeated calculations and preserves each voice's full-rate clocks, filter histories and existing 16-sample latency. Actual host/driver/bank CPU use depends on the played patch, polyphony, effects and buffer size.

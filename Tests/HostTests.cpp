@@ -127,8 +127,9 @@ int main(int argc,char** argv) {
         };
         auto p=load();check(p->getTotalNumInputChannels()==0&&p->getTotalNumOutputChannels()==2,"Unexpected VST3 buses");
         check(p->acceptsMidi()&&!p->producesMidi(),"Unexpected VST3 MIDI contract");
-        check(p->getNumPrograms()==410,"Factory host program contract changed");
+        check(p->getNumPrograms()==530,"Expanded factory host program count is wrong");
         check(p->getProgramName(409)=="Handheld Pulse Motion - Afterglow","Final factory program moved");
+        check(p->getProgramName(529)=="Florida High Night Whistle - Afterglow","Regional host programs are missing");
         // Confirm all 64 public controls are present, not just a generic host bypass.
         for(std::size_t i=0;i<gba::parameterCount;++i)check(parameter(*p,gba::Param(i))!=nullptr,"Hosted parameter missing");
         std::cout<<"Loaded actual VST3 version "<<types[0]->version<<"\n";

@@ -135,7 +135,7 @@ def make_patch(category, name, variation, specs):
     if 'reed' in low: setp(Engine=7, Brightness=.7, Drive=.24)
     if 'music box' in low or 'toy piano' in low: setp(Engine=7, Brightness=.9, Decay=1.1)
     # Named acoustic/keyboard/ensemble profiles take precedence over broad style words.
-    profile = (retro_designs() if category=='Retro Games' else vocal_designs() if category.startswith('Vocals') else instrument_designs()).get(name)
+    profile = (hiphop_designs() if category.startswith('Hip-Hop - ') else retro_designs() if category=='Retro Games' else vocal_designs() if category.startswith('Vocals') else instrument_designs()).get(name)
     if profile:
         assert profile['category'] == category
         setp(**profile['parameters'])
@@ -172,6 +172,7 @@ def make_patch(category, name, variation, specs):
     tags += [ENGINE_NAMES[int(p['engine'])]]
     if profile and category=='Retro Games':tags+=['designed retro',profile['technicalStyle']]
     if profile: tags+=['designed vocal' if category.startswith('Vocals') else 'designed instrument', 'percussive' if p['amp.sustain']<.15 else 'sustained']
+    if profile and category.startswith('Hip-Hop - '):tags+=profile['tags']
     if category.startswith('Vocals'): tags+=['formant','synthetic vowels']
     return dict(id='factory.'+hashlib.sha256(full_name.encode()).hexdigest()[:16], name=full_name,
                 category=category,tags=tags,parameters=p)
@@ -239,9 +240,30 @@ def retro_designs():
                     assert type(value) in (int,float) and lo<=value<=hi,(name,symbol,value)
     return _RETRO
 
+_HIPHOP=None
+def hiphop_designs():
+    global _HIPHOP
+    if _HIPHOP is None:
+        data=json.loads((ROOT/'Presets/hiphop-designs.json').read_text())
+        assert data['format']=='gba2.hiphop-designs' and data['schemaVersion']==1
+        _HIPHOP=data['designs'];specs={row[0]:row for row in schema()}
+        assert len(_HIPHOP)==60
+        counts={category:0 for category in ('Hip-Hop - Detroit','Hip-Hop - West Coast','Hip-Hop - Florida')}
+        for name,profile in _HIPHOP.items():
+            assert profile['category'] in counts and profile['designNotes'] and profile['tags']
+            assert profile['family'] in ('piano','bell','pluck','pad','vox','bass','lead')
+            counts[profile['category']]+=1
+            for parameters in (profile['parameters'],profile['afterglow']):
+                for symbol,value in parameters.items():
+                    assert symbol in specs
+                    _,_,lo,hi,_,_=specs[symbol]
+                    assert type(value) in (int,float) and lo<=value<=hi,(name,symbol,value)
+        assert set(counts.values())=={20}
+    return _HIPHOP
+
 def recipe_digest():
     digest=hashlib.sha256()
-    for name in ['scripts/generate_presets.py','Presets/instrument-designs.json','Presets/vocal-designs.json','Presets/retro-designs.json','Source/dsp/RetroEngine.h','Source/dsp/ParameterList.inc','Source/dsp/VocalEngine.h','Source/dsp/SynthEngine.cpp','Source/dsp/Effects.cpp','Source/dsp/DspMath.h']:
+    for name in ['scripts/generate_presets.py','Presets/instrument-designs.json','Presets/vocal-designs.json','Presets/retro-designs.json','Presets/hiphop-designs.json','Source/dsp/RetroEngine.h','Source/dsp/ParameterList.inc','Source/dsp/VocalEngine.h','Source/dsp/SynthEngine.cpp','Source/dsp/Effects.cpp','Source/dsp/DspMath.h']:
         digest.update(name.encode()+b'\0'+(ROOT/name).read_bytes().replace(b'\r\n',b'\n'))
     return digest.hexdigest()
 
@@ -249,6 +271,8 @@ def generate(uncalibrated=False):
     specs=schema()
     patches=[make_patch(category,name,variation,specs) for category,names in GROUPS.items()
              for name in names.split('|') for variation in range(2)]
+    patches += [make_patch(profile['category'],name,variation,specs)
+                for name,profile in hiphop_designs().items() for variation in range(2)]
     index=json.loads((ROOT/'Presets/factory-index.json').read_text())
     assert index['format']=='gba2.factory-index' and index['schemaVersion']==1
     by_id={p['id']:p for p in patches}
@@ -280,7 +304,7 @@ def generate(uncalibrated=False):
         lines.append('    {'+strings+', {{'+values+'}}},')
     lines+=['}};','}']
     (ROOT/'Source/FactoryData.h').write_text('\n'.join(lines)+'\n')
-    print(f'Generated {len(patches)} patches, {len(GROUPS)} categories, {len(specs)} stable parameters.')
+    print(f'Generated {len(patches)} patches, {len({p["category"] for p in patches})} categories, {len(specs)} stable parameters.')
 
 if __name__=='__main__':
     parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--uncalibrated',action='store_true');args=parser.parse_args();generate(args.uncalibrated)

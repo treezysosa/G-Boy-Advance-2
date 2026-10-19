@@ -1,12 +1,10 @@
-# G BOY ADVANCE 2 — 0.13.1
+# G BOY ADVANCE 2 — 0.14.0
 
-The **ROM HACKS** cartridge now sits in the center control area, immediately left of the master volume knob and above macros A and B. Press it (or F3), choose LOAD SF2, select a SoundFont instrument and play MIDI or the on-screen keyboard.
+**120 new built-in hip-hop presets** cover Detroit, West Coast and Florida: 40 in each region, bringing the factory bank to **530 presets**. Use START and choose a Hip-Hop category, or search by region and instrument. Keys, bells, plucks, pads and original synthetic vox are joined by bass and whistle-like leads. The previous 410 preset IDs, host-program positions, tags and parameter arrays are retained.
 
-Native Windows x64 VST3 and standalone hybrid synthesizer with optional SoundFont 2 playback, 410 synthesized factory sounds, five skins and custom synthesis presets. SoundFonts are cached in the application-data SoundFonts folder; DAW projects save the bank reference and instrument. Back up that folder with songs. Missing banks are reported visibly. No SoundFont or game-ROM audio is bundled. TinySoundFont is pinned under MIT terms.
+**Five new skins** — Crimson Red, Emerald Green, Midnight Blue, Gold and Rose Pink — join Purple, Glacier Blue, Black, White and Spice Orange. Choose a skin in SELECT; each instance saves its choice with the DAW project. ROM Hacks remains beside master volume and continues to play optional SF2 banks.
 
-[Windows/Ubuntu run 39191191366](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39191191366) passed eight Ubuntu DSP suites and eleven Windows CTest suites, including 453 application checks, actual-bundle host/editor checks, pluginval strictness 10, Steinberg validation and six installer lifecycle checks. The installer upgrade test uses 0.13.0 as its baseline. The FL-named test host is not FL Studio.
-
-[Download the 0.13.1 Windows installer ZIP](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39191191366/artifacts/12160153564). Close FL Studio and the standalone app, extract the ZIP into a new folder, run `G-Boy-Advance-2-Setup-x64.exe`, then reopen FL64. [Portable/manual installation](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39191191366/artifacts/12160084002) · [Source](https://github.com/treezysosa/G-Boy-Advance-2/tree/feature/rom-hacks-sf2-0130) · [Current behavior, evidence and limits](docs/RELEASE_0_13.md).
+The audio engine now reuses exact modulation/coefficient calculations across matching chord voices, avoids scanning inactive voices per sample and skips inaudible effect read heads while maintaining their warm histories. Modulation rates, quality, polyphony limits, latency and existing patch settings are retained. Native audio/CPU tests and Windows release validation are in progress; [the current release record](docs/RELEASE_0_14.md) distinguishes measured evidence from remaining manual checks. Earlier installer links refer to earlier versions.
 
 The licensing decision remains explicitly deferred by the owner; this is unsigned build preparation. Current-version real FL Studio/audio-device/DPI/listening and interactive-install acceptance remain pending.
 
@@ -19,7 +17,7 @@ Actual Phase 2 Windows JUCE component render at 1280×646 from [passing CI run 3
 Install Visual Studio 2022 with **Desktop development with C++**, a Windows SDK, CMake 3.24+, and Git. In PowerShell:
 
 ```powershell
-git clone --branch feature/rom-hacks-sf2-0130 https://github.com/treezysosa/G-Boy-Advance-2.git
+git clone --branch feature/regional-bank-skins-cpu-0140 https://github.com/treezysosa/G-Boy-Advance-2.git
 cd G-Boy-Advance-2
 powershell -ExecutionPolicy Bypass -File scripts/build-windows.ps1
 ```
@@ -64,9 +62,9 @@ Close your DAW, copy the entire `.vst3` directory into `C:\Program Files\Common 
 - Sine, harmonic-limited triangle, PolyBLEP saw / square / pulse, and noise; resonant low-pass, high-pass, band-pass, notch, and formant filters.
 - Two ADSRs, two routable LFOs, vibrato, tremolo, velocity, 16-channel MIDI pitch bend / modulation / sustain, 1–32 voices, stealing, mono / legato, glide.
 - Reverb, delay, chorus, phaser, flanger, saturation, distortion, bitcrusher, tape wow / flutter, low / high shelves, and stereo width.
-- 410 original factory patches across 17 categories, explicit named-instrument, vocal and retro profiles, calibrated levels and stable program identities. Vocal patches are synthesized vowel-like timbres and contain no recorded voices or speech.
+- 530 original factory patches across 20 categories, explicit named-instrument, vocal and retro profiles, calibrated levels and stable program identities. Vocal patches are synthesized vowel-like timbres and contain no recorded voices or speech.
 - Reference-based vector UI, playable keyboard, spring-return pitch wheel, functional D-pad, preview A / stop B, START browser, SELECT advanced editor, assignable A–D controls.
-- Five per-instance colour skins; host-visible parameters, project state, user preset Save As / import / export / rename / delete, favorites / recent patches, category search, tags, keyboard navigation.
+- Ten per-instance colour skins; host-visible parameters, project state, user preset Save As / import / export / rename / delete, favorites / recent patches, category search, tags, keyboard navigation.
 - Windows CI, portable packaging and Inno Setup installer script, DSP and JUCE integration tests.
 
 ## Factory and user presets

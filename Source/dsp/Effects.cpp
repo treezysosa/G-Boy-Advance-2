@@ -90,17 +90,19 @@ void Effects::process(float& left,float& right,const Settings& s) noexcept {
     const float delayBlend=delayFade>0?1-float(delayFade)/float(delayFadeLength):1;
     chorusPhase.advance(.27,sr);flangePhase.advance(.27*.71,sr);phaserPhase.advance(.27*.61,sr);
     wowPhase.advance(.27*1.37,sr);flutterPhase.advance(.27*29,sr);
-    const float wobble=s[Param::Wow]*(.0015f*wowPhase.value()+.00025f*flutterPhase.value());
+    const float wobble=s[Param::Wow]>0?s[Param::Wow]*(.0015f*wowPhase.value()+.00025f*flutterPhase.value()):0;
     float* channels[]{&left,&right};
     for(int c=0;c<2;++c) {
         float x=nonlinear(*channels[c],c);
         if(crusherCounter==0)held[c]=std::round(x*quantSteps)/quantSteps;
         if(s[Param::CrusherBits]<16||s[Param::CrusherRate]>1)x=held[c];
-        const float wow=tape[c].read(sr*(.004f+wobble));tape[c].push(x);
+        const float wow=s[Param::Wow]>0?tape[c].read(sr*(.004f+wobble)):x;tape[c].push(x);
         x=std::lerp(x,wow,s[Param::Wow]);
-        const float chorusDelay=sr*(.018f+.006f*sine(float(chorusPhase.phase)+.25f*float(c)));
-        const float flangeDelay=sr*(.0025f+.002f*sine(float(flangePhase.phase)+.4f*float(c)));
-        const float chorus=mod[c].read(chorusDelay),flange=mod[c].read(flangeDelay);mod[c].push(x);
+        // Read heads do not change the delay buffers. Skip inaudible reads and
+        // their trigonometry, while advancing every clock and writing warm history.
+        const float chorus=s[Param::Chorus]>0?mod[c].read(sr*(.018f+.006f*sine(float(chorusPhase.phase)+.25f*float(c)))):x;
+        const float flange=s[Param::Flanger]>0?mod[c].read(sr*(.0025f+.002f*sine(float(flangePhase.phase)+.4f*float(c)))):0;
+        mod[c].push(x);
         x+=s[Param::Chorus]*.45f*(chorus-x);x+=s[Param::Flanger]*.45f*flange;
         float ap=x;
         const float a=.12f+.72f*(.5f+.5f*sine(float(phaserPhase.phase)+.1f*float(c)));
