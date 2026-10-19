@@ -8,6 +8,7 @@ struct VocalEngine {
     std::array<SVF,5> bands{};
     std::array<float,3> tilt{};
     float lowerPhase=0,airLow=0,tiltCoefficient=.3f,airCoefficient=.02f;
+    float cachedChoir=-1,choirNorm=1;
     void reset() noexcept {for(auto& f:bands)f.clear();tilt={};lowerPhase=0;airLow=0;}
     void copyTuningFrom(const VocalEngine& other) noexcept {
         for(std::size_t i=0;i<bands.size();++i)bands[i].copyTuningFrom(other.bands[i]);
@@ -44,7 +45,8 @@ struct VocalEngine {
             tilt[i]+=tiltCoefficient*(source-tilt[i]);
             voiced+=tilt[i]*(i==0?1.0f:choir*.5f);
         }
-        voiced/=std::sqrt(1+choir*choir*.5f);
+        if(choir!=cachedChoir){choirNorm=std::sqrt(1+choir*choir*.5f);cachedChoir=choir;}
+        voiced/=choirNorm;
         const float air=noise.next();airLow+=airCoefficient*(air-airLow);
         const float input=std::lerp(voiced,(air-airLow)*.65f,breath);
         constexpr float gains[]{1,.82f,.56f,.32f,.2f};float out=0;

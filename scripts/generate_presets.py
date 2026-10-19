@@ -163,11 +163,13 @@ def make_patch(category, name, variation, specs):
         setp(Decay=p['amp.decay']*1.4,Attack=p['amp.attack']*1.25,Cutoff=p['filter.cutoff']*.72,
              FilterEnv=p['filter.env']*-.45,Delay=.2,Phaser=.16)
     if variation and profile:setp(**profile.get('afterglow',{}))
+    full_name=name+(' - Afterglow' if variation else '')
+    revision=diversity_refinements().get(full_name)
+    if revision:setp(**revision['parameters'])
     for _,key,lo,hi,_,step in specs:
         v=max(lo,min(hi,p[key]))
         if step:v=lo+round((v-lo)/step)*step
         p[key]=round(v,6)
-    full_name=name+(' - Afterglow' if variation else '')
     tags=[category.split(' - ')[-1].lower(),'synthesis', 'afterglow' if variation else 'original']
     tags += [ENGINE_NAMES[int(p['engine'])]]
     if profile and category=='Retro Games':tags+=['designed retro',profile['technicalStyle']]
@@ -261,9 +263,27 @@ def hiphop_designs():
         assert set(counts.values())=={20}
     return _HIPHOP
 
+_DIVERSITY=None
+def diversity_refinements():
+    global _DIVERSITY
+    if _DIVERSITY is None:
+        data=json.loads((ROOT/'Presets/diversity-refinements.json').read_text())
+        assert data['format']=='gba2.diversity-refinements' and data['schemaVersion']==1
+        _DIVERSITY=data['presets'];specs={row[0]:row for row in schema()}
+        known={name+suffix for names in GROUPS.values() for name in names.split('|') for suffix in ('',' - Afterglow')}
+        known|={name+suffix for name in hiphop_designs() for suffix in ('',' - Afterglow')}
+        assert set(_DIVERSITY)<=known
+        for name,revision in _DIVERSITY.items():
+            assert revision['designNotes'] and revision['parameters']
+            for symbol,value in revision['parameters'].items():
+                assert symbol in specs
+                _,_,lo,hi,_,_=specs[symbol]
+                assert type(value) in (int,float) and lo<=value<=hi,(name,symbol,value)
+    return _DIVERSITY
+
 def recipe_digest():
     digest=hashlib.sha256()
-    for name in ['scripts/generate_presets.py','Presets/instrument-designs.json','Presets/vocal-designs.json','Presets/retro-designs.json','Presets/hiphop-designs.json','Source/dsp/RetroEngine.h','Source/dsp/ParameterList.inc','Source/dsp/VocalEngine.h','Source/dsp/SynthEngine.cpp','Source/dsp/Effects.cpp','Source/dsp/DspMath.h']:
+    for name in ['scripts/generate_presets.py','Presets/instrument-designs.json','Presets/vocal-designs.json','Presets/retro-designs.json','Presets/hiphop-designs.json','Presets/diversity-refinements.json','Source/dsp/RetroEngine.h','Source/dsp/ParameterList.inc','Source/dsp/VocalEngine.h','Source/dsp/SynthEngine.cpp','Source/dsp/SynthEngine.h','Source/dsp/Effects.cpp','Source/dsp/Effects.h','Source/dsp/DspMath.h']:
         digest.update(name.encode()+b'\0'+(ROOT/name).read_bytes().replace(b'\r\n',b'\n'))
     return digest.hexdigest()
 

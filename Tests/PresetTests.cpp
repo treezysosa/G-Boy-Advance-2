@@ -84,7 +84,7 @@ int main(int argc,char** argv){try{
         const auto root=[&](int v){while(parent[std::size_t(v)]!=v)v=parent[std::size_t(v)];return v;};
         for(std::size_t i=0;i<signatures.size();++i)for(std::size_t j=0;j<i;++j)if(signatures[i].note==signatures[j].note&&distance(signatures[i],signatures[j])<.025)parent[std::size_t(root(int(i)))]=root(int(j));
         std::set<int> groups;for(std::size_t i=0;i<parent.size();++i)groups.insert(root(int(i)));
-        check(groups.size()>=300,"Fewer than 300 distinguishable dry spectral/envelope groups on the audit grid");
+        check(groups.size()==signatures.size(),"Factory dry spectral/envelope near-duplicates found; inspect factory-similarity.csv");
         std::set<int> regionalGroups;
         for(std::size_t i=410;i<signatures.size();++i) {
             regionalGroups.insert(root(int(i)));

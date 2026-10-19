@@ -1,6 +1,7 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
 #include <iostream>
+#include <set>
 #include <stdexcept>
 
 int runLibraryTests();
@@ -260,15 +261,18 @@ int main(int argc,char** argv) {
             auto* select=button(*editor,"SELECT");select->onClick();check(button(*editor,"BACK / SELECT")!=nullptr,"SELECT did not open advanced editor");
             auto* synthTabs=dynamic_cast<juce::TabbedComponent*>(named(*editor,"Advanced tabs"));
             check(synthTabs&&synthTabs->getNumTabs()==4&&!synthTabs->getTabNames().contains("SAMPLES"),"Sample playback controls remain in the editor");
-            auto* skin=dynamic_cast<juce::ComboBox*>(named(*editor,"UI skin"));check(skin&&skin->getNumItems()==10,"Ten-skin selector missing");
+            auto* skin=dynamic_cast<juce::ComboBox*>(named(*editor,"UI skin"));check(skin&&skin->getNumItems()==20,"Twenty-skin selector missing");
             auto* autoSkin=dynamic_cast<juce::ToggleButton*>(named(*editor,"New colour on load"));check(autoSkin!=nullptr,"Launch-colour preference is missing");
             autoSkin->setToggleState(false,juce::dontSendNotification);autoSkin->onClick();p.setEditorSkin(0);juce::MessageManager::getInstance()->runDispatchLoopUntil(60);
             const auto sound=p.snapshot();const auto presetId=p.presetId();
             StateListener listener;p.addListener(&listener);
             auto isolated=std::make_unique<GbaProcessor>(root.getChildFile("IsolatedSkin"));isolated->setNewSkinOnLaunch(false);isolated->setEditorSkin(0);std::unique_ptr<juce::AudioProcessorEditor> other(isolated->createEditor());
+            std::set<juce::uint32> shellColours;
             for(std::size_t i=0;i<gba_ui::skins.size();++i){
                 skin->setSelectedId(int(i)+1,juce::sendNotificationSync);
                 check(p.editorSkin==int(i)&&dynamic_cast<ConsoleLook&>(editor->getLookAndFeel()).skin()==int(i),"Skin selection did not update the editor");
+                const auto& look=dynamic_cast<ConsoleLook&>(editor->getLookAndFeel());
+                check(shellColours.insert(look.shell(juce::Colour(0xff8450ec)).getARGB()).second,"Two skins produce the same shell colour");
                 check(p.snapshot().values==sound.values&&p.presetId()==presetId,"Skin changed synthesis or active patch");
                 check(dynamic_cast<ConsoleLook&>(other->getLookAndFeel()).skin()==0,"Skin leaked into another plugin instance");
                 juce::MemoryBlock bytes;p.getStateInformation(bytes);isolated->setStateInformation(bytes.getData(),int(bytes.getSize()));
@@ -277,7 +281,7 @@ int main(int argc,char** argv) {
                 editor->keyPressed(juce::KeyPress(juce::KeyPress::F2Key));snapshot(*editor,"ui-snapshots/Skin-"+juce::String(gba_ui::skins[i].id.data())+".png");
                 editor->keyPressed(juce::KeyPress(juce::KeyPress::F2Key));skin=dynamic_cast<juce::ComboBox*>(named(*editor,"UI skin"));
             }
-            check(listener.appearanceChanges==9,"Skin changes did not notify the host about unsaved state");p.removeListener(&listener);
+            check(listener.appearanceChanges==int(gba_ui::skins.size())-1,"Skin changes did not notify the host about unsaved state");p.removeListener(&listener);
             other.reset();isolated.reset();
             skin->setSelectedId(1,juce::sendNotificationSync);
             snapshot(*editor,"ui-snapshots/Advanced-960.png");

@@ -19,6 +19,19 @@ float Effects::Fir::next(float x,const std::array<float,33>& coefficients) noexc
     if(++pos==33)pos=0;
     return y;
 }
+void Effects::Fir::push(float x) noexcept {
+    history[std::size_t(pos)]=history[std::size_t(pos+33)]=x;
+    if(++pos==33)pos=0;
+}
+float Effects::Fir::upEven(float x,const std::array<float,33>& coefficients) noexcept {
+    // The interpolator always receives (2*x, 0). At its even phase every
+    // noncentral contributing tap multiplies a stored zero. Keep the identical
+    // history/phase and center product, without evaluating those zero products.
+    history[std::size_t(pos)]=history[std::size_t(pos+33)]=x;
+    const float y=history[std::size_t(pos+17)]*coefficients[16];
+    if(++pos==33)pos=0;
+    return y;
+}
 void Effects::Shelf::coefficients(float hz,float db,float rate,bool high) noexcept {
     const float a=std::pow(10.0f,db/40),w=tau*std::min(hz,rate*.4f)/rate,c=std::cos(w);
     const float beta=std::sqrt(2*a)*std::sin(w),plus=a+1,minus=a-1;
@@ -76,8 +89,10 @@ float Effects::nonlinear(float x,int c) noexcept {
         const float driven=v*driveGain;
         return std::lerp(std::tanh(driven),std::clamp(driven,-1.0f,1.0f),hardness)/driveNorm;
     };
-    const float a=down[c].next(shape(up[c].next(2*x,halfband)),halfband);
-    down[c].next(shape(up[c].next(0,halfband)),halfband);
+    const float a=down[c].next(shape(up[c].upEven(2*x,halfband)),halfband);
+    // The odd decimator output is discarded. Only its input history is needed
+    // for the next even output; nonlinear shaping and both FIR histories stay warm.
+    down[c].push(shape(up[c].next(0,halfband)));
     return std::lerp(delayed,a,driveMix);
 }
 void Effects::process(float& left,float& right,const Settings& s) noexcept {

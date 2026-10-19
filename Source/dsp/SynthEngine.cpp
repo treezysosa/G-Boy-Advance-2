@@ -18,7 +18,7 @@ void SynthEngine::reset() noexcept {
     wave1Fade.reset(int(target[Param::Wave1]));wave2Fade.reset(int(target[Param::Wave2]));filterFade.reset(int(target[Param::FilterType]));
     engineFade.reset(int(target[Param::Engine]));
     lfo1Route.reset(int(target[Param::Lfo1Dest]));lfo2Route.reset(int(target[Param::Lfo2Dest]));
-    cachedGlide=-1;cachedOscillatorInterval=1000;cachedBrightness=-1;
+    cachedGlide=-1;cachedOscillatorInterval=1000;cachedBrightness=-1;cachedPitch=-1000;
     cachedFilterBase=cachedFilterHz=-1;cachedFormantVowel=cachedVocalVowel=-100;
 }
 void SynthEngine::setSettings(const Settings& s) noexcept {
@@ -52,14 +52,18 @@ void SynthEngine::buildTables() noexcept {
         }
     }
 }
-float SynthEngine::wavetable(float p,float frequency,float position) const noexcept {
+float SynthEngine::wavetable(float p,float frequency,float position,TableTuning& tuning) const noexcept {
     // Fade each level out one octave before its highest partial reaches 0.45 * sample rate.
     // Both contributing levels therefore stay below Nyquist, including between mip boundaries.
-    float mip=std::clamp(std::log2(std::max(1.0f,frequency*256/(sampleRate*.45f))),0.0f,7.0f);
-    int m=int(mip),m2=std::min(m+1,7),a=std::clamp(int(position),0,3),b=std::min(a+1,3);
+    if(tuning.frequency!=frequency||tuning.rate!=sampleRate) {
+        const float mip=std::clamp(std::log2(std::max(1.0f,frequency*256/(sampleRate*.45f))),0.0f,7.0f);
+        tuning.level=int(mip);tuning.next=std::min(tuning.level+1,7);tuning.blend=mip-float(tuning.level);
+        tuning.frequency=frequency;tuning.rate=sampleRate;
+    }
+    const int m=tuning.level,m2=tuning.next,a=std::clamp(int(position),0,3),b=std::min(a+1,3);
     float t=p*1024;int i=int(t)&1023,j=(i+1)&1023;float f=t-std::floor(t);
     const auto read=[&](int shape,int level) {const auto& table=tables[shape][level];return table[i]+f*(table[j]-table[i]);};
-    float x=std::lerp(read(a,m),read(a,m2),mip-float(m)),y=std::lerp(read(b,m),read(b,m2),mip-float(m));
+    float x=std::lerp(read(a,m),read(a,m2),tuning.blend),y=std::lerp(read(b,m),read(b,m2),tuning.blend);
     return std::lerp(x,y,position-float(a));
 }
 void SynthEngine::start(Voice& v,int channel,int note,float velocity,bool preview,bool legato) noexcept {
@@ -213,7 +217,7 @@ float SynthEngine::excitation(Voice& v,int engine,float frequency,float dt,float
             x=used>0?float(sum)*harmonicScale[std::size_t(used-1)]:0;
             break;
         }
-        case 3:x=std::lerp(wavetable(v.p1,frequency,s[Param::Wavetable]),wavetable(v.p2,dt2*sampleRate,s[Param::Wavetable]),s[Param::OscMix]);break;
+        case 3:x=std::lerp(wavetable(v.p1,frequency,s[Param::Wavetable],v.table1),wavetable(v.p2,dt2*sampleRate,s[Param::Wavetable],v.table2),s[Param::OscMix]);break;
         case 4:{
             if(!v.stringActive){exciteString(v);v.stringActive=true;}
             float read=float(v.stringPos)-v.stringDelay;
@@ -269,7 +273,10 @@ float SynthEngine::voiceSample(Voice& v) noexcept {
     if(vibrato>0)modPitch+=vibratoValue.read(v.vibrato)*vibrato*0.6f;
     v.frequency+=(v.targetFrequency-v.frequency)*glideStep;
     const float pitch=bend[v.channel-1]*s[Param::BendRange]+modPitch;
-    float frequency=std::clamp(pitch==0?v.frequency:v.frequency*std::exp2(pitch/12),8.0f,sampleRate*0.4f);
+    // Matching chord voices share bend/vibrato pitch offsets. Cache only the
+    // exact offset's exponential; each voice retains its own glide and frequency.
+    if(pitch!=0&&pitch!=cachedPitch){pitchRatio=std::exp2(pitch/12);cachedPitch=pitch;}
+    float frequency=std::clamp(pitch==0?v.frequency:v.frequency*pitchRatio,8.0f,sampleRate*0.4f);
     v.fmPhase=wrap(v.fmPhase+frequency*current[Param::FmRatio]/sampleRate);v.subPhase=wrap(v.subPhase+frequency*0.5f/sampleRate);
     float dt=frequency/sampleRate,dt2=std::min(0.45f,dt*oscillator2Ratio);
     v.p1=wrap(v.p1+dt);v.p2=wrap(v.p2+dt2);
@@ -293,13 +300,14 @@ float SynthEngine::voiceSample(Voice& v) noexcept {
         }
         updateFormants(v,s[Param::Vowel]+modVowel+s[Param::Syllable]*syllableMotion*0.8f);
         if(engineFade.weights[6]>0)v.retro.configure(s[Param::Brightness],sampleRate);
-        if(engineFade.weights[4]>0) {
+        if(engineFade.weights[4]>0&&(v.stringFrequency!=frequency||v.stringBrightness!=s[Param::Brightness]||v.stringRate!=sampleRate)) {
             // Compensate the feedback low-pass phase delay so brightness does not detune the string.
             const float omega=tau*frequency/sampleRate,alpha=.15f+.8f*s[Param::Brightness],r=1-alpha;
             const float c=std::cos(omega),sn=std::sin(omega),den=1-2*r*c+r*r;
             const float real=.5f*(1+alpha*(1-r*c)/den),imag=-.5f*alpha*r*sn/den;
             const float lag=std::atan2(-imag,real)/omega;
             v.stringDelay=std::clamp(sampleRate/frequency-lag,2.0f,float(stringSize-2));
+            v.stringFrequency=frequency;v.stringBrightness=s[Param::Brightness];v.stringRate=sampleRate;
         }
     }
     v.controlCounter=(v.controlCounter+1)&15;

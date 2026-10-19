@@ -25,6 +25,10 @@ public:
     const Settings& settings() const noexcept {return target;}
 private:
     static constexpr int maxVoices=32, stringSize=32768;
+    struct TableTuning {
+        float frequency=-1,rate=-1,blend=0;
+        int level=0,next=0;
+    };
     struct Voice {
         int note=-1,channel=1,controlCounter=0;
         bool held=false,preview=false;
@@ -33,6 +37,8 @@ private:
         float velocityRoot=1,panLeft=0,panRight=0;
         float filterCutoff=0,filterResonance=0,formantVowel=0,formantShift=0;
         float vocalVowel=0,vocalShift=0,vocalBrightness=0;
+        TableTuning table1,table2;
+        float stringFrequency=-1,stringBrightness=-1,stringRate=-1;
         bool filterReady=false,formantsReady=false,vocalReady=false;
         double modalElapsed=0;
         bool stringActive=false,modalActive=false;
@@ -64,6 +70,7 @@ private:
     ChoiceFade<5> filterFade;
     EngineFade engineFade;
     float glideStep=1,oscillator2Ratio=1;
+    float cachedPitch=-1000,pitchRatio=1;
     float cachedGlide=-1,cachedOscillatorInterval=1000,cachedBrightness=-1;
     // Exact last-input caches share coefficient math across chord voices.
     // Delay/filter histories remain private to each voice.
@@ -89,7 +96,7 @@ private:
     void release(Voice&) noexcept;
     float oscillator(int wave,float phase,float dt,float width,Random&) noexcept;
     float mixedOscillator(const ChoiceFade<6>&,float phase,float dt,float width,Random&) noexcept;
-    float wavetable(float phase,float frequency,float position) const noexcept;
+    float wavetable(float phase,float frequency,float position,TableTuning&) const noexcept;
     float voiceSample(Voice&) noexcept;
     float excitation(Voice&,int engine,float frequency,float dt,float dt2,float filterEnvelope) noexcept;
     void exciteString(Voice&) noexcept;

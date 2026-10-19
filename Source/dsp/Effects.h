@@ -25,6 +25,8 @@ private:
         std::array<float,66> history{};
         int pos=0;
         float next(float,const std::array<float,33>&) noexcept;
+        float upEven(float,const std::array<float,33>&) noexcept;
+        void push(float) noexcept;
     };
     struct Shelf {
         float b0=1,b1=0,b2=0,a1=0,a2=0,z1=0,z2=0;

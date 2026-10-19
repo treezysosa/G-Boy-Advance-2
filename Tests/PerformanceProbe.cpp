@@ -35,6 +35,7 @@ int main(int argc,char** argv) {
                 s.set(gba::Param::Lfo1Depth,.6f);s.set(gba::Param::Lfo1Dest,float(block%6));
                 s.set(gba::Param::FilterType,float((filter+block/16)%5));
                 s.set(gba::Param::Chorus,block<96?.45f:0);s.set(gba::Param::Flanger,block<96?.4f:0);s.set(gba::Param::Wow,block<96?.3f:0);
+                s.set(gba::Param::Drive,block<96?float(block%11)/10:0);s.set(gba::Param::Distortion,block<96?float(block%7)/6:0);
                 s.set(gba::Param::EqLow,float(block%25)-12);s.set(gba::Param::EqHigh,12-float(block%25));
                 s.set(gba::Param::Glide,float(block%9)*.1f);s.set(gba::Param::Detune,float(block%71)-35);
                 s.set(gba::Param::Attack,.001f+float(block%17)*.01f);s.set(gba::Param::Decay,.01f+float(block%13)*.02f);

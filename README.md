@@ -1,16 +1,16 @@
-# G BOY ADVANCE 2 — 0.14.1
+# G BOY ADVANCE 2 — 0.15.0
 
-**120 new built-in hip-hop presets** cover Detroit, West Coast and Florida: 40 in each region, bringing the factory bank to **530 presets**. Use START and choose a Hip-Hop category, or search by region and instrument. Keys, bells, plucks, pads and original synthetic vox are joined by bass and whistle-like leads. The previous 410 preset IDs, host-program positions, tags and parameter arrays are retained.
+**Twenty UI skins:** the ten new colours are Arctic Cyan, Atomic Violet, Graphite Grey, Ice Mint, Cobalt Blue, Sunset Copper, Pearl Lavender, Candy Coral, Forest Green and Lemon Yellow. Choose SELECT → SKIN, or keep NEW COLOUR ON LOAD enabled for a different colour at each launch. Existing skin IDs and fixed project colours remain compatible.
 
-**Five new skins** — Crimson Red, Emerald Green, Midnight Blue, Gold and Rose Pink — join Purple, Glacier Blue, Black, White and Spice Orange. Each newly loaded instance opens in a different colour from the last launch. Reopening that same window or switching presets keeps its colour. Use SELECT → NEW COLOUR ON LOAD to turn this off and save a fixed project skin. ROM Hacks remains beside master volume. Drop one `.sf2` file anywhere on the window to load its instruments, or use ROM Hacks → LOAD SF2. Loading and validation run on the existing background worker; invalid banks leave the working instrument in place. ROM Hacks also offers a default SoundFont folder and bank list, OPEN FOLDER / CHOOSE FOLDER / REFRESH, and REMEMBER LAST BANK for new instances. Saved projects keep their own bank and instrument.
+**530 factory presets, audited across the full bank.** The new gain-independent comparison uses three identical MIDI notes, two velocities, dry and wet synthesis, two spectral windows and held/release envelopes for every preset: 6,360 renders and 140,185 pairs. Eighteen closely related patches receive original synthesis/envelope revisions, recorded in `Presets/diversity-refinements.json`. Factory IDs, names and host ordering are unchanged. Saved projects and user presets keep their explicit sound settings. The Detroit, West Coast and Florida categories each contain forty presets.
 
-The engine reuses exact repeated modulation/filter calculations across matching chord voices, lists active voices once per render segment and skips unused effect reads while retaining warm histories. Existing patch settings, full-rate modulation, polyphony limits and 16-sample latency are retained. The 650-scene comparison using all 530 current patches was byte-identical against version 0.13.1. Matched Windows notes/chords/retrigger profiles measured processing-time reductions ranging from 12.2% to 20.3% across one-, four- and eight-voice workload groups. These are native measurements on a shared runner, not FL Studio CPU percentages or physical-driver deadline guarantees.
+**Further CPU work:** polyphase oversampling avoids known-zero interpolation taps and discarded decimator outputs, retaining nonlinear processing, warm histories and 16-frame latency. Wavetable mip tuning, plucked-string delay compensation, shared chord pitch exponentials and choir normalization are reused only while their exact inputs match. Voice limits, modulation rates and audio quality settings remain unchanged. Numerical audio and matched CPU comparisons use the immutable 0.14.1 DSP with identical current factory arrays. See [0.15.0 evidence](docs/RELEASE_0_15.md), [performance](docs/PERFORMANCE.md) and [factory audit](docs/FACTORY_LIBRARY.md) for measured results and limits.
 
-[Windows/Ubuntu run 39246825673](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39246825673) passed eight Ubuntu DSP suites and eleven Windows CTest suites, including 774 Windows application checks (121 library and 164 SoundFont checks), three separate OS-process colour launches, native JUCE peer drag/drop dispatch, default/custom folder and last-bank restart checks, two actual-bundle test hosts, pluginval strictness 10, Steinberg 47/0 and six installer lifecycle checks. The synthetic FL-named test host is not FL Studio.
+ROM Hacks remains beside master volume, with single-file SF2 drag and drop, default/custom SoundFont folder, bank/instrument lists and last-bank recall. Saved projects take precedence over the startup bank. No SoundFonts or recorded audio are bundled.
 
-[Download the 0.14.1 Windows installer ZIP](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39246825673/artifacts/12184476620). Close FL Studio and standalone, extract into a new folder, run `G-Boy-Advance-2-Setup-x64.exe`, then reopen FL64. [Portable/manual installation](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39246825673/artifacts/12184651399) · [Source](https://github.com/treezysosa/G-Boy-Advance-2/tree/feature/launch-skins-sf2-drop-0141) · [Behavior and evidence](docs/RELEASE_0_14_1.md).
+[Builds and installer artifacts](https://github.com/treezysosa/G-Boy-Advance-2/actions?query=branch%3Afeature%2Fskins-diversity-cpu-0150) · [Source](https://github.com/treezysosa/G-Boy-Advance-2/tree/feature/skins-diversity-cpu-0150). Close FL Studio and standalone, extract the installer ZIP into a new folder, run `G-Boy-Advance-2-Setup-x64.exe`, then reopen FL64. User presets, banks and SoundFont preferences are retained by the installer.
 
-The licensing decision remains explicitly deferred by the owner; this is unsigned build preparation. Current-version real FL Studio/audio-device/DPI/listening and interactive-install acceptance remain pending.
+These prepared builds are unsigned; the owner has deferred the licensing decision. Automated native-host validation does not substitute for actual FL Studio, physical audio-device, DPI or human listening acceptance.
 
 ![G Boy Advance 2 Phase 2 native JUCE editor](docs/images/phase2-main.png)
 
@@ -21,12 +21,12 @@ Actual Phase 2 Windows JUCE component render at 1280×646 from [passing CI run 3
 Install Visual Studio 2022 with **Desktop development with C++**, a Windows SDK, CMake 3.24+, and Git. In PowerShell:
 
 ```powershell
-git clone --branch feature/launch-skins-sf2-drop-0141 https://github.com/treezysosa/G-Boy-Advance-2.git
+git clone --branch feature/skins-diversity-cpu-0150 https://github.com/treezysosa/G-Boy-Advance-2.git
 cd G-Boy-Advance-2
 powershell -ExecutionPolicy Bypass -File scripts/build-windows.ps1
 ```
 
-You can also use [Build and validate in GitHub Actions](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39246825673). Factory/vocal and retro audition files are separate test outputs and are never installed or loaded by the instrument.
+You can also use [Build and validate in GitHub Actions](https://github.com/treezysosa/G-Boy-Advance-2/actions?query=branch%3Afeature%2Fskins-diversity-cpu-0150). Factory/vocal and retro audition files are separate test outputs and are never installed or loaded by the instrument.
 
 The first local build downloads the pinned JUCE 8.0.6 source. For an offline build, supply an existing checkout:
 
@@ -68,7 +68,7 @@ Close your DAW, copy the entire `.vst3` directory into `C:\Program Files\Common 
 - Reverb, delay, chorus, phaser, flanger, saturation, distortion, bitcrusher, tape wow / flutter, low / high shelves, and stereo width.
 - 530 original factory patches across 20 categories, explicit named-instrument, vocal and retro profiles, calibrated levels and stable program identities. Vocal patches are synthesized vowel-like timbres and contain no recorded voices or speech.
 - Reference-based vector UI, playable keyboard, spring-return pitch wheel, functional D-pad, preview A / stop B, START browser, SELECT advanced editor, assignable A–D controls.
-- Ten colour skins with nonrepeating launch colours or a fixed project choice; SoundFont drag and drop; host-visible parameters, project state, user preset Save As / import / export / rename / delete, favorites / recent patches, category search, tags, keyboard navigation.
+- Twenty colour skins with nonrepeating launch colours or a fixed project choice; SoundFont drag and drop; host-visible parameters, project state, user preset Save As / import / export / rename / delete, favorites / recent patches, category search, tags, keyboard navigation.
 - Windows CI, portable packaging and Inno Setup installer script, DSP and JUCE integration tests.
 
 ## Factory and user presets

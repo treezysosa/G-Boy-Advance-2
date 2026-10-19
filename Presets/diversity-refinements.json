@@ -1,0 +1,79 @@
+{
+  "format": "gba2.diversity-refinements",
+  "schemaVersion": 1,
+  "description": "Original 0.15.0 synthesis revisions after the all-pair, multi-register dry/wet audit. Exact factory names and IDs remain stable. Explicit project/user-preset parameters take precedence over these factory recipes. No audio is stored.",
+  "presets": {
+    "Chorus Guitar - Afterglow": {
+      "designNotes": "Bright, short picked-string voicing with a downward body sweep, distinct from the sustained soul and indie strings.",
+      "parameters": {"Brightness": 0.93, "StringDamping": 0.9978, "Decay": 0.36, "Cutoff": 5400, "FilterEnv": -1.2, "FilterDecay": 0.08, "FilterSustain": 0}
+    },
+    "Acoustic-Style Guitar - Afterglow": {
+      "designNotes": "A blooming string onset and resonant body opening distinguish the alternate acoustic voicing from muted game-guitar and nylon strings.",
+      "parameters": {"Brightness": 0.63, "StringDamping": 0.9991, "Attack": 0.018, "Decay": 1.8, "Cutoff": 950, "Resonance": 0.46, "FilterEnv": 2.7, "FilterDecay": 0.45, "FilterSustain": 0.06}
+    },
+    "Lo-Fi Guitar": {
+      "designNotes": "Damped thumb-pluck excitation and a compact decay define the dry sound before tape effects.",
+      "parameters": {"Brightness": 0.09, "StringDamping": 0.986, "Decay": 0.26, "Cutoff": 1100, "FilterEnv": 0.7, "FilterDecay": 0.07}
+    },
+    "Latin Guitar": {
+      "designNotes": "Brighter finger-pluck excitation, a longer string resonance and a closing filter distinguish it from neo-soul guitar.",
+      "parameters": {"Brightness": 0.84, "StringDamping": 0.9994, "Decay": 0.78, "Cutoff": 8200, "FilterEnv": -0.9, "FilterDecay": 0.22}
+    },
+    "Reed Electric Piano - Afterglow": {
+      "designNotes": "Alternate reed-like FM excitation uses a subharmonic modulator and longer electric-key decay instead of the grand-style modal spectrum.",
+      "parameters": {"Engine": 1, "FmRatio": 0.5, "FmIndex": 2.3, "Decay": 1.8, "Sustain": 0.12, "Cutoff": 6100, "FilterEnv": 1.7, "FilterDecay": 0.35}
+    },
+    "Jazz Keys": {
+      "designNotes": "A soft electric-key onset and mellow three-to-two FM operator structure separate these keys from the grand and upright modal designs.",
+      "parameters": {"Engine": 1, "FmRatio": 1.5, "FmIndex": 0.85, "Attack": 0.01, "Decay": 1.6, "Sustain": 0.16, "Cutoff": 4200, "Resonance": 0.19, "FilterEnv": 1.1, "FilterDecay": 0.11}
+    },
+    "Jazz Keys - Afterglow": {
+      "designNotes": "A mallet-like, short modal attack with a darker high-pass body gives the alternate jazz patch a distinct dry envelope and spectrum.",
+      "parameters": {"Brightness": 0.39, "Attack": 0.004, "Decay": 0.63, "Sustain": 0.09, "FilterType": 1, "Cutoff": 280, "FilterEnv": 0.35, "Release": 0.3}
+    },
+    "Slap-Style Bass": {
+      "designNotes": "A sharp, resonant low-pass snap emphasizes bass articulation rather than the open upper-register game-guitar spectrum.",
+      "parameters": {"Brightness": 0.98, "StringDamping": 0.9981, "Decay": 0.31, "Cutoff": 950, "Resonance": 0.36, "FilterEnv": 3.7, "FilterDecay": 0.055, "FilterSustain": 0}
+    },
+    "Slap-Style Bass - Afterglow": {
+      "designNotes": "A punchy FM alternate with a one-to-one operator ratio supplies a different bass body from all guitar/string patches.",
+      "parameters": {"Engine": 1, "FmRatio": 1, "FmIndex": 2.8, "OscMix": 0.2, "Decay": 0.24, "Sustain": 0.07, "Cutoff": 1800, "Resonance": 0.16, "FilterEnv": 1.8, "FilterDecay": 0.09}
+    },
+    "Harp-Style Pluck": {
+      "designNotes": "A bright long-resonating string with a high-pass body creates a lighter glassy harp tone, distinct from open guitar and slap-bass strings.",
+      "parameters": {"Brightness": 0.98, "StringDamping": 0.9994, "Attack": 0.003, "Decay": 2.8, "Release": 0.6, "FilterType": 1, "Cutoff": 350, "Resonance": 0.12, "FilterEnv": 0}
+    },
+    "Tape Menu Harp": {
+      "designNotes": "A rounded, blooming menu-string envelope and lower body resonance establish the tape harp before wow and bit reduction.",
+      "parameters": {"Brightness": 0.42, "StringDamping": 0.9993, "Attack": 0.035, "Decay": 2.3, "Cutoff": 1700, "Resonance": 0.27, "FilterEnv": 0.8, "FilterDecay": 0.6}
+    },
+    "Tape Menu Harp - Afterglow": {
+      "designNotes": "A short band-pass, high-excitation string creates a hollow game-menu pluck instead of another muted acoustic guitar.",
+      "parameters": {"Brightness": 0.88, "StringDamping": 0.9979, "Attack": 0.012, "Decay": 0.47, "FilterType": 2, "Cutoff": 1900, "Resonance": 0.28, "FilterEnv": -0.8, "FilterDecay": 0.3}
+    },
+    "Detroit Concrete Upright - Afterglow": {
+      "designNotes": "A rounded resonant upright-key body with a softer attack and sustained modal tail, distinct from the short offbeat hammer and celesta designs.",
+      "parameters": {"Brightness": 0.84, "Attack": 0.011, "Decay": 1.4, "Sustain": 0.14, "Cutoff": 900, "Resonance": 0.33, "FilterEnv": 2.8, "FilterDecay": 0.2}
+    },
+    "Detroit Late Shift Piano": {
+      "designNotes": "A darker rounded modal strike and longer body decay distinguish this late-night key patch from music-box bells.",
+      "parameters": {"Brightness": 0.36, "Decay": 1.9, "Sustain": 0.035, "Cutoff": 2100, "Resonance": 0.12, "FilterEnv": 0.7, "FilterDecay": 0.17}
+    },
+    "West Coast Neon Music Box": {
+      "designNotes": "Inharmonic FM glass with a 5.19 operator ratio replaces the toy-piano-like modal tone while retaining a music-box envelope.",
+      "parameters": {"Engine": 1, "FmRatio": 5.19, "FmIndex": 2.1, "OscMix": 0.035, "Decay": 0.95, "FilterEnv": 0, "Cutoff": 12000}
+    },
+    "West Coast Chrome String Pluck - Afterglow": {
+      "designNotes": "A nasal resonant string with a rising body filter and compact release contrasts with the muted harp alternate.",
+      "parameters": {"Brightness": 0.51, "StringDamping": 0.9974, "FilterType": 2, "Cutoff": 1250, "Resonance": 0.39, "FilterEnv": 1.4, "FilterDecay": 0.12, "Decay": 0.28}
+    },
+    "West Coast Portside Sine Lead": {
+      "designNotes": "A soft sine body with a quiet octave triangle and slower attack separates this rounded lead from the pure high whistle alternate.",
+      "parameters": {"Wave1": 0, "Wave2": 1, "Coarse": 12, "OscMix": 0.24, "Attack": 0.028, "Decay": 0.35, "Sustain": 0.86, "Cutoff": 2900, "FilterEnv": 0.5}
+    },
+    "Florida Bright Club Piano": {
+      "designNotes": "Bright, mostly harmonic modal keys with an assertive short filter transient separate club piano chords from the inharmonic retro marimba.",
+      "parameters": {"Brightness": 0.12, "Decay": 0.58, "Sustain": 0.09, "Cutoff": 7900, "Resonance": 0.18, "FilterEnv": 1.9, "FilterDecay": 0.045}
+    }
+  }
+}
