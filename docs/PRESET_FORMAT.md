@@ -96,3 +96,7 @@ A retired slot displays Reserved N (Default) and loads Dream Pad when selected f
 ## Unified vocal category (0.16.3)
 
 The 74 active presets previously listed under Global Pop Textures, Horror and Choirs and Textures now use the browser category `Vocals`. The generator retains the three internal recipe groups and their search tags so their authored synthesis and calibration remain identical. `factory-index.json` records the new browser category without moving IDs or host program slots. On project restoration, a recognized active factory ID displays its current category without replacing the explicit saved parameters. Removed factory slots still use the existing Saved Project behavior. User presets remain independent under User.
+
+## Brass metadata and program append (0.17.0)
+
+Factory patches may include an optional `subcategory` string for browser family filtering; it is not an audio parameter. Brass uses Sax-Style Leads for its 16 unchanged sax voices and five additional families for 24 new individually authored complete dictionaries in `brass-designs.json`. The top-level factory categories remain flat; the optional family selector filters inside Brass. The original 650 host registry slots stay fixed and new identities append slots 650–673. There are 598 active patches and 76 retired slots. Existing user preset files remain schema version 1 and do not acquire factory subfolder metadata.

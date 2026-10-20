@@ -77,7 +77,7 @@ int main(int argc,char** argv){try{
         }
         if(++rendered%64==0)std::cout<<"Audited "<<rendered<<" factory patches\n"<<std::flush;
     }
-    check(gba::factoryPatches.size()==574&&categories.size()==18,"Factory coverage is incomplete");
+    check(gba::factoryPatches.size()==598&&categories.size()==18,"Factory coverage is incomplete");
     if(!levelsOnly){std::ofstream pairs("factory-similarity.csv");pairs<<"id,nearestId,dryAudioDistance\n";int close=0;
         for(std::size_t i=0;i<signatures.size();++i){double best=100;std::size_t nearest=i;for(std::size_t j=0;j<signatures.size();++j)if(i!=j&&signatures[i].note==signatures[j].note){const double d=distance(signatures[i],signatures[j]);if(d<best){best=d;nearest=j;}}pairs<<signatures[i].id<<","<<signatures[nearest].id<<","<<best<<"\n";if(best<.025)++close;}
         std::vector<int> parent(signatures.size());std::iota(parent.begin(),parent.end(),0);
@@ -111,6 +111,9 @@ int main(int argc,char** argv){try{
         }
         std::filesystem::create_directories("retro-auditions");std::ofstream retroIndex("retro-auditions/README.txt");retroIndex<<"Original mathematical synthesis, not commercial game audio. No instrument reads these test WAVs. Human listening acceptance pending; six-second excerpts may truncate tails.\n";number=0;
         for(const auto& p:gba::factoryPatches)if(std::string_view(p.category)=="Retro Games"&&std::string_view(p.name).find(" - Afterglow")==std::string_view::npos)excerpt(p,"retro-auditions",++number,retroIndex);
+        std::filesystem::create_directories("brass-auditions");std::ofstream brassIndex("brass-auditions/README.txt");number=0;
+        brassIndex<<"24 original synthesized brass audition renders. Never installed or loaded by the instrument. Human listening acceptance pending.\n";
+        for(const auto& p:gba::factoryPatches)if(p.program>=650)excerpt(p,"brass-auditions",++number,brassIndex);
         std::filesystem::create_directories("hiphop-auditions");std::ofstream hiphopIndex("hiphop-auditions/README.txt");hiphopIndex<<"Original Detroit, West Coast and Florida synthesis examples. Not samples for the instrument. Human listening acceptance pending.\n";number=0;
         for(const auto& p:gba::factoryPatches)if(std::string_view(p.category).starts_with("Hip-Hop - ")&&std::string_view(p.name).find(" - Afterglow")==std::string_view::npos)excerpt(p,"hiphop-auditions",++number,hiphopIndex);
         for(const auto& category:{"Hip-Hop - Detroit","Hip-Hop - Chicago Drill","Funk","Japan Inspired","80s Pop"}) {

@@ -38,7 +38,7 @@ void removedVocalProjects(const juce::File& root) {
     auto p=std::make_unique<GbaProcessor>(root.getChildFile("RemovedVocals"));
     p->setRateAndBufferSizeDetails(48000,256);p->prepareToPlay(48000,256);
     const auto defaultSettings=p->snapshot();
-    check(p->presets.all().size()==574&&p->presets.categories().size()==18,"Retired categories remain in the factory browser");
+    check(p->presets.all().size()==598&&p->presets.categories().size()==18,"Retired categories remain in the factory browser");
     for(const char* name:{"Vocals - Pop and Indie","Vocals - Southern and West Coast","Vocals - Cartoon and Gaming","Vocals - Soul and R&B"}) {
         PresetManager::Filter f;f.category=name;check(p->presets.filtered(f).empty()&&!p->presets.categories().contains(name),"Removed category remains selectable");
     }
@@ -101,6 +101,26 @@ void unifiedVocals(const juce::File& root) {
     for(int i=0;i<18;++i){p->presets.stepCategory(1);visited.insert(p->presetCategory());}
     check(visited.size()==18&&visited.count("Vocals")==1,"D-pad navigation did not visit each merged category once");
     std::cout<<"PASS 74 merged Vocals presets, three legacy-category edited projects and 18-category navigation\n";
+}
+void brassLibrary(const juce::File& root) {
+    auto p=std::make_unique<GbaProcessor>(root.getChildFile("BrassLibrary"));
+    PresetManager::Filter filter;filter.category="Brass";filter.source=PresetManager::Source::factory;
+    check(p->presets.filtered(filter).size()==40&&!p->presets.categories().contains("Sax-Style Leads"),"Brass must contain new horns and the existing sax sounds");
+    filter.subcategory="Sax-Style Leads";const auto sax=p->presets.filtered(filter);
+    check(sax.size()==16,"Existing sax leads are missing inside Brass");
+    for(const auto& id:sax) {
+        check(p->presets.load(id),"Moved sax identity cannot be loaded");set(*p,"filter.cutoff",4321);const auto edited=p->snapshot();
+        juce::MemoryBlock saved;p->getStateInformation(saved);auto xml=juce::AudioProcessor::getXmlFromBinary(saved.getData(),int(saved.getSize()));
+        check(xml!=nullptr,"Could not create old sax project fixture");xml->setAttribute("presetCategory","Sax-Style Leads");juce::MemoryBlock old;juce::AudioProcessor::copyXmlToBinary(*xml,old);
+        p->presets.restoreDefault(false);p->setStateInformation(old.getData(),int(old.getSize()));
+        check(p->presetId()==id&&p->presetCategory()=="Brass"&&p->snapshot().values==edited.values,"Moving sax sounds changed an edited project or failed to update its category");
+    }
+    for(const char* folder:{"Trumpets","Trombones","Horns","Brass Sections","Synth Brass"}) {
+        filter.subcategory=folder;auto ids=p->presets.filtered(filter);check(ids.size()==(juce::String(folder)=="Brass Sections"||juce::String(folder)=="Synth Brass"?6u:4u),"New brass family is incomplete");
+    }
+    filter.subcategory="Sax-Style Leads";filter.query="tenor";check(p->presets.filtered(filter).size()==2,"Sax subfolder search intersection failed");
+    filter.query.clear();filter.source=PresetManager::Source::user;check(p->presets.filtered(filter).empty(),"Factory sax sounds appear in the user-source filter");
+    std::cout<<"PASS Brass: 24 new patches, 16 unchanged sax sounds, family filters and legacy edited sax project restoration\n";
 }
 void launchAppearance(const juce::File& root) {
     for(int previous=0;previous<int(gba_ui::skins.size());++previous) {
@@ -182,6 +202,7 @@ int main(int argc,char** argv) {
     try {
         removedVocalProjects(root);
         unifiedVocals(root);
+        brassLibrary(root);
         launchAppearance(root);
         checks+=runLibraryTests();
         checks+=runSoundFontTests();
@@ -200,7 +221,7 @@ int main(int argc,char** argv) {
         auto factoryReload=std::make_unique<GbaProcessor>(root);factoryReload->setStateInformation(factoryState.getData(),int(factoryState.getSize()));
         check(factoryReload->presetId()==factoryId,"Factory project identity did not survive state reload");
         check(std::abs(factoryReload->snapshot()[gba::Param::Cutoff]-4321)<.1f&&std::abs(factoryReload->snapshot()[gba::Param::Volume]-.371f)<.0001f,"Factory state was replaced by current library values on project reload");
-        check(p.getNumPrograms()==650,"Expanded factory host-program count is wrong");
+        check(p.getNumPrograms()==674,"Expanded factory host-program count is wrong");
         p.setCurrentProgram(409);p.servicePendingProgram();
         check(p.getCurrentProgram()==409&&p.presetName()=="Handheld Pulse Motion - Afterglow","Appended retro host program is unreachable");
         set(p,"volume",.43f);juce::MemoryBlock retroState;p.getStateInformation(retroState);
@@ -330,7 +351,14 @@ int main(int argc,char** argv) {
                 categoryFilter->setText(category,juce::sendNotificationSync);check(rows()==(juce::String(category)=="80s Pop"?28:24),"Groove browser category is incomplete");
                 query("bass");check(rows()>0,"Groove bass tag search failed");query("");
             }
+            categoryFilter->setText("Brass",juce::sendNotificationSync);check(rows()==40,"Brass browser did not include all new horns and sax sounds");
+            auto* subfolder=dynamic_cast<juce::ComboBox*>(named(*editor,"Preset subfolder"));check(subfolder&&subfolder->isVisible()&&subfolder->getNumItems()==7,"Brass family selector is missing");
+            editor->setSize(960,485);snapshot(*editor,"ui-snapshots/Brass-Browser-960.png");
+            subfolder->setText("Sax-Style Leads",juce::sendNotificationSync);check(rows()==16,"Sax lead sounds are not inside the Brass browser");query("tenor");check(rows()==2,"Sax family and search did not intersect");query("");
+            snapshot(*editor,"ui-snapshots/Sax-in-Brass-960.png");
+            subfolder->setText("Trumpets",juce::sendNotificationSync);check(rows()==4,"New trumpet sounds are missing");
             categoryFilter->setText("Retro Games",juce::sendNotificationSync);check(rows()==56,"Factory/category browser intersection failed");
+            check(!subfolder->isVisible()&&subfolder->getSelectedId()==1,"Changing category retained a stale brass subfolder filter");
             auto beforeBrowse=p.presetId();presetList->selectRow(0);check(p.presetId()==beforeBrowse,"Keyboard browsing changes the loaded sound");presetList->keyPressed(juce::KeyPress(juce::KeyPress::downKey));check(presetList->getSelectedRow()==1&&p.presetId()==beforeBrowse,"List arrow navigation loads a patch or fails to move");presetList->keyPressed(juce::KeyPress(juce::KeyPress::returnKey));check(p.presetCategory()=="Retro Games","Enter did not load the selected preset");render(p,audio,8);check(p.voiceCount()>0,"Browser Enter did not preview real audio");button(*editor,"B  STOP")->onClick();p.panic();render(p,audio,1);
             presetName->setText("Browser User");presetTags->setText("custom azure keys");button(*editor,"SAVE AS")->onClick();auto browserUser=p.presetId();
             check(p.presetCategory()=="User"&&p.presets.find(browserUser)->tags=="custom azure keys","Browser Save As lost custom tags");check(sourceFilter->getSelectedId()==2&&categoryFilter->getText()=="Retro Games","Save As reset browser filters");check(!button(*editor,"A  PREVIEW")->isEnabled()&&!button(*editor,"FAVORITE")->isEnabled(),"Hidden active patch leaves browser actions enabled");

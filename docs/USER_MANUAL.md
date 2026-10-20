@@ -1,4 +1,4 @@
-> Current version: **0.16.3**. The **Vocals** folder combines Global Pop Textures, Horror and Choirs and Textures into 74 sounds. There are 574 factory presets across 18 categories; the pad/string and SoundFont CPU improvements, twenty skins and ROM Hacks SF2 library recall are retained. [Current changes](RELEASE_0_16_3.md).
+> Current version: **0.17.0**. Brass contains 24 new brass sounds plus all 16 previous sax leads. There are 598 factory presets across 18 categories. Existing CPU improvements, twenty skins, Vocals and ROM Hacks SF2 recall are retained. [Current changes](RELEASE_0_17_0.md).
 
 
 Older 0.12.0 projects restore their synthesis parameters and skin, show `SYNTH ONLY:` in the display and a removal notice in START, and discard embedded audio from newly saved state. Sample sounds no longer play. Original project, audio and preset files are left unchanged; preserve the original project if its sample content is still needed. Sample-containing presets are rejected/skipped. Schema 1 synthesis `.gba2preset` import/export continues to work.
@@ -57,7 +57,7 @@ This development version passes Windows compilation, automated tests and pluginv
 
 ## Factory bank revision 0.6
 
-The bank contains 574 factory sounds in 18 categories. Vocals - Pop and Indie, Vocals - Southern and West Coast, Vocals - Cartoon and Gaming and Vocals - Soul and R&B have been removed, including their seventy-six presets. Surviving sounds, names, IDs and original host program numbers are retained. Named instruments have explicit synthesis profiles and Afterglow variants change active excitation/envelope controls. Factory levels are calibrated using a 100 ms stereo RMS metric; quieter articulations remain quieter when the master knob reaches its gain ceiling. This is not perceptual loudness normalization.
+The bank contains 598 factory sounds in 18 categories. Vocals - Pop and Indie, Vocals - Southern and West Coast, Vocals - Cartoon and Gaming and Vocals - Soul and R&B have been removed, including their seventy-six presets. Surviving sounds, names, IDs and original host program numbers are retained. Named instruments have explicit synthesis profiles and Afterglow variants change active excitation/envelope controls. Factory levels are calibrated using a 100 ms stereo RMS metric; quieter articulations remain quieter when the master knob reaches its gain ceiling. This is not perceptual loudness normalization.
 
 Saved projects restore their actual parameter values, even when their factory ID also exists in the revised bank. Loading the factory preset again selects its new voicing. User presets remain independent. Optional category audition WAVs are original test renders for listening review; they are never loaded by the instrument.
 
@@ -148,8 +148,12 @@ These are original synthesis patches, without recorded instruments, artist voice
 
 ## Removed vocal categories (0.16.1)
 
-Vocals - Pop and Indie (16 presets), Vocals - Southern and West Coast (14 presets), Vocals - Cartoon and Gaming (28 presets) and Vocals - Soul and R&B (18 presets) are removed from Factory search, category selection, favorites/recent results and D-pad browsing. All other 574 factory patches remain unchanged, including vocals in the remaining categories and regional hip-hop banks. Existing user presets remain available.
+Vocals - Pop and Indie (16 presets), Vocals - Southern and West Coast (14 presets), Vocals - Cartoon and Gaming (28 presets) and Vocals - Soul and R&B (18 presets) are removed from Factory search, category selection, favorites/recent results and D-pad browsing. All 574 previously retained factory sounds remain unchanged, including vocals and regional hip-hop banks; 24 additional brass presets bring the current bank to 598. Existing user presets remain available.
 
 Saved DAW projects store their synthesis settings. Reopening a project that used a removed factory preset keeps its saved sound, name, edited settings and program number; its category display reads Saved Project. Use START → Save As to keep an independent user preset. The removed sounds cannot be freshly selected from the factory bank.
 
-The seventy-six old program numbers are reserved in the host program list so the other sounds do not move. Selecting a Reserved N (Default) slot from another program plays Dream Pad. Repeating the current retired slot after restoring a project preserves its saved sound; switch to another program first to intentionally load the default. Reserved slots do not count toward the 574 factory presets. SoundFont banks, user files, skins and audio parameters are unchanged.
+The seventy-six old program numbers are reserved in the host program list so the other sounds do not move. Selecting a Reserved N (Default) slot from another program plays Dream Pad. Repeating the current retired slot after restoring a project preserves its saved sound; switch to another program first to intentionally load the default. Reserved slots do not count toward the 598 factory presets. SoundFont banks, user files, skins and audio parameters are unchanged.
+
+### Brass and sax sounds
+
+Open START and select **Brass** to see all 40 sounds, including the 16 existing sax leads. The optional **All subfolders** menu narrows Brass to **Sax-Style Leads**, **Trumpets**, **Trombones**, **Horns**, **Brass Sections** or **Synth Brass**. Search, favorites, recent history and source filters still apply. Choosing another category clears the subfolder filter. Existing sax projects keep their saved sound settings; their category now displays Brass.

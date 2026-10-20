@@ -162,10 +162,11 @@ private:GbaProcessor& processor;juce::TabbedComponent tabs;juce::ComboBox skin;j
 class BrowserPanel final : public juce::Component,private juce::ListBoxModel,private juce::KeyListener,private juce::Timer {
 public:
     BrowserPanel(GbaProcessor& p,std::function<void()> close):processor(p),closePanel(std::move(close)),list("Presets",this){
-        for(auto* c:std::initializer_list<juce::Component*>{&search,&category,&source,&favoritesOnly,&recentOnly,&list,&back,&preview,&stop,&favorite,&save,&rename,&remove,&restore,&name,&tags,&rescan,&importSound,&exportSound,&status}){addAndMakeVisible(c);c->addKeyListener(this);}
+        for(auto* c:std::initializer_list<juce::Component*>{&search,&category,&subcategory,&source,&favoritesOnly,&recentOnly,&list,&back,&preview,&stop,&favorite,&save,&rename,&remove,&restore,&name,&tags,&rescan,&importSound,&exportSound,&status}){addAndMakeVisible(c);c->addKeyListener(this);}
         setName("Preset browser");setWantsKeyboardFocus(true);search.setName("Preset search");category.setName("Preset category");source.setName("Preset source");name.setName("Preset name");tags.setName("Preset tags");status.setName("Preset status");
         search.setTextToShowWhenEmpty("Search words or \"quoted phrases\", names and tags...",text.withAlpha(.55f));search.onTextChange=[this]{message.clear();refresh();};
-        category.onChange=[this]{message.clear();refresh();};source.addItemList({"All sources","Factory","User"},1);source.setSelectedId(1,juce::dontSendNotification);source.onChange=[this]{message.clear();refresh();};
+        subcategory.setName("Preset subfolder");subcategory.setTooltip("Choose a folder inside the selected preset category, or browse all its sounds.");
+        category.onChange=[this]{subcategory.setSelectedId(1,juce::dontSendNotification);message.clear();refresh();};subcategory.onChange=[this]{message.clear();refresh();};source.addItemList({"All sources","Factory","User"},1);source.setSelectedId(1,juce::dontSendNotification);source.onChange=[this]{message.clear();refresh();};
         favoritesOnly.onClick=[this]{message.clear();refresh();};recentOnly.onClick=[this]{message.clear();refresh();};
         back.onClick=[this]{asyncClose(this,closePanel);};preview.onClick=[this]{activate(true);};stop.onClick=[this]{processor.stopPreview();};
         favorite.onClick=[this]{auto id=selectedId();if(id.isNotEmpty())result(processor.presets.toggleFavorite(id),"Favorite updated.");};
@@ -186,13 +187,13 @@ public:
     void paint(juce::Graphics& g) override {panel(*this,g,getLocalBounds().toFloat(),14);caption(g,"PRESET LIBRARY",{20,10,float(std::max(100,getWidth()-620)),30},22);}
     void resized() override {
         int w=getWidth(),h=getHeight();back.setBounds(w-160,12,140,30);source.setBounds(w-300,12,130,30);category.setBounds(w-550,12,240,30);
-        search.setBounds(20,56,w-470,30);favoritesOnly.setBounds(w-440,56,135,30);recentOnly.setBounds(w-300,56,135,30);rescan.setBounds(w-155,56,135,30);list.setBounds(20,99,w-40,h-221);
+        search.setBounds(20,56,w-(subcategory.isVisible()?660:470),30);subcategory.setBounds(w-630,56,180,30);favoritesOnly.setBounds(w-440,56,135,30);recentOnly.setBounds(w-300,56,135,30);rescan.setBounds(w-155,56,135,30);list.setBounds(20,99,w-40,h-221);
         preview.setBounds(20,h-110,110,29);stop.setBounds(138,h-110,90,29);favorite.setBounds(236,h-110,145,29);importSound.setBounds(389,h-110,125,29);exportSound.setBounds(522,h-110,135,29);restore.setBounds(w-215,h-110,195,29);
         const int input=w-490,n=int(input*.55);name.setBounds(20,h-69,n,30);tags.setBounds(30+n,h-69,input-n,30);save.setBounds(w-450,h-69,130,30);rename.setBounds(w-310,h-69,135,30);remove.setBounds(w-165,h-69,145,30);status.setBounds(20,h-35,w-40,25);
     }
 private:
     GbaProcessor& processor;std::function<void()> closePanel;
-    juce::TextEditor search,name,tags;juce::ComboBox category,source;
+    juce::TextEditor search,name,tags;juce::ComboBox category,subcategory,source;
     juce::ToggleButton favoritesOnly {"Favorites only"},recentOnly {"Recently used"};juce::ListBox list;
     juce::TextButton back {"BACK / START"},preview {"A  PREVIEW"},stop {"B  STOP"},favorite {"FAVORITE"},save {"SAVE AS"},rename {"RENAME"},remove {"DELETE"},restore {"RESTORE DREAM PAD"},rescan {"REFRESH"},importSound {"IMPORT"},exportSound {"EXPORT SOUND"};
     std::unique_ptr<juce::FileChooser> chooser;
@@ -214,7 +215,8 @@ private:
     void result(juce::Result r,const juce::String& success,bool selectActive=false){message=r.failed()?r.getErrorMessage():(processor.presets.lastError.isEmpty()?success:processor.presets.lastError);refresh(selectActive);if(r.wasOk()&&(selectActive||success=="Library refreshed."))updateButtons(true);}
     void refresh(bool selectActive=false){
         updating=true;auto keep=selectActive?processor.presetId():selectedId();auto selectedCategory=category.getSelectedId()>1?category.getText():juce::String();category.clear(juce::dontSendNotification);category.addItem("All categories",1);category.addItemList(processor.presets.categories(),2);int index=processor.presets.categories().indexOf(selectedCategory);category.setSelectedId(index<0?1:index+2,juce::dontSendNotification);
-        PresetManager::Filter filter;filter.query=search.getText();filter.category=category.getSelectedId()>1?category.getText():juce::String();filter.source=source.getSelectedId()==2?PresetManager::Source::factory:source.getSelectedId()==3?PresetManager::Source::user:PresetManager::Source::all;filter.favorites=favoritesOnly.getToggleState();filter.recent=recentOnly.getToggleState();visible=processor.presets.filtered(filter);
+        auto folders=processor.presets.subcategories(category.getSelectedId()>1?category.getText():juce::String());auto selectedFolder=subcategory.getSelectedId()>1?subcategory.getText():juce::String();subcategory.clear(juce::dontSendNotification);subcategory.addItem("All subfolders",1);subcategory.addItemList(folders,2);int folderIndex=folders.indexOf(selectedFolder);subcategory.setSelectedId(folderIndex<0?1:folderIndex+2,juce::dontSendNotification);subcategory.setVisible(!folders.isEmpty());if(getWidth()>0)resized();
+        PresetManager::Filter filter;filter.query=search.getText();filter.subcategory=subcategory.getSelectedId()>1?subcategory.getText():juce::String();filter.category=category.getSelectedId()>1?category.getText():juce::String();filter.source=source.getSelectedId()==2?PresetManager::Source::factory:source.getSelectedId()==3?PresetManager::Source::user:PresetManager::Source::all;filter.favorites=favoritesOnly.getToggleState();filter.recent=recentOnly.getToggleState();visible=processor.presets.filtered(filter);
         list.updateContent();list.deselectAllRows();int row=-1;for(std::size_t i=0;i<visible.size();++i)if(visible[i]==keep)row=int(i);if(row<0)for(std::size_t i=0;i<visible.size();++i)if(visible[i]==processor.presetId())row=int(i);if(row>=0)list.selectRow(row);
         activeSeen=processor.presetId();revisionSeen=processor.presets.revision();updating=false;updateButtons();list.repaint();
     }
@@ -237,7 +239,7 @@ private:
     void paintListBoxItem(int row,juce::Graphics& g,int width,int height,bool selected) override {
         if(row<0||row>=int(visible.size()))return;
         auto* p=processor.presets.find(visible[std::size_t(row)]);if(!p)return;
-        g.fillAll(selected?uiColour(*this,0xff7943ff).darker(.4f):(row%2?uiColour(*this,0xff131c61).withAlpha(.4f):uiColour(*this,0xff080c25)));g.setColour(text);g.setFont(font(15,true));g.drawText((processor.presets.isFavorite(p->id)?"* ":"  ")+p->name,10,1,width-330,height-2,juce::Justification::centredLeft,true);g.setColour(text.withAlpha(.6f));g.setFont(font(12));g.drawText((p->factory?p->category+" / FACTORY":juce::String("USER"))+(p->id==processor.presetId()?" / LOADED":""),width-320,0,310,height,juce::Justification::centredRight,true);
+        g.fillAll(selected?uiColour(*this,0xff7943ff).darker(.4f):(row%2?uiColour(*this,0xff131c61).withAlpha(.4f):uiColour(*this,0xff080c25)));g.setColour(text);g.setFont(font(15,true));g.drawText((processor.presets.isFavorite(p->id)?"* ":"  ")+p->name,10,1,width-330,height-2,juce::Justification::centredLeft,true);g.setColour(text.withAlpha(.6f));g.setFont(font(12));g.drawText((p->factory?p->category+(p->subcategory.isEmpty()?juce::String():" / "+p->subcategory)+" / FACTORY":juce::String("USER"))+(p->id==processor.presetId()?" / LOADED":""),width-320,0,310,height,juce::Justification::centredRight,true);
     }
     void selectedRowsChanged(int) override {if(!updating){message.clear();updateButtons();}}
     void listBoxItemClicked(int,const juce::MouseEvent&) override {activate(false);}

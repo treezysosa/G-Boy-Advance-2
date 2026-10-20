@@ -1,12 +1,12 @@
-# G BOY ADVANCE 2 — 0.16.3
+# G BOY ADVANCE 2 — 0.17.0
 
-**574 factory presets across 18 categories.** Global Pop Textures, Horror and Choirs and Textures now share one **Vocals** folder containing all 74 existing sounds. Vocals - Pop and Indie, Vocals - Southern and West Coast, Vocals - Cartoon and Gaming and Vocals - Soul and R&B have been removed, including their seventy-six factory patches. All remaining sounds, calibrated levels and identities are unchanged. The Detroit, Chicago Drill, Funk, Japan Inspired and 80s Pop additions remain available.
+**598 factory presets across 18 categories.** Brass contains 24 new brass presets and all 16 previous sax leads. The 74-sound Vocals folder and every other existing sound are retained.
 
-Saved projects retain their explicit synthesis settings, including sounds from the removed categories. Seventy-six old host program numbers are reserved to keep every surviving program number stable; choosing a reserved slot from another program loads Dream Pad. Repeating the current retired slot after project restoration preserves the saved sound. Reserved slots are separate from the 574 active factory presets. Existing user presets are retained.
+Saved projects retain their explicit synthesis settings, including sounds from the removed categories. Seventy-six old host program numbers are reserved to keep every surviving program number stable; choosing a reserved slot from another program loads Dream Pad. Repeating the current retired slot after project restoration preserves the saved sound. Reserved slots are separate from the 598 active factory presets. Existing user presets are retained.
 
-Version **0.16.3** combines the three remaining vocal folders, retains the pad/string and SoundFont CPU improvements, and preserves every preset sound, ID and host program number. Saved projects display the current factory category while retaining their edited parameters. [Current changes](docs/RELEASE_0_16_3.md).
+Version **0.17.0** adds a Brass folder with optional family browsing for Sax-Style Leads, Trumpets, Trombones, Horns, Brass Sections and Synth Brass. Existing sound dictionaries, program identities and CPU improvements are retained. [Current changes](docs/RELEASE_0_17_0.md).
 
-[Download Windows installer 0.16.3](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39451806321/artifacts/12279079837) · [Portable/manual archive](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39451806321/artifacts/12279986533) · [Source](https://github.com/treezysosa/G-Boy-Advance-2/tree/feature/unified-vocals-0163). Close FL Studio and standalone before installing; extract into a fresh folder and run `G-Boy-Advance-2-Setup-x64.exe`. User presets, banks and preferences are retained.
+For Windows builds and installation, use the commands below. Close FL Studio and standalone before installing; user presets, banks and preferences are retained.
 
 [Windows/Ubuntu run 39446025149](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39446025149) passed nine Ubuntu suites and twelve Windows CTest suites: 630,175 common DSP/preset checks, 2,884 Windows application checks (332 library / 164 SoundFont), both actual-bundle hosts (647/648), pluginval strictness 10, Steinberg 47 passed / 0 failed and six installer lifecycle checks. The synthetic FL-named host is not FL Studio.
 
@@ -79,7 +79,7 @@ Close your DAW, copy the entire `.vst3` directory into `C:\Program Files\Common 
 - Sine, harmonic-limited triangle, PolyBLEP saw / square / pulse, and noise; resonant low-pass, high-pass, band-pass, notch, and formant filters.
 - Two ADSRs, two routable LFOs, vibrato, tremolo, velocity, 16-channel MIDI pitch bend / modulation / sustain, 1–32 voices, stealing, mono / legato, glide.
 - Reverb, delay, chorus, phaser, flanger, saturation, distortion, bitcrusher, tape wow / flutter, low / high shelves, and stereo width.
-- 574 original factory patches across 18 categories, explicit named-instrument, vocal and retro profiles, calibrated levels and stable program identities. Vocal patches are synthesized vowel-like timbres and contain no recorded voices or speech.
+- 598 original factory patches across 18 categories, explicit named-instrument, vocal and retro profiles, calibrated levels and stable program identities. Vocal patches are synthesized vowel-like timbres and contain no recorded voices or speech.
 - Reference-based vector UI, playable keyboard, spring-return pitch wheel, functional D-pad, preview A / stop B, START browser, SELECT advanced editor, assignable A–D controls.
 - Twenty colour skins with nonrepeating launch colours or a fixed project choice; SoundFont drag and drop; host-visible parameters, project state, user preset Save As / import / export / rename / delete, favorites / recent patches, category search, tags, keyboard navigation.
 - Windows CI, portable packaging and Inno Setup installer script, DSP and JUCE integration tests.

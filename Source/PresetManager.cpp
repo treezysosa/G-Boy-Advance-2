@@ -39,21 +39,23 @@ juce::Result boundedJson(const juce::File& file,juce::var& result){
 }
 PresetManager::PresetManager(GbaProcessor& p,juce::File dataRoot):processor(p){
     folder=(dataRoot==juce::File()?juce::File::getSpecialLocation(juce::File::userApplicationDataDirectory).getChildFile("Treezy Audio/G Boy Advance 2"):dataRoot).getChildFile("Presets");preferences=folder.getParentDirectory().getChildFile("library.json");
-    for(const auto& patch:gba::factoryPatches){GbaPreset preset;preset.id=patch.id;preset.name=patch.name;preset.category=patch.category;preset.tags=patch.tags;preset.settings.values=patch.values;presets.push_back(std::move(preset));}
+    for(const auto& patch:gba::factoryPatches){GbaPreset preset;preset.id=patch.id;preset.name=patch.name;preset.category=patch.category;preset.subcategory=patch.subcategory;preset.tags=patch.tags;preset.settings.values=patch.values;presets.push_back(std::move(preset));}
     refresh();
 }
 juce::Result PresetManager::finish(juce::Result result){lastError=result.failed()?result.getErrorMessage():juce::String();return result;}
 const GbaPreset* PresetManager::find(const juce::String& id) const {for(const auto& p:presets)if(p.id==id)return &p;return nullptr;}
 juce::StringArray PresetManager::categories() const {juce::StringArray result;for(const auto& p:presets)result.addIfNotAlreadyThere(p.category);return result;}
+juce::StringArray PresetManager::subcategories(const juce::String& category) const {juce::StringArray result;for(const auto& p:presets)if(p.category==category&&p.subcategory.isNotEmpty())result.addIfNotAlreadyThere(p.subcategory);return result;}
 std::vector<juce::String> PresetManager::filtered(const Filter& filter) const {
     auto words=juce::StringArray::fromTokens(filter.query," \t\r\n","\"");std::vector<juce::String> result;
     for(const auto& p:presets){
         if(filter.category.isNotEmpty()&&p.category!=filter.category)continue;
+        if(filter.subcategory.isNotEmpty()&&p.subcategory!=filter.subcategory)continue;
         if(filter.source==Source::factory&&!p.factory)continue;
         if(filter.source==Source::user&&p.factory)continue;
         if(filter.favorites&&!isFavorite(p.id))continue;
         if(filter.recent&&!isRecent(p.id))continue;
-        auto text=p.name+" "+p.category+" "+p.tags;bool matches=true;
+        auto text=p.name+" "+p.category+" "+p.subcategory+" "+p.tags;bool matches=true;
         for(auto word:words){word=word.trim().unquoted();if(word.isNotEmpty()&&!text.containsIgnoreCase(word)){matches=false;break;}}
         if(matches)result.push_back(p.id);
     }

@@ -846,82 +846,98 @@
     {
       "id": "factory.4210ac245c0c2f12",
       "name": "Smooth Jazz Sax-Style Lead",
-      "category": "Sax-Style Leads"
+      "category": "Brass",
+      "subcategory": "Sax-Style Leads"
     },
     {
       "id": "factory.775d5d0205381728",
       "name": "Smooth Jazz Sax-Style Lead - Afterglow",
-      "category": "Sax-Style Leads"
+      "category": "Brass",
+      "subcategory": "Sax-Style Leads"
     },
     {
       "id": "factory.5781dcaf6f238bd7",
       "name": "Soul Sax-Style Lead",
-      "category": "Sax-Style Leads"
+      "category": "Brass",
+      "subcategory": "Sax-Style Leads"
     },
     {
       "id": "factory.6b20ac4826c2c7af",
       "name": "Soul Sax-Style Lead - Afterglow",
-      "category": "Sax-Style Leads"
+      "category": "Brass",
+      "subcategory": "Sax-Style Leads"
     },
     {
       "id": "factory.a2c603eb9e579228",
       "name": "80s Pop Sax-Style Lead",
-      "category": "Sax-Style Leads"
+      "category": "Brass",
+      "subcategory": "Sax-Style Leads"
     },
     {
       "id": "factory.11a15bbd1923f00a",
       "name": "80s Pop Sax-Style Lead - Afterglow",
-      "category": "Sax-Style Leads"
+      "category": "Brass",
+      "subcategory": "Sax-Style Leads"
     },
     {
       "id": "factory.54df668c4f0c57d1",
       "name": "City Pop Sax-Style Lead",
-      "category": "Sax-Style Leads"
+      "category": "Brass",
+      "subcategory": "Sax-Style Leads"
     },
     {
       "id": "factory.5e679aab37690fa1",
       "name": "City Pop Sax-Style Lead - Afterglow",
-      "category": "Sax-Style Leads"
+      "category": "Brass",
+      "subcategory": "Sax-Style Leads"
     },
     {
       "id": "factory.6fe614e94415ce93",
       "name": "Alto Sax-Style Lead",
-      "category": "Sax-Style Leads"
+      "category": "Brass",
+      "subcategory": "Sax-Style Leads"
     },
     {
       "id": "factory.ba7f84b6724b9d77",
       "name": "Alto Sax-Style Lead - Afterglow",
-      "category": "Sax-Style Leads"
+      "category": "Brass",
+      "subcategory": "Sax-Style Leads"
     },
     {
       "id": "factory.1bbbc5e5d25256f7",
       "name": "Tenor Sax-Style Lead",
-      "category": "Sax-Style Leads"
+      "category": "Brass",
+      "subcategory": "Sax-Style Leads"
     },
     {
       "id": "factory.6f24b2115046e8cf",
       "name": "Tenor Sax-Style Lead - Afterglow",
-      "category": "Sax-Style Leads"
+      "category": "Brass",
+      "subcategory": "Sax-Style Leads"
     },
     {
       "id": "factory.95976a0a8e61f3c1",
       "name": "Breath Sax-Style Lead",
-      "category": "Sax-Style Leads"
+      "category": "Brass",
+      "subcategory": "Sax-Style Leads"
     },
     {
       "id": "factory.db87cfd90199ae29",
       "name": "Breath Sax-Style Lead - Afterglow",
-      "category": "Sax-Style Leads"
+      "category": "Brass",
+      "subcategory": "Sax-Style Leads"
     },
     {
       "id": "factory.b376a064f7034682",
       "name": "Dream Sax-Style Lead",
-      "category": "Sax-Style Leads"
+      "category": "Brass",
+      "subcategory": "Sax-Style Leads"
     },
     {
       "id": "factory.a04556d711dfbc1f",
       "name": "Dream Sax-Style Lead - Afterglow",
-      "category": "Sax-Style Leads"
+      "category": "Brass",
+      "subcategory": "Sax-Style Leads"
     },
     {
       "id": "factory.a5b36f964ea95564",
@@ -3328,6 +3344,150 @@
       "id": "factory.d3150109ad7f7061",
       "name": "80s Neon Vowel Chords",
       "category": "80s Pop"
+    },
+    {
+      "id": "factory.ea6997ac0ca242a1",
+      "name": "Velvet Jazz Trumpet",
+      "category": "Brass",
+      "subcategory": "Trumpets"
+    },
+    {
+      "id": "factory.6cf080725f7217f5",
+      "name": "Bright Soul Trumpet",
+      "category": "Brass",
+      "subcategory": "Trumpets"
+    },
+    {
+      "id": "factory.5ac8f0ffc4108ee9",
+      "name": "Muted Midnight Trumpet",
+      "category": "Brass",
+      "subcategory": "Trumpets"
+    },
+    {
+      "id": "factory.d0fe39be5105257b",
+      "name": "Funk Trumpet Staccato",
+      "category": "Brass",
+      "subcategory": "Trumpets"
+    },
+    {
+      "id": "factory.ab8306276a0256e1",
+      "name": "Warm Slide Trombone",
+      "category": "Brass",
+      "subcategory": "Trombones"
+    },
+    {
+      "id": "factory.20f202bacbc30525",
+      "name": "Low Growl Trombone",
+      "category": "Brass",
+      "subcategory": "Trombones"
+    },
+    {
+      "id": "factory.0480c27bdd207bfe",
+      "name": "Round Tenor Trombone",
+      "category": "Brass",
+      "subcategory": "Trombones"
+    },
+    {
+      "id": "factory.bc0936e4fdf15233",
+      "name": "Short Bounce Trombone",
+      "category": "Brass",
+      "subcategory": "Trombones"
+    },
+    {
+      "id": "factory.f430916f5738072c",
+      "name": "Warm French Horn",
+      "category": "Brass",
+      "subcategory": "Horns"
+    },
+    {
+      "id": "factory.a1ae874f5266825f",
+      "name": "Cinematic Horn Bloom",
+      "category": "Brass",
+      "subcategory": "Horns"
+    },
+    {
+      "id": "factory.7e59517473e35583",
+      "name": "Muted Chamber Horn",
+      "category": "Brass",
+      "subcategory": "Horns"
+    },
+    {
+      "id": "factory.8fe5059df502d80e",
+      "name": "Sunrise Horn Call",
+      "category": "Brass",
+      "subcategory": "Horns"
+    },
+    {
+      "id": "factory.c900422e97a46ef7",
+      "name": "Soul Horn Section",
+      "category": "Brass",
+      "subcategory": "Brass Sections"
+    },
+    {
+      "id": "factory.9779b50eb13c5184",
+      "name": "Funk Horn Punch",
+      "category": "Brass",
+      "subcategory": "Brass Sections"
+    },
+    {
+      "id": "factory.01ae80d9bbeb6609",
+      "name": "City Pop Brass Section",
+      "category": "Brass",
+      "subcategory": "Brass Sections"
+    },
+    {
+      "id": "factory.bed66503a1806949",
+      "name": "Cinematic Low Brass",
+      "category": "Brass",
+      "subcategory": "Brass Sections"
+    },
+    {
+      "id": "factory.981a2e1b5e937e54",
+      "name": "Marching Brass Stab",
+      "category": "Brass",
+      "subcategory": "Brass Sections"
+    },
+    {
+      "id": "factory.0cfb441581b3d527",
+      "name": "Vintage Studio Brass",
+      "category": "Brass",
+      "subcategory": "Brass Sections"
+    },
+    {
+      "id": "factory.69189f10b1e35423",
+      "name": "Analog Poly Brass",
+      "category": "Brass",
+      "subcategory": "Synth Brass"
+    },
+    {
+      "id": "factory.b5ba74624ba2e0b6",
+      "name": "80s Arena Synth Brass",
+      "category": "Brass",
+      "subcategory": "Synth Brass"
+    },
+    {
+      "id": "factory.2322c886a4cf3f19",
+      "name": "FM Chrome Brass",
+      "category": "Brass",
+      "subcategory": "Synth Brass"
+    },
+    {
+      "id": "factory.c3814e6cf32feabf",
+      "name": "Neon Pulse Brass",
+      "category": "Brass",
+      "subcategory": "Synth Brass"
+    },
+    {
+      "id": "factory.6d72729980fa8e72",
+      "name": "Retro Arcade Brass",
+      "category": "Brass",
+      "subcategory": "Synth Brass"
+    },
+    {
+      "id": "factory.68ed49b6d10ed51e",
+      "name": "Dream Brass Pad",
+      "category": "Brass",
+      "subcategory": "Synth Brass"
     }
   ]
 }

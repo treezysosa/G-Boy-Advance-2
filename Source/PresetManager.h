@@ -4,7 +4,7 @@
 #include <set>
 class GbaProcessor;
 struct GbaPreset {
-    juce::String id,name,category,tags;
+    juce::String id,name,category,tags,subcategory;
     gba::Settings settings;
     juce::File file;
     bool factory=true;
@@ -13,11 +13,12 @@ struct GbaPreset {
 class PresetManager {
 public:
     enum class Source {all,factory,user};
-    struct Filter {juce::String query,category;Source source=Source::all;bool favorites=false,recent=false;};
+    struct Filter {juce::String query,category,subcategory;Source source=Source::all;bool favorites=false,recent=false;};
     explicit PresetManager(GbaProcessor&,juce::File dataRoot={});
     const std::vector<GbaPreset>& all() const noexcept {return presets;}
     const GbaPreset* find(const juce::String& id) const;
     juce::StringArray categories() const;
+    juce::StringArray subcategories(const juce::String& category) const;
     std::vector<juce::String> filtered(const Filter&) const;
     juce::Result refresh();
     std::uint64_t revision() const noexcept {return generation;}

@@ -128,7 +128,7 @@ int main(int argc,char** argv) {
         };
         auto p=load();check(p->getTotalNumInputChannels()==0&&p->getTotalNumOutputChannels()==2,"Unexpected VST3 buses");
         check(p->acceptsMidi()&&!p->producesMidi(),"Unexpected VST3 MIDI contract");
-        check(p->getNumPrograms()==650,"Expanded factory host program count is wrong");
+        check(p->getNumPrograms()==674,"Expanded factory host program count is wrong");
         check(p->getProgramName(409)=="Handheld Pulse Motion - Afterglow","Final factory program moved");
         check(p->getProgramName(529)=="Florida High Night Whistle - Afterglow","Regional host programs are missing");
         check(p->getProgramName(649)=="80s Neon Vowel Chords","Groove-pack host programs are missing");
