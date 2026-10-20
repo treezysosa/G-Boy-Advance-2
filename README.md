@@ -6,7 +6,24 @@ Saved projects retain their explicit synthesis settings, including sounds from t
 
 Version **0.16.2** optimizes sustained built-in pad/string voices and ROM Hacks SoundFont processing. Factory sounds, polyphony, tails, project state and all twenty skins are retained. [Current changes and evidence](docs/RELEASE_0_16_2.md).
 
-Windows validation and packaging are in progress. Verified installer links and measured results will be recorded after completion.
+[Download Windows installer 0.16.2](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39446025149/artifacts/12276169340) · [Portable/manual archive](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39446025149/artifacts/12276089363) · [Source](https://github.com/treezysosa/G-Boy-Advance-2/tree/feature/pad-string-cpu-0162). Close FL Studio and standalone, extract into a fresh folder, run `G-Boy-Advance-2-Setup-x64.exe`, then reopen FL64. User presets, banks and preferences are retained.
+
+[Windows/Ubuntu run 39446025149](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39446025149) passed nine Ubuntu suites and twelve Windows CTest suites: 630,175 common DSP/preset checks, 2,884 Windows application checks (332 library / 164 SoundFont), both actual-bundle hosts (647/648), pluginval strictness 10, Steinberg 47 passed / 0 failed and six installer lifecycle checks. The synthetic FL-named host is not FL Studio.
+
+The existing 694-scene / 10,985,472-float probe is byte-identical: **True**, maximum error 0.0, SHA256 `e11dc0441a54813b12522f57c77e667df090ab3572ad7e447fead6effffe07bd`. The additional 148 eight-second pad/string/SF2 scenes / 147,532,832 floats are byte-identical: **True**, maximum error 0.0, SHA256 `b82eb8711e49eb3cc033b810df7b3a83d2d386b75f73f8a55d94bbbc3e9dfa7a`. These compare the same compiler and drivers against immutable released 0.16.1 source.
+
+Matched Windows measurements across all three rates, both callback sizes and both workloads, repeated in before/after/after/before order:
+
+| Requested voices | Built-in pad/string DSP time reduction | SF2 fixture DSP time reduction |
+|---:|---:|---:|
+| 4 | 6.17% | 1.39% |
+| 8 | 8.70% | 2.48% |
+| 16 | 9.65% | 3.47% |
+| 32 | 8.88% | 5.11% |
+
+Positive percentages mean less measured render time; negative values mean more on that shared runner. Setup/warmup are excluded. These results are not predicted FL Studio CPU percentages or guarantees for arbitrary SoundFonts, computers and audio drivers.
+
+Owner FL64, real audio/MIDI devices, DPI and human listening remain manual acceptance work. The prepared build is unsigned and the owner’s licensing decision remains deferred.
 
 ![G Boy Advance 2 Phase 2 native JUCE editor](docs/images/phase2-main.png)
 

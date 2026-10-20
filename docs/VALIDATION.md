@@ -1,4 +1,4 @@
-> Current update: **0.16.2**, sustained pad/string and SoundFont CPU optimizations. All 574 factory dictionaries and program/parameter identities are retained. Windows validation is in progress. [Current evidence](RELEASE_0_16_2.md). Earlier results below retain their historical baselines.
+> Current update: **0.16.2**, sustained pad/string and SoundFont CPU optimizations. All 574 factory dictionaries and program/parameter identities are retained. Windows/Ubuntu suites, both VST3 validators, matched CPU/audio probes and installer upgrade checks pass. [Current evidence](RELEASE_0_16_2.md). Earlier results below retain their historical baselines.
 
 > Current update: **0.16.1**, 574 active factory presets in 20 categories. Four vocal categories are removed; all surviving sound dictionaries, original host numbers and DSP are unchanged. Windows/Ubuntu suites, both plugin validators, seventy-six old-project migration/echo cases and installer upgrade checks pass. The 694-scene audio probe is byte-identical to 0.16.0 DSP with identical current arrays. [Current evidence](RELEASE_0_16_1.md). Earlier results below retain their historical baselines.
 

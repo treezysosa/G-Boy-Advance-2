@@ -1,6 +1,6 @@
 # Exact next steps
 
-Version 0.16.2 targets sustained pad/string and SoundFont CPU use without reducing polyphony or tails. [Current evidence](RELEASE_0_16_2.md). Windows validation and packaging are in progress; the remaining manual acceptance items are below.
+Version 0.16.2 targets sustained pad/string and SoundFont CPU use without reducing polyphony or tails. [Current evidence](RELEASE_0_16_2.md). [Windows/Ubuntu run 39446025149](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39446025149) passed nine Ubuntu suites and twelve Windows CTest suites: 630,175 common DSP/preset checks, 2,884 Windows application checks (332 library / 164 SoundFont), both actual-bundle hosts (647/648), pluginval strictness 10, Steinberg 47 passed / 0 failed and six installer lifecycle checks. The synthetic FL-named host is not FL Studio.; the remaining manual acceptance items are below.
 
 1. Complete the remaining manual matrix in RELEASE_CHECKLIST.md on real Windows devices and the five named DAWs. Record host/Windows versions, interface/driver, sample rate, buffer, date and evidence. Source inspection and a custom host do not establish named-DAW compatibility.
 2. Profile low driver buffers with real GUI, multiple instances, note-on bursts and rapid engine/parameter requests. Investigate any actual underruns; the current shared-runner over-budget observations are recorded in RELEASE_0_13.md without assigning a cause. Revalidate/recalibrate audio if further DSP work changes timbre/levels.
