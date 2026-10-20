@@ -1,4 +1,4 @@
-> Current update: **0.17.0**, Brass contains 24 new sounds plus 16 unchanged sax leads; 598 factory presets across 18 categories. Native DSP is unchanged. [Current changes and validation](RELEASE_0_17_0.md). Earlier results below retain their historical baselines.
+> Current update: **0.17.0**, Brass contains 24 new presets and all 16 unchanged sax leads; 598 factory presets across 18 categories. Windows/Ubuntu suites, both VST3 validators, browser family filters, edited sax-project restoration and the 0.16.3 → 0.17.0 installer upgrade passed. DSP remains unchanged. [Current evidence](RELEASE_0_17_0.md). Earlier results below retain their historical baselines.
 
 > Current update: **0.16.3**, **Vocals** combines all 74 retained vocal-category sounds; 574 factory presets across 18 categories. Windows and Ubuntu suites, both VST3 validators, edited legacy-category restoration and the 0.16.2 → 0.16.3 installer upgrade passed. DSP and SoundFont processing are unchanged from 0.16.2. [Current evidence](RELEASE_0_16_3.md). Earlier results below retain their historical baselines.
 

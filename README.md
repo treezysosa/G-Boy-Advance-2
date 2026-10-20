@@ -6,7 +6,7 @@ Saved projects retain their explicit synthesis settings, including sounds from t
 
 Version **0.17.0** adds a Brass folder with optional family browsing for Sax-Style Leads, Trumpets, Trombones, Horns, Brass Sections and Synth Brass. Existing sound dictionaries, program identities and CPU improvements are retained. [Current changes](docs/RELEASE_0_17_0.md).
 
-For Windows builds and installation, use the commands below. Close FL Studio and standalone before installing; user presets, banks and preferences are retained.
+[Download Windows installer 0.17.0](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39460496611/artifacts/12284335363) · [Portable/manual archive](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39460496611/artifacts/12284355262) · [Source](https://github.com/treezysosa/G-Boy-Advance-2/tree/feature/brass-library-0170). Close FL Studio and standalone before installing; extract into a fresh folder and run `G-Boy-Advance-2-Setup-x64.exe`. User presets, banks and preferences are retained.
 
 [Windows/Ubuntu run 39446025149](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39446025149) passed nine Ubuntu suites and twelve Windows CTest suites: 630,175 common DSP/preset checks, 2,884 Windows application checks (332 library / 164 SoundFont), both actual-bundle hosts (647/648), pluginval strictness 10, Steinberg 47 passed / 0 failed and six installer lifecycle checks. The synthetic FL-named host is not FL Studio.
 
