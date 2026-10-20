@@ -20,12 +20,12 @@ try{
     {
         auto a=std::make_unique<GbaProcessor>(root);auto& m=a->presets;const auto factory=m.all().front().id;
         check(m.all().size()==598,"Factory count/order drifted");check(!root.getChildFile("library.json").exists(),"Construction unexpectedly writes recent history");
-        for(const char* category:{"Hip-Hop - Detroit","Hip-Hop - West Coast","Hip-Hop - Florida"}) {
+        for(const char* category:{"Detroit","West Coast","Florida"}) {
             PresetManager::Filter regional;regional.category=category;regional.source=PresetManager::Source::factory;
-            check(m.filtered(regional).size()==(juce::String(category)=="Hip-Hop - Detroit"?60u:40u),"Regional factory category is incomplete");
+            check(m.filtered(regional).size()==(juce::String(category)=="Detroit"?60u:40u),"Regional factory category is incomplete");
             for(const char* family:{"piano","bell","pluck","pad","vox"}){regional.query=family;check(!m.filtered(regional).empty(),"Regional family/tag search is incomplete");}
         }
-        for(const char* category:{"Hip-Hop - Chicago Drill","Funk","Japan Inspired","80s Pop"}) {
+        for(const char* category:{"Chicago","Funk","Japan Inspired","80s Pop"}) {
             PresetManager::Filter pack;pack.category=category;pack.source=PresetManager::Source::factory;
             const auto patches=m.filtered(pack);check(patches.size()==(juce::String(category)=="80s Pop"?28u:24u),"Groove category count is wrong");
             for(const auto& patchId:patches){
@@ -35,7 +35,7 @@ try{
                 check(matches,("Groove preset parameters changed beyond host normalization precision on load: "+m.find(patchId)->name.toStdString()).c_str());
             }
         }
-        PresetManager::Filter detroit;detroit.category="Hip-Hop - Detroit";detroit.query="piano";
+        PresetManager::Filter detroit;detroit.category="Detroit";detroit.query="piano";
         check(m.filtered(detroit).size()==30,"Expanded Detroit piano search is incomplete");
         PresetManager::Filter f;f.query="FM bass";auto ids=m.filtered(f);check(!ids.empty(),"AND search across name/category/tags has no results");for(const auto& id:ids){auto* p=m.find(id);check((p->name+" "+p->category+" "+p->tags).containsIgnoreCase("bass"),"AND search admits missing words");}
         f.query="\"early 3D\" retro";ids=m.filtered(f);check(!ids.empty(),"Quoted technical-style search failed");for(const auto& id:ids)check(m.find(id)->tags.containsIgnoreCase("early 3D"),"Quoted phrase was split");

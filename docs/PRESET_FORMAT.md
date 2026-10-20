@@ -100,3 +100,7 @@ The 74 active presets previously listed under Global Pop Textures, Horror and Ch
 ## Brass metadata and program append (0.17.0)
 
 Factory patches may include an optional `subcategory` string for browser family filtering; it is not an audio parameter. Brass uses Sax-Style Leads for its 16 unchanged sax voices and five additional families for 24 new individually authored complete dictionaries in `brass-designs.json`. The top-level factory categories remain flat; the optional family selector filters inside Brass. The original 650 host registry slots stay fixed and new identities append slots 650–673. There are 598 active patches and 76 retired slots. Existing user preset files remain schema version 1 and do not acquire factory subfolder metadata.
+
+## Regional display names (0.17.1)
+
+The generator maps its original regional recipe categories to Detroit, West Coast, Florida and Chicago after synthesis and tag generation. The identity registry and shipped factory JSON use these shorter browser names. Only the 164 category fields change; all 598 parameter dictionaries, tags, names, gains and the 674-entry program order remain fixed. Calibration accepts both the legacy and current category names so family-specific bass/pad/vox targets remain valid on future regeneration.

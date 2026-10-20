@@ -19,10 +19,10 @@ Central-note maximum rolling 100 ms stereo RMS: 0.009269–0.036000 (11.78 dB sp
 | Strings | 20 | additive, physical modeling, subtractive, wavetable | 0.01518–0.02800 |
 | Vocals | 74 | formant | 0.01425–0.02000 |
 | Retro Games | 56 | additive, chiptune, fm, formant, modal, physical modeling, wavetable | 0.00975–0.02500 |
-| Hip-Hop - Detroit | 60 | additive, fm, formant, modal, physical modeling, subtractive, wavetable | 0.01372–0.03600 |
-| Hip-Hop - West Coast | 40 | additive, fm, formant, physical modeling, subtractive, wavetable | 0.02000–0.03600 |
-| Hip-Hop - Florida | 40 | fm, formant, modal, physical modeling, subtractive, wavetable | 0.01152–0.03600 |
-| Hip-Hop - Chicago Drill | 24 | additive, chiptune, fm, formant, modal, physical modeling, subtractive, wavetable | 0.00941–0.03600 |
+| Detroit | 60 | additive, fm, formant, modal, physical modeling, subtractive, wavetable | 0.01372–0.03600 |
+| West Coast | 40 | additive, fm, formant, physical modeling, subtractive, wavetable | 0.02000–0.03600 |
+| Florida | 40 | fm, formant, modal, physical modeling, subtractive, wavetable | 0.01152–0.03600 |
+| Chicago | 24 | additive, chiptune, fm, formant, modal, physical modeling, subtractive, wavetable | 0.00941–0.03600 |
 | Funk | 24 | additive, fm, modal, physical modeling, subtractive, wavetable | 0.01127–0.03600 |
 | Japan Inspired | 24 | additive, chiptune, fm, formant, modal, physical modeling, subtractive, wavetable | 0.01466–0.03600 |
 | 80s Pop | 28 | additive, fm, formant, modal, subtractive, wavetable | 0.00927–0.03600 |

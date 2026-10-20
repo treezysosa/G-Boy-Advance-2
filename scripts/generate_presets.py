@@ -327,6 +327,13 @@ def brass_patches(specs):
     assert actual==counts,actual
     return patches
 
+CATEGORY_NAMES = {
+    'Hip-Hop - Detroit': 'Detroit',
+    'Hip-Hop - West Coast': 'West Coast',
+    'Hip-Hop - Florida': 'Florida',
+    'Hip-Hop - Chicago Drill': 'Chicago',
+}
+
 def generate(uncalibrated=False):
     specs=schema()
     patches=[make_patch(category,name,variation,specs) for category,names in GROUPS.items()
@@ -342,6 +349,7 @@ def generate(uncalibrated=False):
             patch['category'] = 'Vocals'
         elif patch['category']=='Sax-Style Leads':
             patch['category']='Brass';patch['subcategory']='Sax-Style Leads'
+        patch['category']=CATEGORY_NAMES.get(patch['category'],patch['category'])
     index=json.loads((ROOT/'Presets/factory-index.json').read_text())
     assert index['format']=='gba2.factory-index' and index['schemaVersion']==1
     by_id={p['id']:p for p in patches}

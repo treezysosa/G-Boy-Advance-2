@@ -1,4 +1,4 @@
-> Current version: **0.17.0**. Brass contains 24 new brass sounds plus all 16 previous sax leads. There are 598 factory presets across 18 categories. Existing CPU improvements, twenty skins, Vocals and ROM Hacks SF2 recall are retained. [Current changes](RELEASE_0_17_0.md).
+> Current version: **0.17.1**. Regional folders are named Detroit, West Coast, Florida and Chicago. All 598 presets across 18 categories, Brass/sax sounds, Vocals, skins and ROM Hacks behavior are retained. [Current changes](RELEASE_0_17_1.md).
 
 
 Older 0.12.0 projects restore their synthesis parameters and skin, show `SYNTH ONLY:` in the display and a removal notice in START, and discard embedded audio from newly saved state. Sample sounds no longer play. Original project, audio and preset files are left unchanged; preserve the original project if its sample content is still needed. Sample-containing presets are rejected/skipped. Schema 1 synthesis `.gba2preset` import/export continues to work.
@@ -157,3 +157,7 @@ The seventy-six old program numbers are reserved in the host program list so the
 ### Brass and sax sounds
 
 Open START and select **Brass** to see all 40 sounds, including the 16 existing sax leads. The optional **All subfolders** menu narrows Brass to **Sax-Style Leads**, **Trumpets**, **Trombones**, **Horns**, **Brass Sections** or **Synth Brass**. Search, favorites, recent history and source filters still apply. Choosing another category clears the subfolder filter. Existing sax projects keep their saved sound settings; their category now displays Brass.
+
+### Regional preset folders
+
+The regional factory categories are **Detroit** (60 sounds), **West Coast** (40), **Florida** (40) and **Chicago** (24). These replace the previous Hip-Hop category labels. Individual preset names and their sounds are unchanged. The preset browser and D-pad use the new names; existing projects retain their saved synthesis settings.

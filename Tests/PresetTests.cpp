@@ -115,8 +115,8 @@ int main(int argc,char** argv){try{
         brassIndex<<"24 original synthesized brass audition renders. Never installed or loaded by the instrument. Human listening acceptance pending.\n";
         for(const auto& p:gba::factoryPatches)if(p.program>=650)excerpt(p,"brass-auditions",++number,brassIndex);
         std::filesystem::create_directories("hiphop-auditions");std::ofstream hiphopIndex("hiphop-auditions/README.txt");hiphopIndex<<"Original Detroit, West Coast and Florida synthesis examples. Not samples for the instrument. Human listening acceptance pending.\n";number=0;
-        for(const auto& p:gba::factoryPatches)if(std::string_view(p.category).starts_with("Hip-Hop - ")&&std::string_view(p.name).find(" - Afterglow")==std::string_view::npos)excerpt(p,"hiphop-auditions",++number,hiphopIndex);
-        for(const auto& category:{"Hip-Hop - Detroit","Hip-Hop - Chicago Drill","Funk","Japan Inspired","80s Pop"}) {
+        for(const auto& p:gba::factoryPatches)if((std::string_view(p.category)=="Detroit"||std::string_view(p.category)=="West Coast"||std::string_view(p.category)=="Florida"||std::string_view(p.category)=="Chicago")&&std::string_view(p.name).find(" - Afterglow")==std::string_view::npos)excerpt(p,"hiphop-auditions",++number,hiphopIndex);
+        for(const auto& category:{"Detroit","Chicago","Funk","Japan Inspired","80s Pop"}) {
             const auto directory=std::filesystem::path("groove-auditions")/category;
             std::filesystem::create_directories(directory);std::ofstream grooveIndex(directory/"README.txt");number=0;
             grooveIndex<<"Original synthesis test renders for the 0.16.0 additions. Not installed or read by the plugin. Human listening acceptance pending.\n";

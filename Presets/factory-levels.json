@@ -1,7 +1,7 @@
 {
   "format": "gba2.factory-levels",
   "schemaVersion": 1,
-  "recipeSha256": "52b8b5e1ed6451e28af0e33c075ac6c7e06b563f17435019c15de1299dda811a",
+  "recipeSha256": "b3c1f2f9dfeee6251022bfc742176036a2c72e55ac603aee7df246d53191e65b",
   "metric": "Maximum rolling 100 ms stereo RMS at 48 kHz, MIDI 60 (bass 48), velocity 0.9, hold max(0.8s, attack+0.35s). Master volume is after the limiter; no audio is stored.",
   "targets": {
     "80s Pop": 0.026,
@@ -11,10 +11,10 @@
     "Flutes": 0.026,
     "Funk": 0.026,
     "Guitars": 0.026,
-    "Hip-Hop - Chicago Drill": 0.026,
-    "Hip-Hop - Detroit": 0.026,
-    "Hip-Hop - Florida": 0.026,
-    "Hip-Hop - West Coast": 0.026,
+    "Chicago": 0.026,
+    "Detroit": 0.026,
+    "Florida": 0.026,
+    "West Coast": 0.026,
     "Japan Inspired": 0.026,
     "Pads": 0.028,
     "Pianos and Keys": 0.026,

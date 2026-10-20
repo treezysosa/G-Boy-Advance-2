@@ -1,12 +1,12 @@
-# G BOY ADVANCE 2 — 0.17.0
+# G BOY ADVANCE 2 — 0.17.1
 
 **598 factory presets across 18 categories.** Brass contains 24 new brass presets and all 16 previous sax leads. The 74-sound Vocals folder and every other existing sound are retained.
 
 Saved projects retain their explicit synthesis settings, including sounds from the removed categories. Seventy-six old host program numbers are reserved to keep every surviving program number stable; choosing a reserved slot from another program loads Dream Pad. Repeating the current retired slot after project restoration preserves the saved sound. Reserved slots are separate from the 598 active factory presets. Existing user presets are retained.
 
-Version **0.17.0** adds a Brass folder with optional family browsing for Sax-Style Leads, Trumpets, Trombones, Horns, Brass Sections and Synth Brass. Existing sound dictionaries, program identities and CPU improvements are retained. [Current changes](docs/RELEASE_0_17_0.md).
+Version **0.17.1** shortens the four regional folder names to **Detroit**, **West Coast**, **Florida** and **Chicago**. All 598 sounds, preset names and identities remain unchanged. [Current changes](docs/RELEASE_0_17_1.md).
 
-[Download Windows installer 0.17.0](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39460496611/artifacts/12284335363) · [Portable/manual archive](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39460496611/artifacts/12284355262) · [Source](https://github.com/treezysosa/G-Boy-Advance-2/tree/feature/brass-library-0170). Close FL Studio and standalone before installing; extract into a fresh folder and run `G-Boy-Advance-2-Setup-x64.exe`. User presets, banks and preferences are retained.
+For Windows builds and installation, use the commands below. Close FL Studio and standalone before installing; user presets, banks and preferences are retained.
 
 [Windows/Ubuntu run 39446025149](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39446025149) passed nine Ubuntu suites and twelve Windows CTest suites: 630,175 common DSP/preset checks, 2,884 Windows application checks (332 library / 164 SoundFont), both actual-bundle hosts (647/648), pluginval strictness 10, Steinberg 47 passed / 0 failed and six installer lifecycle checks. The synthetic FL-named host is not FL Studio.
 

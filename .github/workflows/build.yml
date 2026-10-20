@@ -86,7 +86,7 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           name: G-Boy-Advance-2-Installer-x64
-          run-id: 39451806321
+          run-id: 39460496611
           github-token: ${{ github.token }}
           path: build/previous-installer
       - name: Exercise install, upgrade, reinstall, standalone launch and uninstall
@@ -142,12 +142,12 @@ jobs:
         if: always()
         with:
           name: Detroit-piano-auditions-Windows
-          path: build/groove-auditions/Hip-Hop - Detroit/**
+          path: build/groove-auditions/Detroit/**
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: Chicago-Drill-auditions-Windows
-          path: build/groove-auditions/Hip-Hop - Chicago Drill/**
+          path: build/groove-auditions/Chicago/**
       - uses: actions/upload-artifact@v4
         if: always()
         with:

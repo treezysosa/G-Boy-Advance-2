@@ -346,8 +346,8 @@ int main(int argc,char** argv) {
             auto* search=dynamic_cast<juce::TextEditor*>(named(*editor,"Preset search"));auto* categoryFilter=dynamic_cast<juce::ComboBox*>(named(*editor,"Preset category"));auto* sourceFilter=dynamic_cast<juce::ComboBox*>(named(*editor,"Preset source"));auto* presetList=dynamic_cast<juce::ListBox*>(named(*editor,"Presets"));auto* presetName=dynamic_cast<juce::TextEditor*>(named(*editor,"Preset name"));auto* presetTags=dynamic_cast<juce::TextEditor*>(named(*editor,"Preset tags"));
             check(search&&categoryFilter&&sourceFilter&&presetList&&presetName&&presetTags,"Browser controls are missing accessible names");
             auto rows=[&]{return presetList->getListBoxModel()->getNumRows();};auto query=[&](const juce::String& value){search->setText(value);juce::MessageManager::getInstance()->runDispatchLoopUntil(30);};
-            sourceFilter->setSelectedId(2,juce::sendNotificationSync);categoryFilter->setText("Hip-Hop - Detroit",juce::sendNotificationSync);check(rows()==60,"Regional browser category is incomplete");query("piano");check(rows()==30,"Regional piano tag search failed");query("vox");check(rows()==6,"Regional vox tag search failed");query("");
-            for(const char* category:{"Hip-Hop - Chicago Drill","Funk","Japan Inspired","80s Pop"}) {
+            sourceFilter->setSelectedId(2,juce::sendNotificationSync);categoryFilter->setText("Detroit",juce::sendNotificationSync);check(rows()==60,"Regional browser category is incomplete");query("piano");check(rows()==30,"Regional piano tag search failed");query("vox");check(rows()==6,"Regional vox tag search failed");query("");
+            for(const char* category:{"Chicago","Funk","Japan Inspired","80s Pop"}) {
                 categoryFilter->setText(category,juce::sendNotificationSync);check(rows()==(juce::String(category)=="80s Pop"?28:24),"Groove browser category is incomplete");
                 query("bass");check(rows()>0,"Groove bass tag search failed");query("");
             }
