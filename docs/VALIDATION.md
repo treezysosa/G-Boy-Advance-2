@@ -1,4 +1,4 @@
-> Current update: **0.16.3**, unified Vocals category: 74 unchanged sounds in one folder, 574 factory presets across 18 categories. DSP and SoundFont processing are unchanged from 0.16.2. [Current changes and validation](RELEASE_0_16_3.md). Earlier results below describe their historical baselines.
+> Current update: **0.16.3**, **Vocals** combines all 74 retained vocal-category sounds; 574 factory presets across 18 categories. Windows and Ubuntu suites, both VST3 validators, edited legacy-category restoration and the 0.16.2 → 0.16.3 installer upgrade passed. DSP and SoundFont processing are unchanged from 0.16.2. [Current evidence](RELEASE_0_16_3.md). Earlier results below retain their historical baselines.
 
 > Current update: **0.16.2**, sustained pad/string and SoundFont CPU optimizations. All 574 factory dictionaries and program/parameter identities are retained. Windows/Ubuntu suites, both VST3 validators, matched CPU/audio probes and installer upgrade checks pass. [Current evidence](RELEASE_0_16_2.md). Earlier results below retain their historical baselines.
 
