@@ -38,7 +38,7 @@ void removedVocalProjects(const juce::File& root) {
     auto p=std::make_unique<GbaProcessor>(root.getChildFile("RemovedVocals"));
     p->setRateAndBufferSizeDetails(48000,256);p->prepareToPlay(48000,256);
     const auto defaultSettings=p->snapshot();
-    check(p->presets.all().size()==574&&p->presets.categories().size()==20,"Retired categories remain in the factory browser");
+    check(p->presets.all().size()==574&&p->presets.categories().size()==18,"Retired categories remain in the factory browser");
     for(const char* name:{"Vocals - Pop and Indie","Vocals - Southern and West Coast","Vocals - Cartoon and Gaming","Vocals - Soul and R&B"}) {
         PresetManager::Filter f;f.category=name;check(p->presets.filtered(f).empty()&&!p->presets.categories().contains(name),"Removed category remains selectable");
     }
@@ -70,8 +70,37 @@ void removedVocalProjects(const juce::File& root) {
     juce::MemoryBlock lastProject;check(lastProject.fromBase64Encoding(projects->getLast()["state"].toString()),"Last old project fixture is invalid");p->setStateInformation(lastProject.getData(),int(lastProject.getSize()));
     const auto kept=p->snapshot();check(p->presets.saveAs("Kept Project Sound").wasOk(),"Could not keep a restored sound as a user preset");
     const auto userId=p->presetId();p->presets.restoreDefault(false);check(p->presets.load(userId)&&p->snapshot().values==kept.values,"User preset no longer reloads independently of removed factory categories");
-    for(int i=0;i<20;++i){p->presets.stepCategory(1);check(p->presetCategory()!="Vocals - Pop and Indie"&&p->presetCategory()!="Vocals - Southern and West Coast"&&p->presetCategory()!="Vocals - Cartoon and Gaming"&&p->presetCategory()!="Vocals - Soul and R&B","D-pad category navigation reaches a removed category");}
-    std::cout<<"PASS 76 actual 0.16.0 removed-vocal projects: edited settings, audible notes, resave, reserved host slots, surviving program numbers and 20 browser categories\n";
+    for(int i=0;i<18;++i){p->presets.stepCategory(1);check(p->presetCategory()!="Vocals - Pop and Indie"&&p->presetCategory()!="Vocals - Southern and West Coast"&&p->presetCategory()!="Vocals - Cartoon and Gaming"&&p->presetCategory()!="Vocals - Soul and R&B","D-pad category navigation reaches a removed category");}
+    std::cout<<"PASS 76 actual 0.16.0 removed-vocal projects: edited settings, audible notes, resave, reserved host slots, surviving program numbers and 18 browser categories\n";
+}
+void unifiedVocals(const juce::File& root) {
+    auto p=std::make_unique<GbaProcessor>(root.getChildFile("UnifiedVocals"));
+    PresetManager::Filter filter;filter.category="Vocals";filter.source=PresetManager::Source::factory;
+    check(p->presets.filtered(filter).size()==74,"Unified Vocals category lost factory sounds");
+    const char* names[]{"Japanese City Pop Vocal Synth","Ghost Whisper Synth","Children's Choir-Style Synth"};
+    const char* categories[]{"Vocals - Global Pop Textures","Vocals - Horror","Vocals - Choirs and Textures"};
+    for(int group=0;group<3;++group) {
+        check(!p->presets.categories().contains(categories[group]),"Old vocal folder remains selectable");
+        for(const auto& patch:gba::factoryPatches)if(juce::String(patch.name)==names[group]) {
+            check(p->presets.load(patch.id),"Could not load a merged vocal preset");
+            set(*p,"filter.cutoff",4321);const auto edited=p->snapshot();
+            juce::MemoryBlock current;p->getStateInformation(current);
+            auto xml=juce::AudioProcessor::getXmlFromBinary(current.getData(),int(current.getSize()));
+            check(xml!=nullptr,"Could not create legacy-category project fixture");
+            xml->setAttribute("presetCategory",categories[group]);
+            juce::MemoryBlock legacy;juce::AudioProcessor::copyXmlToBinary(*xml,legacy);
+            p->presets.restoreDefault(false);p->setStateInformation(legacy.getData(),int(legacy.getSize()));
+            check(p->presetCategory()=="Vocals"&&p->presetId()==patch.id&&p->presetName()==patch.name&&p->getCurrentProgram()==patch.program,"Saved vocal project lost its identity or new category");
+            check(p->snapshot().values==edited.values,"Category migration replaced edited project parameters");
+            juce::MemoryBlock saved;p->getStateInformation(saved);
+            auto migrated=juce::AudioProcessor::getXmlFromBinary(saved.getData(),int(saved.getSize()));
+            check(migrated&&migrated->getStringAttribute("presetCategory")=="Vocals","Resaved vocal project retained the old category");
+        }
+    }
+    std::set<juce::String> visited;
+    for(int i=0;i<18;++i){p->presets.stepCategory(1);visited.insert(p->presetCategory());}
+    check(visited.size()==18&&visited.count("Vocals")==1,"D-pad navigation did not visit each merged category once");
+    std::cout<<"PASS 74 merged Vocals presets, three legacy-category edited projects and 18-category navigation\n";
 }
 void launchAppearance(const juce::File& root) {
     for(int previous=0;previous<int(gba_ui::skins.size());++previous) {
@@ -152,6 +181,7 @@ int main(int argc,char** argv) {
     auto root=juce::File::getSpecialLocation(juce::File::tempDirectory).getChildFile("gba2-tests-"+juce::Uuid().toString());
     try {
         removedVocalProjects(root);
+        unifiedVocals(root);
         launchAppearance(root);
         checks+=runLibraryTests();
         checks+=runSoundFontTests();

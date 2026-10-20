@@ -1,6 +1,6 @@
 # Factory library audit
 
-574 parameter-only presets across 20 categories. The 102 named instrument designs, 37 named vocal designs, 28 named retro designs and 60 regional hip-hop designs each have an active Afterglow voicing. The 120 additional groove-pack designs are individually authored complete patches, without automatic Afterglow variants. Surviving IDs and all host program indices are frozen; seventy-six removed-category slots are reserved by `Presets/factory-index.json`.
+574 parameter-only presets across 18 categories. The 102 named instrument designs, 37 named vocal designs, 28 named retro designs and 60 regional hip-hop designs each have an active Afterglow voicing. The 120 additional groove-pack designs are individually authored complete patches, without automatic Afterglow variants. Surviving IDs and all host program indices are frozen; seventy-six removed-category slots are reserved by `Presets/factory-index.json`.
 
 This report describes native numerical renders at 48 kHz. It does not certify perceptual uniqueness, natural acoustic realism or commercial sound quality. Human listening acceptance remains pending.
 
@@ -17,9 +17,7 @@ Central-note maximum rolling 100 ms stereo RMS: 0.009269–0.036000 (11.78 dB sp
 | Plucks | 20 | additive, chiptune, fm, physical modeling, subtractive, wavetable | 0.01132–0.02600 |
 | Sax-Style Leads | 16 | formant | 0.02600–0.02600 |
 | Strings | 20 | additive, physical modeling, subtractive, wavetable | 0.01518–0.02800 |
-| Vocals - Global Pop Textures | 24 | formant | 0.02000–0.02000 |
-| Vocals - Horror | 14 | formant | 0.02000–0.02000 |
-| Vocals - Choirs and Textures | 36 | formant | 0.01425–0.02000 |
+| Vocals | 74 | formant | 0.01425–0.02000 |
 | Retro Games | 56 | additive, chiptune, fm, formant, modal, physical modeling, wavetable | 0.00975–0.02500 |
 | Hip-Hop - Detroit | 60 | additive, fm, formant, modal, physical modeling, subtractive, wavetable | 0.01372–0.03600 |
 | Hip-Hop - West Coast | 40 | additive, fm, formant, physical modeling, subtractive, wavetable | 0.02000–0.03600 |

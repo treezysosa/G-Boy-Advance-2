@@ -59,7 +59,8 @@ function Check-Installed {
     }
     $factory=Get-Content -LiteralPath (Join-Path $app 'Factory Presets/factory.json') -Raw | ConvertFrom-Json
     $categories=@($factory.presets.category | Sort-Object -Unique)
-    if($factory.presets.Count -ne 574 -or $categories.Count -ne 20 -or $categories -contains 'Vocals - Pop and Indie' -or $categories -contains 'Vocals - Southern and West Coast' -or $categories -contains 'Vocals - Cartoon and Gaming' -or $categories -contains 'Vocals - Soul and R&B') {throw 'Installed factory bank did not remove the requested vocal categories.'}
+    if($factory.presets.Count -ne 574 -or $categories.Count -ne 18 -or $categories -contains 'Vocals - Pop and Indie' -or $categories -contains 'Vocals - Southern and West Coast' -or $categories -contains 'Vocals - Cartoon and Gaming' -or $categories -contains 'Vocals - Soul and R&B') {throw 'Installed factory bank did not remove the requested vocal categories.'}
+    if(@($factory.presets | Where-Object category -eq 'Vocals').Count -ne 74 -or $categories -contains 'Vocals - Global Pop Textures' -or $categories -contains 'Vocals - Horror' -or $categories -contains 'Vocals - Choirs and Textures') {throw 'Installed Vocals folder is incomplete or still split into old categories.'}
     if ((Get-FileHash -LiteralPath $sentinel).Hash -ne $sentinelHash) { throw 'Installer changed user preset data.' }
     if ((Get-FileHash -LiteralPath $audioSentinel).Hash -ne $audioSentinelHash) { throw 'Installer changed personal audio data.' }
     if ((Get-FileHash -LiteralPath $sfSentinel).Hash -ne $sfSentinelHash) { throw 'Installer changed the SoundFont cache.' }
@@ -73,14 +74,14 @@ try {
         Run-Setup $previous @('/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART','/SP-',"/DIR=`"$app`"","/LOG=`"$(Join-Path $logs 'install-previous.txt')`"")
         $installed=$true
         if(-not (Test-Path -LiteralPath (Join-Path $vst 'Contents/x86_64-win/G Boy Advance 2.vst3'))) {throw 'Previous-version VST3 was not installed.'}
-        if((Get-ItemProperty $key).DisplayVersion -ne '0.16.1') {throw 'Upgrade test requires the pinned 0.16.1 installer.'}
+        if((Get-ItemProperty $key).DisplayVersion -ne '0.16.2') {throw 'Upgrade test requires the pinned 0.16.2 installer.'}
         if ((Get-FileHash -LiteralPath $sentinel).Hash -ne $sentinelHash) {throw 'Previous installer changed user data.'}
-        $report.Add('PASS pinned 0.16.1 installation before upgrade, default VST3 path and user-data preservation')
+        $report.Add('PASS pinned 0.16.2 installation before upgrade, default VST3 path and user-data preservation')
     }
     Run-Setup $Installer @('/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART','/SP-',"/DIR=`"$app`"","/LOG=`"$(Join-Path $logs 'install.txt')`"")
     $installed=$true;Check-Installed
-    if((Get-ItemProperty $key).DisplayVersion -ne '0.16.2') {throw 'Installed registry version does not match the release candidate.'}
-    $kind=if($PreviousInstaller){'0.16.1-to-0.16.2 upgrade'}else{'clean install'}
+    if((Get-ItemProperty $key).DisplayVersion -ne '0.16.3') {throw 'Installed registry version does not match the release candidate.'}
+    $kind=if($PreviousInstaller){'0.16.2-to-0.16.3 upgrade'}else{'clean install'}
     $report.Add('PASS silent '+$kind+': default common VST3 path, standalone, manual, factory bank, binary hashes')
     $diagnostics=Join-Path $logs 'diagnostics-smoke.txt'
     & (Join-Path $app 'collect-windows-diagnostics.ps1') -OutputPath $diagnostics

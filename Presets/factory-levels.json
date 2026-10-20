@@ -1,7 +1,7 @@
 {
   "format": "gba2.factory-levels",
   "schemaVersion": 1,
-  "recipeSha256": "883bf0509c1315272f4c79693c556104605808668aa57bad6a7cc1f2383c6fa5",
+  "recipeSha256": "4757ec432b575d4dd1b23ea058fae6f202a8a66429b208cafaf4bff303c6a231",
   "metric": "Maximum rolling 100 ms stereo RMS at 48 kHz, MIDI 60 (bass 48), velocity 0.9, hold max(0.8s, attack+0.35s). Master volume is after the limiter; no audio is stored.",
   "targets": {
     "80s Pop": 0.026,
@@ -21,9 +21,7 @@
     "Retro Games": 0.025,
     "Sax-Style Leads": 0.026,
     "Strings": 0.028,
-    "Vocals - Choirs and Textures": 0.02,
-    "Vocals - Global Pop Textures": 0.02,
-    "Vocals - Horror": 0.02
+    "Vocals": 0.02
   },
   "presetTargets": {
     "factory.1d01b9c467ecfb27": 0.026,

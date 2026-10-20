@@ -89,6 +89,10 @@ After an authorized recipe change, run `python scripts/generate_presets.py --unc
 
 ## Retiring factory categories (0.16.1)
 
-The registry retains all 650 host slot identities. Seventy-six entries are marked `retired: true`; they have no factory recipes or embedded parameter arrays. The generated `factoryPatches` array and shipped JSON contain only 574 active patches in 20 categories. Each generated active patch records its stable host `program` number; `factoryPrograms` maps all 650 host slots to an active array index or -1 for a retired slot. Host slot order and the 64 audio parameter IDs are unchanged.
+The registry retains all 650 host slot identities. Seventy-six entries are marked `retired: true`; they have no factory recipes or embedded parameter arrays. The generated `factoryPatches` array and shipped JSON contain only 574 active patches in 18 categories. Each generated active patch records its stable host `program` number; `factoryPrograms` maps all 650 host slots to an active array index or -1 for a retired slot. Host slot order and the 64 audio parameter IDs are unchanged.
 
 A retired slot displays Reserved N (Default) and loads Dream Pad when selected from another program. Same-slot host messages after project restoration preserve the saved parameters. Restoring an old state uses its embedded parameters without loading a current library patch, preserving sound and edits even when its original category was removed. Actual 0.16.0 states for all seventy-six removed sounds are captured in `Tests/RemovedVocalStates.h`; this is test-only data, never linked into the plugin.
+
+## Unified vocal category (0.16.3)
+
+The 74 active presets previously listed under Global Pop Textures, Horror and Choirs and Textures now use the browser category `Vocals`. The generator retains the three internal recipe groups and their search tags so their authored synthesis and calibration remain identical. `factory-index.json` records the new browser category without moving IDs or host program slots. On project restoration, a recognized active factory ID displays its current category without replacing the explicit saved parameters. Removed factory slots still use the existing Saved Project behavior. User presets remain independent under User.

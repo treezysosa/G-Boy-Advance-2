@@ -1,4 +1,4 @@
-> Current version: **0.16.2**, pad/string and SoundFont CPU optimizations; 574 factory presets, twenty skins and ROM Hacks SF2 library recall. [Current changes and evidence](RELEASE_0_16_2.md).
+> Current version: **0.16.3**. The **Vocals** folder combines Global Pop Textures, Horror and Choirs and Textures into 74 sounds. There are 574 factory presets across 18 categories; the pad/string and SoundFont CPU improvements, twenty skins and ROM Hacks SF2 library recall are retained. [Current changes](RELEASE_0_16_3.md).
 
 
 Older 0.12.0 projects restore their synthesis parameters and skin, show `SYNTH ONLY:` in the display and a removal notice in START, and discard embedded audio from newly saved state. Sample sounds no longer play. Original project, audio and preset files are left unchanged; preserve the original project if its sample content is still needed. Sample-containing presets are rejected/skipped. Schema 1 synthesis `.gba2preset` import/export continues to work.
@@ -57,7 +57,7 @@ This development version passes Windows compilation, automated tests and pluginv
 
 ## Factory bank revision 0.6
 
-The bank contains 574 factory sounds in 20 categories. Vocals - Pop and Indie, Vocals - Southern and West Coast, Vocals - Cartoon and Gaming and Vocals - Soul and R&B have been removed, including their seventy-six presets. Surviving sounds, names, IDs and original host program numbers are retained. Named instruments have explicit synthesis profiles and Afterglow variants change active excitation/envelope controls. Factory levels are calibrated using a 100 ms stereo RMS metric; quieter articulations remain quieter when the master knob reaches its gain ceiling. This is not perceptual loudness normalization.
+The bank contains 574 factory sounds in 18 categories. Vocals - Pop and Indie, Vocals - Southern and West Coast, Vocals - Cartoon and Gaming and Vocals - Soul and R&B have been removed, including their seventy-six presets. Surviving sounds, names, IDs and original host program numbers are retained. Named instruments have explicit synthesis profiles and Afterglow variants change active excitation/envelope controls. Factory levels are calibrated using a 100 ms stereo RMS metric; quieter articulations remain quieter when the master knob reaches its gain ceiling. This is not perceptual loudness normalization.
 
 Saved projects restore their actual parameter values, even when their factory ID also exists in the revised bank. Loading the factory preset again selects its new voicing. User presets remain independent. Optional category audition WAVs are original test renders for listening review; they are never loaded by the instrument.
 

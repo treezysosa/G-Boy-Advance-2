@@ -267,6 +267,7 @@ void GbaProcessor::setStateInformation(const void* data,int bytes) {
     for(std::size_t i=0;i<gba::factoryPrograms.size();++i)if(activePresetId==gba::factoryPrograms[i].id){
         currentProgram.store(int(i));
         if(gba::factoryPrograms[i].patchIndex<0)activePresetCategory="Saved Project";
+        else activePresetCategory=gba::factoryPatches[std::size_t(gba::factoryPrograms[i].patchIndex)].category;
         break;
     }
     panicRequested.store(true);

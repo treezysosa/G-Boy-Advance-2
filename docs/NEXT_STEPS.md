@@ -1,3 +1,5 @@
+> Current update: **0.16.3**, unified Vocals category: 74 unchanged sounds in one folder, 574 factory presets across 18 categories. DSP and SoundFont processing are unchanged from 0.16.2. [Current changes and validation](RELEASE_0_16_3.md). Earlier results below describe their historical baselines.
+
 # Exact next steps
 
 Version 0.16.2 targets sustained pad/string and SoundFont CPU use without reducing polyphony or tails. [Current evidence](RELEASE_0_16_2.md). [Windows/Ubuntu run 39446025149](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39446025149) passed nine Ubuntu suites and twelve Windows CTest suites: 630,175 common DSP/preset checks, 2,884 Windows application checks (332 library / 164 SoundFont), both actual-bundle hosts (647/648), pluginval strictness 10, Steinberg 47 passed / 0 failed and six installer lifecycle checks. The synthetic FL-named host is not FL Studio.; the remaining manual acceptance items are below.

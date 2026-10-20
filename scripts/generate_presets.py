@@ -312,6 +312,11 @@ def generate(uncalibrated=False):
     patches += [make_patch(profile['category'],name,variation,specs)
                 for name,profile in hiphop_designs().items() for variation in range(2)]
     patches += groove_patches(specs)
+    # Keep legacy recipe groups and search tags: their names participate in the
+    # authored voicing logic. Merge only the browser metadata, after synthesis.
+    for patch in patches:
+        if patch['category'] in ('Vocals - Global Pop Textures', 'Vocals - Horror', 'Vocals - Choirs and Textures'):
+            patch['category'] = 'Vocals'
     index=json.loads((ROOT/'Presets/factory-index.json').read_text())
     assert index['format']=='gba2.factory-index' and index['schemaVersion']==1
     by_id={p['id']:p for p in patches}
