@@ -6,7 +6,7 @@ Saved projects retain their explicit synthesis settings, including sounds from t
 
 Version **0.17.1** shortens the four regional folder names to **Detroit**, **West Coast**, **Florida** and **Chicago**. All 598 sounds, preset names and identities remain unchanged. [Current changes](docs/RELEASE_0_17_1.md).
 
-For Windows builds and installation, use the commands below. Close FL Studio and standalone before installing; user presets, banks and preferences are retained.
+[Download Windows installer 0.17.1](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39465006237/artifacts/12285962556) · [Portable/manual archive](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39465006237/artifacts/12285987607) · [Source](https://github.com/treezysosa/G-Boy-Advance-2/tree/feature/folder-names-0171). Close FL Studio and standalone before installing; extract into a fresh folder and run `G-Boy-Advance-2-Setup-x64.exe`. User presets, banks and preferences are retained.
 
 [Windows/Ubuntu run 39446025149](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39446025149) passed nine Ubuntu suites and twelve Windows CTest suites: 630,175 common DSP/preset checks, 2,884 Windows application checks (332 library / 164 SoundFont), both actual-bundle hosts (647/648), pluginval strictness 10, Steinberg 47 passed / 0 failed and six installer lifecycle checks. The synthetic FL-named host is not FL Studio.
 

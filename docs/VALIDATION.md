@@ -1,4 +1,4 @@
-> Current update: **0.17.1**, regional folders renamed to Detroit, West Coast, Florida and Chicago. All 598 factory sounds, DSP and identities are unchanged. [Current changes and validation](RELEASE_0_17_1.md). Earlier results below retain their historical baselines.
+> Current update: **0.17.1**, folders renamed to Detroit, West Coast, Florida and Chicago. All 598 sounds, DSP and program/parameter identities are unchanged. Windows/Ubuntu suites, both VST3 validators and the 0.17.0 → 0.17.1 installer upgrade passed. [Current evidence](RELEASE_0_17_1.md). Earlier results below retain their historical baselines.
 
 > Current update: **0.17.0**, Brass contains 24 new presets and all 16 unchanged sax leads; 598 factory presets across 18 categories. Windows/Ubuntu suites, both VST3 validators, browser family filters, edited sax-project restoration and the 0.16.3 → 0.17.0 installer upgrade passed. DSP remains unchanged. [Current evidence](RELEASE_0_17_0.md). Earlier results below retain their historical baselines.
 
