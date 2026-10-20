@@ -1,4 +1,4 @@
-> Current version: **0.16.1: 574 presets in 20 categories; four vocal categories removed**, retaining ROM Hacks SF2 drag/drop, default folder and last-bank recall. [Current changes and evidence](RELEASE_0_16_1.md) · [SoundFont workflow](RELEASE_0_14_1.md).
+> Current version: **0.16.2**, pad/string and SoundFont CPU optimizations; 574 factory presets, twenty skins and ROM Hacks SF2 library recall. [Current changes and evidence](RELEASE_0_16_2.md).
 
 
 Older 0.12.0 projects restore their synthesis parameters and skin, show `SYNTH ONLY:` in the display and a removal notice in START, and discard embedded audio from newly saved state. Sample sounds no longer play. Original project, audio and preset files are left unchanged; preserve the original project if its sample content is still needed. Sample-containing presets are rejected/skipped. Schema 1 synthesis `.gba2preset` import/export continues to work.

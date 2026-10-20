@@ -5,7 +5,7 @@ ROOT = Path(__file__).resolve().parents[1]
 ROOT_FILES = {'CMakeLists.txt', 'README.md', '.gitignore', 'LICENSE', 'LICENSE.md', 'NOTICE', 'CHANGELOG.md'}
 SOURCE_DIRS = {'Source', 'Tests', 'Presets', 'scripts', 'docs', 'packaging', '.github'}
 REQUIRED = {
-    'Tests/RemovedVocalStates.h', 'Presets/groove-designs.json', 'Presets/hiphop-designs.json', 'Tests/PlayBenchmark.cpp', 'Tests/PresetDiversityTests.cpp', 'Presets/diversity-refinements.json',
+    'Tests/PadStringBenchmark.cpp', 'Tests/SustainedProbe.cpp', 'docs/RELEASE_0_16_2.md', 'Tests/RemovedVocalStates.h', 'Presets/groove-designs.json', 'Presets/hiphop-designs.json', 'Tests/PlayBenchmark.cpp', 'Tests/PresetDiversityTests.cpp', 'Presets/diversity-refinements.json',
     'docs/FL_STUDIO.md', 'scripts/collect-windows-diagnostics.ps1',
     'Tests/ModalReferenceProbe.cpp', 'docs/PHASE_10_FINALIZATION.md', 'scripts/check-notices.py', 'scripts/sign-release-windows.ps1', 'docs/licenses/manifest.json',
     'Tests/HostTests.cpp', 'Tests/Benchmark.cpp', 'scripts/test-installer-windows.ps1',

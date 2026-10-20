@@ -1,6 +1,7 @@
 #include "dsp/SynthEngine.h"
 #include <atomic>
 #include <iostream>
+#include <limits>
 #include <memory>
 #include <stdexcept>
 #include <string>
@@ -164,10 +165,27 @@ void transitions(gba::SynthEngine& e) {
     trackAllocations=false;check(bounded,"Interrupted choice transitions became unbounded");check(allocations==0,"Choice crossfades allocate on the audio thread");
     std::cout<<"PASS waveform/filter crossfades, rapid retargeting and no render allocations\n";
 }
+void stableBlocksAndCopies() {
+    for(double rate:{44100.,48000.,96000.})for(int engine:{0,2,3}) {
+        auto prototype=std::make_unique<gba::SynthEngine>();auto s=clean();s.set(gba::Param::Engine,float(engine));s.set(gba::Param::Lfo1Depth,.3f);s.set(gba::Param::Lfo2Depth,.2f);s.set(gba::Param::Lfo2Dest,5);s.set(gba::Param::Vibrato,.17f);s.set(gba::Param::Glide,.04f);
+        init(*prototype,s,rate);Audio warm(17);
+        for(int note:{48,55,60,64}){prototype->noteOn(1,note,.8f);render(*prototype,warm);}
+        auto whole=std::make_unique<gba::SynthEngine>(*prototype),split=std::make_unique<gba::SynthEngine>(*prototype);
+        Audio a(8192),b(8192);render(*whole,a);constexpr int sizes[]{1,17,64,257};
+        for(int at=0,block=0;at<8192;++block){const int count=std::min(sizes[block%4],8192-at);split->render(b.l.data()+at,b.r.data()+at,count);at+=count;}
+        check(a.l==b.l&&a.r==b.r,"Stable voice processing depends on host block partition");
+        check(whole->activeVoices()==split->activeVoices(),"Stable block partition changed held voices");
+    }
+    auto original=std::make_unique<gba::SynthEngine>();auto s=clean();s.set(gba::Param::Engine,4);init(*original,s);original->noteOn(1,60,.8f);Audio warm(256);render(*original,warm);
+    auto first=std::make_unique<gba::SynthEngine>(*original),second=std::make_unique<gba::SynthEngine>(*original),third=std::make_unique<gba::SynthEngine>(*original);
+    Audio a(256),b(256),advance(2048);render(*second,a);render(*first,advance);render(*third,b);
+    check(a.l==b.l&&a.r==b.r,"Copied prepared engines share mutable plucked-string memory");
+    std::cout<<"PASS stable chords at three rates with irregular blocks and independent prepared-engine copies\n";
+}
 }
 int main() {
     try {
-        envelopeTiming();longModulationClock();filters();auto e=std::make_unique<gba::SynthEngine>();oscillators(*e);voicesAndModulation(*e);transitions(*e);
+        envelopeTiming();longModulationClock();filters();stableBlocksAndCopies();auto e=std::make_unique<gba::SynthEngine>();oscillators(*e);voicesAndModulation(*e);transitions(*e);
         std::cout<<"All "<<checks<<" Phase 3 core synthesis checks passed.\n";return 0;
     }catch(const std::exception& error){trackAllocations=false;std::cerr<<"FAIL: "<<error.what()<<"\n";return 1;}
 }

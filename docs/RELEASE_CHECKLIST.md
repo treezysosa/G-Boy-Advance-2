@@ -1,4 +1,4 @@
-> Current version: **0.16.1, 574 presets in 20 categories, twenty skins and SF2 library recall**. [Current release evidence and limits](RELEASE_0_16_1.md). Earlier release records below remain historical.
+> Current version: **0.16.2**, pad/string and SF2 CPU update. [Current evidence and limits](RELEASE_0_16_2.md). Earlier release records below remain historical.
 
 
 # Release acceptance record

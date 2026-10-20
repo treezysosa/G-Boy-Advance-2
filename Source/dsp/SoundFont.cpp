@@ -30,6 +30,10 @@ struct SoundFont::Impl {
     Effects effects;std::array<SVF,2> filters{};
     Settings target,current;float rate=48000,volume=.72f,phase=0;
     std::array<float,32> glide{};std::array<int,17> lastKey{};std::array<float,17> wheel{};
+    std::array<double,32> basePitch{},pitchFactor{};
+    std::array<float,33> smoothing{};
+    float filterCutoff=-1,filterResonance=-1,glideTime=-1,glideDecay=0;
+    int glideCount=0;
     std::array<float,128> buffer{};int previewRemaining=0,selected=0,fade=0;
     float lastL=0,lastR=0,tailL=0,tailR=0,volumeStep=.002f;
     ~Impl(){if(font)tsf_close(font);}
@@ -37,6 +41,7 @@ struct SoundFont::Impl {
         if(font){for(int i=0;i<font->voiceNum;++i)tsf_voice_kill(&font->voices[i]);
             for(int c=0;c<17;++c){tsf_channel_midi_control(font,c,121,0);tsf_channel_set_sustain(font,c,0);tsf_channel_set_pitchwheel(font,c,8192);}}
         effects.reset();for(auto& f:filters)f.clear();glide.fill(0);lastKey.fill(-1);wheel.fill(0);previewRemaining=0;lastL=lastR=0;fade=0;
+        filterCutoff=filterResonance=glideTime=-1;glideCount=0;
     }
     void transition() noexcept {tailL=lastL;tailR=lastR;fade=240;}
 };
@@ -73,7 +78,10 @@ bool SoundFont::load(const void* data,std::size_t bytes,std::string& error){
     for(int i=0;i<f->presetNum;++i)impl->programs.push_back({tsf_get_presetname(f,i),f->presets[i].bank,f->presets[i].preset});
     prepare(impl->rate);select(0);return true;
 }
-void SoundFont::prepare(double rate){auto& d=*impl;d.rate=float(std::clamp(rate,8000.,192000.));d.effects.prepare(d.rate);d.volumeStep=1-std::exp(-1/(d.rate*.01f));if(d.font)tsf_set_output(d.font,TSF_STEREO_INTERLEAVED,int(d.rate),-6);d.current=d.target;d.volume=d.target[Param::Volume];d.reset();}
+void SoundFont::prepare(double rate){auto& d=*impl;d.rate=float(std::clamp(rate,8000.,192000.));d.effects.prepare(d.rate);d.volumeStep=1-std::exp(-1/(d.rate*.01f));
+    for(std::size_t n=1;n<d.smoothing.size();++n)d.smoothing[n]=1-std::exp(-float(n)/(d.rate*.015f));
+    if(d.font)tsf_set_output(d.font,TSF_STEREO_INTERLEAVED,int(d.rate),-6);
+    d.current=d.target;d.volume=d.target[Param::Volume];d.reset();}
 void SoundFont::reset() noexcept{impl->reset();}
 void SoundFont::setSettings(const Settings& s) noexcept{impl->target=s;}
 void SoundFont::select(int index) noexcept{auto& d=*impl;if(!d.font)return;index=std::clamp(index,0,d.font->presetNum-1);d.transition();for(int v=0;v<d.font->voiceNum;++v)tsf_voice_kill(&d.font->voices[v]);for(int c=0;c<17;++c){tsf_channel_set_presetindex(d.font,c,index);tsf_channel_set_bank(d.font,c,d.font->presets[index].bank);}d.lastKey.fill(-1);d.selected=index;}
@@ -98,6 +106,12 @@ void SoundFont::noteOn(int channel,int key,float velocity,bool preview) noexcept
         // The macro adds a minimum attack without replacing the bank envelope.
         v.ampenv.parameters.attack=std::max(v.ampenv.parameters.attack,d.target[Param::Attack]);tsf_voice_envelope_nextsegment(&v.ampenv,TSF_SEGMENT_NONE,d.rate);
         d.glide[std::size_t(i)]=d.target[Param::Glide]>.0001f&&d.lastKey[std::size_t(c)]>=0?float(d.lastKey[std::size_t(c)]-key):0;
+        // This part of TinySoundFont's pitch calculation depends only on the
+        // new voice's immutable key/region and prepared output rate. Cache the
+        // original expressions, including fractional sample-rate handling.
+        const double note=v.playingKey+v.region->transpose+v.region->tune/100.0;
+        d.basePitch[std::size_t(i)]=v.region->pitch_keycenter+(note-v.region->pitch_keycenter)*(v.region->pitch_keytrack/100.0);
+        d.pitchFactor[std::size_t(i)]=v.region->sample_rate/(tsf_timecents2Secsd(v.region->pitch_keycenter*100.0)*d.rate);
     }
     d.lastKey[std::size_t(c)]=key;
 }
@@ -110,16 +124,30 @@ int SoundFont::activeVoices() const noexcept{return impl->font?tsf_active_voice_
 void SoundFont::render(float* left,float* right,int frames) noexcept{
     auto& d=*impl;if(!d.font)return;
     for(int at=0;at<frames;){int count=std::min(32,frames-at);if(d.previewRemaining>0)count=std::min(count,d.previewRemaining);
-        const float smooth=1-std::exp(-float(count)/(d.rate*.015f));
+        const float smooth=d.smoothing[std::size_t(count)];
         for(std::size_t i=0;i<parameterCount;++i)d.current.values[i]+=(d.target.values[i]-d.current.values[i])*smooth;
-        d.filters[0].coefficients(d.current[Param::Cutoff],d.current[Param::Resonance],d.rate);d.filters[1].tuning(d.filters[0].g,d.filters[0].k);
+        if(d.filterCutoff!=d.current[Param::Cutoff]||d.filterResonance!=d.current[Param::Resonance]) {
+            d.filters[0].coefficients(d.current[Param::Cutoff],d.current[Param::Resonance],d.rate);d.filters[1].copyTuningFrom(d.filters[0]);
+            d.filterCutoff=d.current[Param::Cutoff];d.filterResonance=d.current[Param::Resonance];
+        }
         for(int c=0;c<17;++c)tsf_channel_set_pitchrange(d.font,c,d.target[Param::BendRange]);
         d.phase+=float(count)*5.2f/d.rate;d.phase-=std::floor(d.phase);
-        const float glideDecay=d.target[Param::Glide]>.0001f?std::exp(-float(count)/(d.rate*d.target[Param::Glide])):0;
+        if(d.glideCount!=count||d.glideTime!=d.target[Param::Glide]) {
+            d.glideDecay=d.target[Param::Glide]>.0001f?std::exp(-float(count)/(d.rate*d.target[Param::Glide])):0;
+            d.glideCount=count;d.glideTime=d.target[Param::Glide];
+        }
+        const float vibratoPhase=std::sin(tau*d.phase);
+        std::array<float,17> channelPitch{},channelVibrato{};std::array<bool,17> channelReady{};
         for(int i=0;i<d.font->voiceNum;++i){auto& v=d.font->voices[i];if(v.playingPreset<0)continue;int c=std::clamp(v.playingChannel,0,16);
-            const float vibrato=(d.target[Param::Vibrato]+.5f*d.wheel[std::size_t(c)])*std::sin(tau*d.phase);
-            const float bend=(float(tsf_channel_get_pitchwheel(d.font,c))-8192)/8192*tsf_channel_get_pitchrange(d.font,c);
-            tsf_voice_calcpitchratio(&v,bend+tsf_channel_get_tuning(d.font,c)+d.glide[std::size_t(i)]+vibrato,d.rate);d.glide[std::size_t(i)]*=glideDecay;
+            if(!channelReady[std::size_t(c)]) {
+                const float bend=(float(tsf_channel_get_pitchwheel(d.font,c))-8192)/8192*tsf_channel_get_pitchrange(d.font,c);
+                channelPitch[std::size_t(c)]=bend+tsf_channel_get_tuning(d.font,c);
+                channelVibrato[std::size_t(c)]=(d.target[Param::Vibrato]+.5f*d.wheel[std::size_t(c)])*vibratoPhase;
+                channelReady[std::size_t(c)]=true;
+            }
+            const float shift=channelPitch[std::size_t(c)]+d.glide[std::size_t(i)]+channelVibrato[std::size_t(c)];
+            double pitch=d.basePitch[std::size_t(i)];if(shift)pitch+=shift;
+            v.pitchInputTimecents=pitch*100.0;v.pitchOutputFactor=d.pitchFactor[std::size_t(i)];d.glide[std::size_t(i)]*=d.glideDecay;
         }
         tsf_render_float(d.font,d.buffer.data(),count,0);
         for(int i=0;i<count;++i){float l=d.filters[0].next(d.buffer[std::size_t(i*2)],std::clamp(int(d.target[Param::FilterType]),0,3));float r=d.filters[1].next(d.buffer[std::size_t(i*2+1)],std::clamp(int(d.target[Param::FilterType]),0,3));

@@ -1,14 +1,12 @@
-# G BOY ADVANCE 2 — 0.16.1
+# G BOY ADVANCE 2 — 0.16.2
 
 **574 factory presets across 20 categories.** Vocals - Pop and Indie, Vocals - Southern and West Coast, Vocals - Cartoon and Gaming and Vocals - Soul and R&B have been removed, including their seventy-six factory patches. All remaining sounds, calibrated levels and identities are unchanged. The Detroit, Chicago Drill, Funk, Japan Inspired and 80s Pop additions remain available.
 
 Saved projects retain their explicit synthesis settings, including sounds from the removed categories. Seventy-six old host program numbers are reserved to keep every surviving program number stable; choosing a reserved slot from another program loads Dream Pad. Repeating the current retired slot after project restoration preserves the saved sound. Reserved slots are separate from the 574 active factory presets. Existing user presets are retained.
 
-All twenty skins, launch colours, ROM Hacks SF2 drag/drop, library folders and recall, and the existing DSP optimizations remain available. See [current release details](docs/RELEASE_0_16_1.md). [Download Windows installer 0.16.1](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39329504889/artifacts/12224422761) · [Portable/manual archive](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39329504889/artifacts/12224039729) · [Source](https://github.com/treezysosa/G-Boy-Advance-2/tree/feature/remove-vocal-categories-0161). Close FL Studio and standalone, extract the ZIP into a fresh folder, run `G-Boy-Advance-2-Setup-x64.exe`, then reopen FL64. User presets, SoundFonts and preferences are retained.
+Version **0.16.2** optimizes sustained built-in pad/string voices and ROM Hacks SoundFont processing. Factory sounds, polyphony, tails, project state and all twenty skins are retained. [Current changes and evidence](docs/RELEASE_0_16_2.md).
 
-[Windows/Ubuntu run 39329504889](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39329504889) passed nine Ubuntu DSP suites and twelve Windows CTest suites: 630,156 native DSP/preset checks, 2,884 Windows application checks (332 library / 164 SoundFont), both actual-bundle hosts (647/648 checks), pluginval strictness 10, Steinberg 47 passed / 0 failed and six installer lifecycle checks. The synthetic FL-named host is not FL Studio.
-
-All seventy-six actual 0.16.0 project fixtures retain their edited settings, original IDs/programs and audible output. Resave, user Save As and repeated host program messages pass. The 574 remaining factory dictionaries are unchanged; both full-bank sound-difference screens pass. The 694-scene audio probe is byte-identical to 0.16.0 DSP with identical current arrays. Actual owner FL Studio, physical devices/DPI and human listening remain manual acceptance work; these prepared builds are unsigned and the owner’s licensing decision remains deferred.
+Windows validation and packaging are in progress. Verified installer links and measured results will be recorded after completion.
 
 ![G Boy Advance 2 Phase 2 native JUCE editor](docs/images/phase2-main.png)
 
@@ -19,12 +17,12 @@ Actual Phase 2 Windows JUCE component render at 1280×646 from [passing CI run 3
 Install Visual Studio 2022 with **Desktop development with C++**, a Windows SDK, CMake 3.24+, and Git. In PowerShell:
 
 ```powershell
-git clone --branch feature/remove-vocal-categories-0161 https://github.com/treezysosa/G-Boy-Advance-2.git
+git clone --branch feature/pad-string-cpu-0162 https://github.com/treezysosa/G-Boy-Advance-2.git
 cd G-Boy-Advance-2
 powershell -ExecutionPolicy Bypass -File scripts/build-windows.ps1
 ```
 
-You can also use [Build and validate in GitHub Actions](https://github.com/treezysosa/G-Boy-Advance-2/actions?query=branch%3Afeature%2Fremove-vocal-categories-0161). Factory/vocal and retro audition files are separate test outputs and are never installed or loaded by the instrument.
+You can also use [Build and validate in GitHub Actions](https://github.com/treezysosa/G-Boy-Advance-2/actions?query=branch%3Afeature%2Fpad-string-cpu-0162). Factory/vocal and retro audition files are separate test outputs and are never installed or loaded by the instrument.
 
 The first local build downloads the pinned JUCE 8.0.6 source. For an offline build, supply an existing checkout:
 

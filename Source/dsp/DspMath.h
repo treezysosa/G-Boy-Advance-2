@@ -24,6 +24,16 @@ inline float triangle(float phase,float dt) noexcept {
     const double angle=double(tau*phase),first=std::sin(angle);
     const double factor=2*std::cos(2*angle);
     double previous=-first,partial=first;float sum=0;
+    if(15*dt<.48f) {
+        // Low and middle notes use every partial. Expose the fixed denominators
+        // and remove eight repeated Nyquist branches without changing the sum.
+        const auto add=[&](int h) {
+            sum+=float(partial)*((h%4==1)?1.f:-1.f)/float(h*h);
+            const double next=factor*partial-previous;previous=partial;partial=next;
+        };
+        add(1);add(3);add(5);add(7);add(9);add(11);add(13);add(15);
+        return sum*.81f;
+    }
     for(int h=1;h<=15;h+=2) {
         if(float(h)*dt>=.48f)break;
         sum+=float(partial)*((h%4==1)?1.f:-1.f)/float(h*h);

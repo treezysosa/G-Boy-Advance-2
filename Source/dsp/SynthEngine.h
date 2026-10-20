@@ -29,6 +29,12 @@ private:
         float frequency=-1,rate=-1,blend=0;
         int level=0,next=0;
     };
+    struct FrameCache {
+        float pitch=-1000,pitchRatio=1;
+        float filterBase=-1,filterOctaves=0,cutoff=0,filterHz=-1,filterResonance=-1;
+        SVF filterTuning;
+        LfoValueCache lfo1,lfo2,vibrato,tremolo,syllable;
+    };
     struct Voice {
         int note=-1,channel=1,controlCounter=0;
         bool held=false,preview=false;
@@ -51,8 +57,7 @@ private:
         VocalEngine vocal;
         RetroEngine retro;
         Random noise;
-        std::array<float,stringSize> string{};
-        int stringPos=0;
+        int stringIndex=0,stringPos=0;
     };
     struct Key {bool down=false;float velocity=0;std::uint64_t order=0;unsigned presses=0;};
     bool tablesReady=false,prepared=false;
@@ -70,20 +75,23 @@ private:
     ChoiceFade<5> filterFade;
     EngineFade engineFade;
     float glideStep=1,oscillator2Ratio=1;
-    float cachedPitch=-1000,pitchRatio=1;
     float cachedGlide=-1,cachedOscillatorInterval=1000,cachedBrightness=-1;
     // Exact last-input caches share coefficient math across chord voices.
     // Delay/filter histories remain private to each voice.
-    float cachedFilterBase=-1,cachedFilterOctaves=0,cachedCutoff=0,cachedFilterHz=-1,cachedFilterResonance=-1;
     float cachedFormantVowel=-100,cachedFormantShift=0;
     float cachedVocalVowel=-100,cachedVocalShift=0,cachedVocalBrightness=0;
-    SVF filterTuning;
     std::array<SVF,3> formantTuning;
     VocalEngine vocalTuning;
     Envelope::Rates ampRates,filterRates;
     double lfo1Increment=0,lfo2Increment=0,vibratoIncrement=0,tremoloIncrement=0,syllableIncrement=0;
-    LfoValueCache lfo1Value,lfo2Value,vibratoValue,tremoloValue,syllableValue;
+    FrameCache scalarCache;
+    std::array<FrameCache,32> frameCaches{};
     std::array<Voice,maxVoices> voices{};
+    // Keep the rarely accessed plucked-string delay memory outside the hot
+    // voice records. Pad/string chords traverse compact modulation/filter state
+    // rather than jumping more than 128 KiB between every pair of voices.
+    // Indices, rather than pointers, keep prepared-engine copies independent.
+    std::array<std::array<float,stringSize>,maxVoices> strings{};
     std::array<float,16> bend{},wheel{};
     std::array<bool,16> sustain{};
     std::array<std::array<Key,128>,16> keys{};
@@ -97,7 +105,12 @@ private:
     float oscillator(int wave,float phase,float dt,float width,Random&) noexcept;
     float mixedOscillator(const ChoiceFade<6>&,float phase,float dt,float width,Random&) noexcept;
     float wavetable(float phase,float frequency,float position,TableTuning&) const noexcept;
-    float voiceSample(Voice&) noexcept;
+    template<int Engine> float voiceSample(Voice&,FrameCache&) noexcept;
+    void updateSharedControls() noexcept;
+    void updateHarmonics() noexcept;
+    bool canRenderStable() const noexcept;
+    void renderStable(float*,float*,int) noexcept;
+    template<int Engine> void renderStableEngine(float*,float*,int) noexcept;
     float excitation(Voice&,int engine,float frequency,float dt,float dt2,float filterEnvelope) noexcept;
     void exciteString(Voice&) noexcept;
     void updateFormants(Voice&,float vowel) noexcept;

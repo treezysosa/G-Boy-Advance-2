@@ -84,6 +84,12 @@ void Effects::update(const Settings& s) noexcept {
 }
 float Effects::nonlinear(float x,int c) noexcept {
     const float delayed=dry[c][std::size_t(dryPos)];dry[c][std::size_t(dryPos)]=x;
+    if(driveMix==0) {
+        // Preserve both FIR histories for later automation; the unused even
+        // decimator output needs only a history write while fully bypassed.
+        down[c].push(up[c].upEven(2*x,halfband));down[c].push(up[c].next(0,halfband));
+        return delayed;
+    }
     const auto shape=[&](float v) {
         if(driveMix==0)return v;
         const float driven=v*driveGain;
