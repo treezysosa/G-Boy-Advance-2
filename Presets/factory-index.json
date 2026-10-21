@@ -3488,6 +3488,462 @@
       "name": "Dream Brass Pad",
       "category": "Brass",
       "subcategory": "Synth Brass"
+    },
+    {
+      "id": "factory.2484b7c28d99e5d3",
+      "name": "Round Sub Kick",
+      "category": "Percussion",
+      "subcategory": "Kicks"
+    },
+    {
+      "id": "factory.dbfc1ff070ec6bd1",
+      "name": "FM Thump Kick",
+      "category": "Percussion",
+      "subcategory": "Kicks"
+    },
+    {
+      "id": "factory.a1cc2cef22047300",
+      "name": "Rubber Knock Kick",
+      "category": "Percussion",
+      "subcategory": "Kicks"
+    },
+    {
+      "id": "factory.67c028b18d54d45c",
+      "name": "Broken Speaker Kick",
+      "category": "Percussion",
+      "subcategory": "Kicks"
+    },
+    {
+      "id": "factory.229cc2daa0027f09",
+      "name": "Bright Wire Snare",
+      "category": "Percussion",
+      "subcategory": "Snares and Claps"
+    },
+    {
+      "id": "factory.be9f90aaec7b17a8",
+      "name": "Hollow Room Snare",
+      "category": "Percussion",
+      "subcategory": "Snares and Claps"
+    },
+    {
+      "id": "factory.4bc5da6a30aea78f",
+      "name": "Circuit Snap Snare",
+      "category": "Percussion",
+      "subcategory": "Snares and Claps"
+    },
+    {
+      "id": "factory.f841ef7c80e3375b",
+      "name": "Paper Handclap",
+      "category": "Percussion",
+      "subcategory": "Snares and Claps"
+    },
+    {
+      "id": "factory.262dfd93c99daee6",
+      "name": "Wide Neon Clap",
+      "category": "Percussion",
+      "subcategory": "Snares and Claps"
+    },
+    {
+      "id": "factory.5254e0199cbcb4fe",
+      "name": "Tight Noise Hat",
+      "category": "Percussion",
+      "subcategory": "Hats and Cymbals"
+    },
+    {
+      "id": "factory.5c9610d535b81617",
+      "name": "Open Air Hat",
+      "category": "Percussion",
+      "subcategory": "Hats and Cymbals"
+    },
+    {
+      "id": "factory.ac143933d0f3d9d3",
+      "name": "Metal FM Hat",
+      "category": "Percussion",
+      "subcategory": "Hats and Cymbals"
+    },
+    {
+      "id": "factory.3096db51da6486af",
+      "name": "Pocket Shaker",
+      "category": "Percussion",
+      "subcategory": "Hats and Cymbals"
+    },
+    {
+      "id": "factory.906d825c6e2a7cc2",
+      "name": "Bronze Splash Cymbal",
+      "category": "Percussion",
+      "subcategory": "Hats and Cymbals"
+    },
+    {
+      "id": "factory.cd7d57ce46d62025",
+      "name": "Soft Low Tom",
+      "category": "Percussion",
+      "subcategory": "Toms and Hand Drums"
+    },
+    {
+      "id": "factory.8e6d5b25a7577784",
+      "name": "Glass High Tom",
+      "category": "Percussion",
+      "subcategory": "Toms and Hand Drums"
+    },
+    {
+      "id": "factory.7fa7b5dd68db0b3a",
+      "name": "Muted Bongo Knock",
+      "category": "Percussion",
+      "subcategory": "Toms and Hand Drums"
+    },
+    {
+      "id": "factory.45b2a4b3e2701e99",
+      "name": "Talking Drum Pulse",
+      "category": "Percussion",
+      "subcategory": "Toms and Hand Drums"
+    },
+    {
+      "id": "factory.70c9e6d8381a7dca",
+      "name": "Dry Wood Clave",
+      "category": "Percussion",
+      "subcategory": "Wood and Metal"
+    },
+    {
+      "id": "factory.80e1c5e3e29961dd",
+      "name": "Hollow Temple Block",
+      "category": "Percussion",
+      "subcategory": "Wood and Metal"
+    },
+    {
+      "id": "factory.ff1f569e5d617578",
+      "name": "Copper Cowbell",
+      "category": "Percussion",
+      "subcategory": "Wood and Metal"
+    },
+    {
+      "id": "factory.ecd683d3b67bcfee",
+      "name": "Rimshot Chrome",
+      "category": "Percussion",
+      "subcategory": "Wood and Metal"
+    },
+    {
+      "id": "factory.70c6c65fa29d2c3b",
+      "name": "Tiny Triangle Chime",
+      "category": "Percussion",
+      "subcategory": "Wood and Metal"
+    },
+    {
+      "id": "factory.e18275090e4dee80",
+      "name": "Sand Grain Tambourine",
+      "category": "Percussion",
+      "subcategory": "Wood and Metal"
+    },
+    {
+      "id": "factory.023a8da5de7e5e5a",
+      "name": "Velvet Chamber Clarinet",
+      "category": "Woodwinds",
+      "subcategory": "Clarinets"
+    },
+    {
+      "id": "factory.095b695e965b73b7",
+      "name": "Reedy Upper Clarinet",
+      "category": "Woodwinds",
+      "subcategory": "Clarinets"
+    },
+    {
+      "id": "factory.d6bf84631956c332",
+      "name": "Bass Clarinet Shadow",
+      "category": "Woodwinds",
+      "subcategory": "Clarinets"
+    },
+    {
+      "id": "factory.e7024f3de0b87c1e",
+      "name": "Staccato Ebony Reed",
+      "category": "Woodwinds",
+      "subcategory": "Clarinets"
+    },
+    {
+      "id": "factory.4c7a748eeb06658c",
+      "name": "Oboe Morning Reed",
+      "category": "Woodwinds",
+      "subcategory": "Oboes"
+    },
+    {
+      "id": "factory.583c5d476aa6a23c",
+      "name": "English Horn Warmth",
+      "category": "Woodwinds",
+      "subcategory": "Oboes"
+    },
+    {
+      "id": "factory.a03313f25b809277",
+      "name": "Piccolo Oboe Call",
+      "category": "Woodwinds",
+      "subcategory": "Oboes"
+    },
+    {
+      "id": "factory.55db3ec4eeff51fc",
+      "name": "Bassoon Walnut",
+      "category": "Woodwinds",
+      "subcategory": "Bassoons"
+    },
+    {
+      "id": "factory.eb7e6420c34f80c3",
+      "name": "Contrabassoon Air",
+      "category": "Woodwinds",
+      "subcategory": "Bassoons"
+    },
+    {
+      "id": "factory.0eaf58023a2b916e",
+      "name": "Bassoon Short Steps",
+      "category": "Woodwinds",
+      "subcategory": "Bassoons"
+    },
+    {
+      "id": "factory.fdca1a6e2e3f50da",
+      "name": "Recorder Linen",
+      "category": "Woodwinds",
+      "subcategory": "Recorders"
+    },
+    {
+      "id": "factory.7d7a67b12d88c186",
+      "name": "Tenor Recorder Breath",
+      "category": "Woodwinds",
+      "subcategory": "Recorders"
+    },
+    {
+      "id": "factory.294e721e61e7cb45",
+      "name": "Pocket Recorder Chirp",
+      "category": "Woodwinds",
+      "subcategory": "Recorders"
+    },
+    {
+      "id": "factory.879bf25d66968c8f",
+      "name": "Silver Concert Flute",
+      "category": "Woodwinds",
+      "subcategory": "Flutes and Pipes"
+    },
+    {
+      "id": "factory.8e8ba1f95626c14d",
+      "name": "Alto Air Column",
+      "category": "Woodwinds",
+      "subcategory": "Flutes and Pipes"
+    },
+    {
+      "id": "factory.1192311651713032",
+      "name": "Piccolo Bright Thread",
+      "category": "Woodwinds",
+      "subcategory": "Flutes and Pipes"
+    },
+    {
+      "id": "factory.5c496c634e12f3e1",
+      "name": "Bamboo Hollow Pipe",
+      "category": "Woodwinds",
+      "subcategory": "Bamboo and Pan"
+    },
+    {
+      "id": "factory.44c159a41cfc79d9",
+      "name": "Panpipe Cedar Puff",
+      "category": "Woodwinds",
+      "subcategory": "Bamboo and Pan"
+    },
+    {
+      "id": "factory.fbe521f799a4cf0b",
+      "name": "Shakuhachi Dawn Air",
+      "category": "Woodwinds",
+      "subcategory": "Bamboo and Pan"
+    },
+    {
+      "id": "factory.eff91046c50cefb2",
+      "name": "Reed Pipe Harmonic Mist",
+      "category": "Woodwinds",
+      "subcategory": "Bamboo and Pan"
+    },
+    {
+      "id": "factory.e6a7dd748a2aa957",
+      "name": "Vox Amber Ah Stab",
+      "category": "Vocals",
+      "subcategory": "Vox Stabs"
+    },
+    {
+      "id": "factory.286d97eeccd7496e",
+      "name": "Vox Silk Eh Chop",
+      "category": "Vocals",
+      "subcategory": "Vox Stabs"
+    },
+    {
+      "id": "factory.ce0334ac49cd28b2",
+      "name": "Vox Round Oh Hit",
+      "category": "Vocals",
+      "subcategory": "Vox Stabs"
+    },
+    {
+      "id": "factory.d181ba0476c91067",
+      "name": "Vox Bright Ee Tick",
+      "category": "Vocals",
+      "subcategory": "Vox Stabs"
+    },
+    {
+      "id": "factory.50408d4972f0923d",
+      "name": "Vox Dusty Uh Pulse",
+      "category": "Vocals",
+      "subcategory": "Vox Stabs"
+    },
+    {
+      "id": "factory.24eb7b9df40dc193",
+      "name": "Vox Air Hah Flick",
+      "category": "Vocals",
+      "subcategory": "Vox Stabs"
+    },
+    {
+      "id": "factory.d216a1e24b097a9e",
+      "name": "Vox Low Vowel Bounce",
+      "category": "Vocals",
+      "subcategory": "Vox Stabs"
+    },
+    {
+      "id": "factory.b6e63f11eb38361d",
+      "name": "Vox Neon Open Stab",
+      "category": "Vocals",
+      "subcategory": "Vox Stabs"
+    },
+    {
+      "id": "factory.4aa1173c9625874a",
+      "name": "Vox Hushed Short Chant",
+      "category": "Vocals",
+      "subcategory": "Vox Stabs"
+    },
+    {
+      "id": "factory.ae1a7451a087b89e",
+      "name": "Vox Chrome Formant Cut",
+      "category": "Vocals",
+      "subcategory": "Vox Stabs"
+    },
+    {
+      "id": "factory.0fa29f7f0849e969",
+      "name": "Vox Soft Vowel Answer",
+      "category": "Vocals",
+      "subcategory": "Vox Stabs"
+    },
+    {
+      "id": "factory.6beffd7facfbabe4",
+      "name": "Vox Hollow Wah Chop",
+      "category": "Vocals",
+      "subcategory": "Vox Stabs"
+    },
+    {
+      "id": "factory.366fe9c4ebe76576",
+      "name": "Milwaukee Bounce Tine",
+      "category": "Hip Hop Milwaukee"
+    },
+    {
+      "id": "factory.4fdb2baba19e4931",
+      "name": "Milwaukee Side Street Piano",
+      "category": "Hip Hop Milwaukee"
+    },
+    {
+      "id": "factory.7cc1f2a7ea2688d6",
+      "name": "Milwaukee Chrome Keys",
+      "category": "Hip Hop Milwaukee"
+    },
+    {
+      "id": "factory.330795a0f4998781",
+      "name": "Milwaukee Rubber Key Snap",
+      "category": "Hip Hop Milwaukee"
+    },
+    {
+      "id": "factory.fc56161488411d6c",
+      "name": "Milwaukee Ice Corner Bell",
+      "category": "Hip Hop Milwaukee"
+    },
+    {
+      "id": "factory.1a156f15cc825bb1",
+      "name": "Milwaukee Copper Ping",
+      "category": "Hip Hop Milwaukee"
+    },
+    {
+      "id": "factory.807ec4325a519841",
+      "name": "Milwaukee Glass Bounce",
+      "category": "Hip Hop Milwaukee"
+    },
+    {
+      "id": "factory.4c727fda4531074f",
+      "name": "Milwaukee Pocket Music Bell",
+      "category": "Hip Hop Milwaukee"
+    },
+    {
+      "id": "factory.9fea1ab880067914",
+      "name": "Milwaukee Wire Flick Pluck",
+      "category": "Hip Hop Milwaukee"
+    },
+    {
+      "id": "factory.7202efcd33b2c994",
+      "name": "Milwaukee Neon Toy Pluck",
+      "category": "Hip Hop Milwaukee"
+    },
+    {
+      "id": "factory.a426185c929ad865",
+      "name": "Milwaukee Bottle Tap",
+      "category": "Hip Hop Milwaukee"
+    },
+    {
+      "id": "factory.dc68bdcabaa88430",
+      "name": "Milwaukee FM Thumb Pluck",
+      "category": "Hip Hop Milwaukee"
+    },
+    {
+      "id": "factory.8db32a8c883228ed",
+      "name": "Milwaukee Deep Pocket Sub",
+      "category": "Hip Hop Milwaukee"
+    },
+    {
+      "id": "factory.b2c3564a53129b81",
+      "name": "Milwaukee Saw Rubber Bass",
+      "category": "Hip Hop Milwaukee"
+    },
+    {
+      "id": "factory.8074c6464f7bae8f",
+      "name": "Milwaukee FM Knock Bass",
+      "category": "Hip Hop Milwaukee"
+    },
+    {
+      "id": "factory.65a8e1ca419bc951",
+      "name": "Milwaukee Night Shift Bass",
+      "category": "Hip Hop Milwaukee"
+    },
+    {
+      "id": "factory.e58f3bd8e5b05944",
+      "name": "Milwaukee Whistle Signal",
+      "category": "Hip Hop Milwaukee"
+    },
+    {
+      "id": "factory.62d95263a47e0c69",
+      "name": "Milwaukee Arcade Turn Lead",
+      "category": "Hip Hop Milwaukee"
+    },
+    {
+      "id": "factory.62ee779e9db69b99",
+      "name": "Milwaukee Horn Jab",
+      "category": "Hip Hop Milwaukee"
+    },
+    {
+      "id": "factory.ab96132977e866d1",
+      "name": "Milwaukee Nasal Brass Pop",
+      "category": "Hip Hop Milwaukee"
+    },
+    {
+      "id": "factory.3a0da7417f4b2aff",
+      "name": "Milwaukee Bounce Ooh",
+      "category": "Hip Hop Milwaukee"
+    },
+    {
+      "id": "factory.48f5ad31329ef160",
+      "name": "Milwaukee High Eh Cut",
+      "category": "Hip Hop Milwaukee"
+    },
+    {
+      "id": "factory.e1aea8d733441b1d",
+      "name": "Milwaukee Winter Window Pad",
+      "category": "Hip Hop Milwaukee"
+    },
+    {
+      "id": "factory.6224b41c7159fc77",
+      "name": "Milwaukee Lake Neon Pad",
+      "category": "Hip Hop Milwaukee"
     }
   ]
 }

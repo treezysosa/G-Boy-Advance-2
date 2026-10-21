@@ -1,29 +1,14 @@
-# G BOY ADVANCE 2 — 0.17.1
+# G BOY ADVANCE 2 — 0.18.0
 
-**598 factory presets across 18 categories.** Brass contains 24 new brass presets and all 16 previous sax leads. The 74-sound Vocals folder and every other existing sound are retained.
+**678 factory presets across 21 categories and 30 UI skins.** The expansion adds 24 Percussion, 20 Woodwinds, 24 Hip Hop Milwaukee sounds and 12 synthetic Vox stabs inside **Vocals** (86 total). The four regional folders remain Detroit, West Coast, Florida and Chicago; Brass still includes all 16 sax sounds. Removed vocal categories remain removed.
 
-Saved projects retain their explicit synthesis settings, including sounds from the removed categories. Seventy-six old host program numbers are reserved to keep every surviving program number stable; choosing a reserved slot from another program loads Dream Pad. Repeating the current retired slot after project restoration preserves the saved sound. Reserved slots are separate from the 598 active factory presets. Existing user presets are retained.
+The 10 new skins are Amethyst, Seafoam, Sunset, Ice Blue, Wine Red, Olive, Pearl, Bronze, Bubblegum and Smoke. SELECT → SKIN changes the appearance; NEW COLOUR ON LOAD keeps choosing a different color for each launch, or turn it off to pin a project color. Appearance never changes audio settings.
 
-Version **0.17.1** shortens the four regional folder names to **Detroit**, **West Coast**, **Florida** and **Chicago**. All 598 sounds, preset names and identities remain unchanged. [Current changes](docs/RELEASE_0_17_1.md).
+The audio engine now uses four interleaved SSE2 double-precision additive recurrences, direct bounded wavetable interpolation, stable per-voice blocks for all eight synthesis engines and a float-accurate output soft-limiter calculation. The SoundFont wrapper avoids redundant channel initialization. Polyphony, harmonic counts, envelopes, oversampling and 16-frame latency are retained. The 50% performance target is measured against immutable 0.17.1 source, with identical patches and events. **Windows results are pending; no 50% improvement is claimed.**
 
-[Download Windows installer 0.17.1](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39465006237/artifacts/12285962556) · [Portable/manual archive](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39465006237/artifacts/12285987607) · [Source](https://github.com/treezysosa/G-Boy-Advance-2/tree/feature/folder-names-0171). Close FL Studio and standalone before installing; extract into a fresh folder and run `G-Boy-Advance-2-Setup-x64.exe`. User presets, banks and preferences are retained.
+All 598 prior factory parameter dictionaries, 674 existing host slots and 64 parameter IDs remain intact. Eighty new host slots are appended (754 total, including 76 reserved); user presets, SoundFonts and projects remain available. ROM Hacks still supports SF2 drag/drop, the default/custom library folder and bank/instrument recall.
 
-[Windows/Ubuntu run 39446025149](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39446025149) passed nine Ubuntu suites and twelve Windows CTest suites: 630,175 common DSP/preset checks, 2,884 Windows application checks (332 library / 164 SoundFont), both actual-bundle hosts (647/648), pluginval strictness 10, Steinberg 47 passed / 0 failed and six installer lifecycle checks. The synthetic FL-named host is not FL Studio.
-
-The existing 694-scene / 10,985,472-float probe is byte-identical: **True**, maximum error 0.0, SHA256 `e11dc0441a54813b12522f57c77e667df090ab3572ad7e447fead6effffe07bd`. The additional 148 eight-second pad/string/SF2 scenes / 147,532,832 floats are byte-identical: **True**, maximum error 0.0, SHA256 `b82eb8711e49eb3cc033b810df7b3a83d2d386b75f73f8a55d94bbbc3e9dfa7a`. These compare the same compiler and drivers against immutable released 0.16.1 source.
-
-Matched Windows measurements across all three rates, both callback sizes and both workloads, repeated in before/after/after/before order:
-
-| Requested voices | Built-in pad/string DSP time reduction | SF2 fixture DSP time reduction |
-|---:|---:|---:|
-| 4 | 6.17% | 1.39% |
-| 8 | 8.70% | 2.48% |
-| 16 | 9.65% | 3.47% |
-| 32 | 8.88% | 5.11% |
-
-Positive percentages mean less measured render time; negative values mean more on that shared runner. Setup/warmup are excluded. These results are not predicted FL Studio CPU percentages or guarantees for arbitrary SoundFonts, computers and audio drivers.
-
-Owner FL64, real audio/MIDI devices, DPI and human listening remain manual acceptance work. The prepared build is unsigned and the owner’s licensing decision remains deferred.
+[Current changes and validation](docs/RELEASE_0_18_0.md) · [Source branch](https://github.com/treezysosa/G-Boy-Advance-2/tree/feature/expansion-performance-0180). The new installer link will be added after Windows validation. The prepared build is unsigned; the owner's licensing decision remains deferred. Real FL Studio/physical audio-device checks and human listening remain manual acceptance work.
 
 ![G Boy Advance 2 Phase 2 native JUCE editor](docs/images/phase2-main.png)
 
@@ -34,12 +19,12 @@ Actual Phase 2 Windows JUCE component render at 1280×646 from [passing CI run 3
 Install Visual Studio 2022 with **Desktop development with C++**, a Windows SDK, CMake 3.24+, and Git. In PowerShell:
 
 ```powershell
-git clone --branch feature/pad-string-cpu-0162 https://github.com/treezysosa/G-Boy-Advance-2.git
+git clone --branch feature/expansion-performance-0180 https://github.com/treezysosa/G-Boy-Advance-2.git
 cd G-Boy-Advance-2
 powershell -ExecutionPolicy Bypass -File scripts/build-windows.ps1
 ```
 
-You can also use [Build and validate in GitHub Actions](https://github.com/treezysosa/G-Boy-Advance-2/actions?query=branch%3Afeature%2Fpad-string-cpu-0162). Factory/vocal and retro audition files are separate test outputs and are never installed or loaded by the instrument.
+You can also use [Build and validate in GitHub Actions](https://github.com/treezysosa/G-Boy-Advance-2/actions?query=branch%3Afeature%2Fexpansion-performance-0180). Factory/vocal and retro audition files are separate test outputs and are never installed or loaded by the instrument.
 
 The first local build downloads the pinned JUCE 8.0.6 source. For an offline build, supply an existing checkout:
 

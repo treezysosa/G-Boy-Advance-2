@@ -1,4 +1,5 @@
-> Current version: **0.17.1**. Regional folders are named Detroit, West Coast, Florida and Chicago. All 598 presets across 18 categories, Brass/sax sounds, Vocals, skins and ROM Hacks behavior are retained. [Current changes](RELEASE_0_17_1.md).
+> Current version: **0.18.0**. 678 presets in 21 categories, 30 skins. Added Percussion (24), Woodwinds (20), Hip Hop Milwaukee (24) and 12 Vox stabs in Vocals (86). SELECT → SKIN selects the new colors. [Current changes](RELEASE_0_18_0.md).
+
 
 
 Older 0.12.0 projects restore their synthesis parameters and skin, show `SYNTH ONLY:` in the display and a removal notice in START, and discard embedded audio from newly saved state. Sample sounds no longer play. Original project, audio and preset files are left unchanged; preserve the original project if its sample content is still needed. Sample-containing presets are rejected/skipped. Schema 1 synthesis `.gba2preset` import/export continues to work.
@@ -57,7 +58,7 @@ This development version passes Windows compilation, automated tests and pluginv
 
 ## Factory bank revision 0.6
 
-The bank contains 598 factory sounds in 18 categories. Vocals - Pop and Indie, Vocals - Southern and West Coast, Vocals - Cartoon and Gaming and Vocals - Soul and R&B have been removed, including their seventy-six presets. Surviving sounds, names, IDs and original host program numbers are retained. Named instruments have explicit synthesis profiles and Afterglow variants change active excitation/envelope controls. Factory levels are calibrated using a 100 ms stereo RMS metric; quieter articulations remain quieter when the master knob reaches its gain ceiling. This is not perceptual loudness normalization.
+The bank contains 678 factory sounds in 21 categories. Vocals - Pop and Indie, Vocals - Southern and West Coast, Vocals - Cartoon and Gaming and Vocals - Soul and R&B have been removed, including their seventy-six presets. Surviving sounds, names, IDs and original host program numbers are retained. Named instruments have explicit synthesis profiles and Afterglow variants change active excitation/envelope controls. Factory levels are calibrated using a 100 ms stereo RMS metric; quieter articulations remain quieter when the master knob reaches its gain ceiling. This is not perceptual loudness normalization.
 
 Saved projects restore their actual parameter values, even when their factory ID also exists in the revised bank. Loading the factory preset again selects its new voicing. User presets remain independent. Optional category audition WAVs are original test renders for listening review; they are never loaded by the instrument.
 
@@ -148,11 +149,11 @@ These are original synthesis patches, without recorded instruments, artist voice
 
 ## Removed vocal categories (0.16.1)
 
-Vocals - Pop and Indie (16 presets), Vocals - Southern and West Coast (14 presets), Vocals - Cartoon and Gaming (28 presets) and Vocals - Soul and R&B (18 presets) are removed from Factory search, category selection, favorites/recent results and D-pad browsing. All 574 previously retained factory sounds remain unchanged, including vocals and regional hip-hop banks; 24 additional brass presets bring the current bank to 598. Existing user presets remain available.
+Vocals - Pop and Indie (16 presets), Vocals - Southern and West Coast (14 presets), Vocals - Cartoon and Gaming (28 presets) and Vocals - Soul and R&B (18 presets) are removed from Factory search, category selection, favorites/recent results and D-pad browsing. All 574 previously retained factory sounds remain unchanged, including vocals and regional hip-hop banks; 24 additional brass presets bring the 0.17.0 bank to 598; the 0.18.0 expansion adds 80 sounds. Existing user presets remain available.
 
 Saved DAW projects store their synthesis settings. Reopening a project that used a removed factory preset keeps its saved sound, name, edited settings and program number; its category display reads Saved Project. Use START → Save As to keep an independent user preset. The removed sounds cannot be freshly selected from the factory bank.
 
-The seventy-six old program numbers are reserved in the host program list so the other sounds do not move. Selecting a Reserved N (Default) slot from another program plays Dream Pad. Repeating the current retired slot after restoring a project preserves its saved sound; switch to another program first to intentionally load the default. Reserved slots do not count toward the 598 factory presets. SoundFont banks, user files, skins and audio parameters are unchanged.
+The seventy-six old program numbers are reserved in the host program list so the other sounds do not move. Selecting a Reserved N (Default) slot from another program plays Dream Pad. Repeating the current retired slot after restoring a project preserves its saved sound; switch to another program first to intentionally load the default. Reserved slots do not count toward the 678 factory presets. SoundFont banks, user files, skins and audio parameters are unchanged.
 
 ### Brass and sax sounds
 
@@ -161,3 +162,13 @@ Open START and select **Brass** to see all 40 sounds, including the 16 existing 
 ### Regional preset folders
 
 The regional factory categories are **Detroit** (60 sounds), **West Coast** (40), **Florida** (40) and **Chicago** (24). These replace the previous Hip-Hop category labels. Individual preset names and their sounds are unchanged. The preset browser and D-pad use the new names; existing projects retain their saved synthesis settings.
+
+## Percussion, Woodwinds, Milwaukee and Vox (0.18.0)
+
+START opens the browser. Choose Percussion for 24 original pitched electronic drums, hats, claps and wood/metal hits, or Woodwinds for 20 synthetic clarinet, oboe, bassoon, recorder and pipe sounds. Their subfolder selector narrows the instrument family; All subfolders shows the complete category. These are synthesized approximations, not acoustic recordings. The keyboard transposes percussion; lower notes suit kick/tom bodies and upper notes suit metal/chime sounds.
+
+Hip Hop Milwaukee contains 24 original bounce-oriented pianos, bells, plucks, basses, leads, brass stabs, vowel cuts and pads. Search a family tag to narrow the results. The 12 new Vox stabs are in Vocals → Vox Stabs, together with the 74 retained Vocals sounds under All subfolders. Vox is not a separate top-level folder. No deleted vocal category is recreated.
+
+The new skins are Amethyst, Seafoam, Sunset, Ice Blue, Wine Red, Olive, Pearl, Bronze, Bubblegum and Smoke, in addition to the previous 20. SELECT → SKIN changes the current instance; BACK returns immediately. NEW COLOUR ON LOAD continues to choose a different color on each launch. Disable it to save a fixed skin in the project. Skins do not change your preset or DSP settings.
+
+CPU measurements use identical native workloads against 0.17.1; a universal 50% gain is not promised. The runtime retains the same voice limits, tails and full-rate controls. On dense chords, lowering the voice count to 8–16 and using a larger device buffer can still help, especially with large external SoundFonts. See PERFORMANCE.md and the current release evidence for measured results and their limits.

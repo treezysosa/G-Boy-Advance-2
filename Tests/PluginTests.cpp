@@ -38,7 +38,7 @@ void removedVocalProjects(const juce::File& root) {
     auto p=std::make_unique<GbaProcessor>(root.getChildFile("RemovedVocals"));
     p->setRateAndBufferSizeDetails(48000,256);p->prepareToPlay(48000,256);
     const auto defaultSettings=p->snapshot();
-    check(p->presets.all().size()==598&&p->presets.categories().size()==18,"Retired categories remain in the factory browser");
+    check(p->presets.all().size()==678&&p->presets.categories().size()==21,"Retired categories remain in the factory browser");
     for(const char* name:{"Vocals - Pop and Indie","Vocals - Southern and West Coast","Vocals - Cartoon and Gaming","Vocals - Soul and R&B"}) {
         PresetManager::Filter f;f.category=name;check(p->presets.filtered(f).empty()&&!p->presets.categories().contains(name),"Removed category remains selectable");
     }
@@ -70,13 +70,13 @@ void removedVocalProjects(const juce::File& root) {
     juce::MemoryBlock lastProject;check(lastProject.fromBase64Encoding(projects->getLast()["state"].toString()),"Last old project fixture is invalid");p->setStateInformation(lastProject.getData(),int(lastProject.getSize()));
     const auto kept=p->snapshot();check(p->presets.saveAs("Kept Project Sound").wasOk(),"Could not keep a restored sound as a user preset");
     const auto userId=p->presetId();p->presets.restoreDefault(false);check(p->presets.load(userId)&&p->snapshot().values==kept.values,"User preset no longer reloads independently of removed factory categories");
-    for(int i=0;i<18;++i){p->presets.stepCategory(1);check(p->presetCategory()!="Vocals - Pop and Indie"&&p->presetCategory()!="Vocals - Southern and West Coast"&&p->presetCategory()!="Vocals - Cartoon and Gaming"&&p->presetCategory()!="Vocals - Soul and R&B","D-pad category navigation reaches a removed category");}
-    std::cout<<"PASS 76 actual 0.16.0 removed-vocal projects: edited settings, audible notes, resave, reserved host slots, surviving program numbers and 18 browser categories\n";
+    for(int i=0;i<21;++i){p->presets.stepCategory(1);check(p->presetCategory()!="Vocals - Pop and Indie"&&p->presetCategory()!="Vocals - Southern and West Coast"&&p->presetCategory()!="Vocals - Cartoon and Gaming"&&p->presetCategory()!="Vocals - Soul and R&B","D-pad category navigation reaches a removed category");}
+    std::cout<<"PASS 76 actual 0.16.0 removed-vocal projects: edited settings, audible notes, resave, reserved host slots, surviving program numbers and 21 browser categories\n";
 }
 void unifiedVocals(const juce::File& root) {
     auto p=std::make_unique<GbaProcessor>(root.getChildFile("UnifiedVocals"));
     PresetManager::Filter filter;filter.category="Vocals";filter.source=PresetManager::Source::factory;
-    check(p->presets.filtered(filter).size()==74,"Unified Vocals category lost factory sounds");
+    check(p->presets.filtered(filter).size()==86,"Unified Vocals category lost factory sounds");
     const char* names[]{"Japanese City Pop Vocal Synth","Ghost Whisper Synth","Children's Choir-Style Synth"};
     const char* categories[]{"Vocals - Global Pop Textures","Vocals - Horror","Vocals - Choirs and Textures"};
     for(int group=0;group<3;++group) {
@@ -98,9 +98,9 @@ void unifiedVocals(const juce::File& root) {
         }
     }
     std::set<juce::String> visited;
-    for(int i=0;i<18;++i){p->presets.stepCategory(1);visited.insert(p->presetCategory());}
-    check(visited.size()==18&&visited.count("Vocals")==1,"D-pad navigation did not visit each merged category once");
-    std::cout<<"PASS 74 merged Vocals presets, three legacy-category edited projects and 18-category navigation\n";
+    for(int i=0;i<21;++i){p->presets.stepCategory(1);visited.insert(p->presetCategory());}
+    check(visited.size()==21&&visited.count("Vocals")==1,"D-pad navigation did not visit each merged category once");
+    std::cout<<"PASS 86 Vocals presets (12 new Vox stabs), three legacy-category edited projects and 21-category navigation\n";
 }
 void brassLibrary(const juce::File& root) {
     auto p=std::make_unique<GbaProcessor>(root.getChildFile("BrassLibrary"));
@@ -221,7 +221,7 @@ int main(int argc,char** argv) {
         auto factoryReload=std::make_unique<GbaProcessor>(root);factoryReload->setStateInformation(factoryState.getData(),int(factoryState.getSize()));
         check(factoryReload->presetId()==factoryId,"Factory project identity did not survive state reload");
         check(std::abs(factoryReload->snapshot()[gba::Param::Cutoff]-4321)<.1f&&std::abs(factoryReload->snapshot()[gba::Param::Volume]-.371f)<.0001f,"Factory state was replaced by current library values on project reload");
-        check(p.getNumPrograms()==674,"Expanded factory host-program count is wrong");
+        check(p.getNumPrograms()==754,"Expanded factory host-program count is wrong");
         p.setCurrentProgram(409);p.servicePendingProgram();
         check(p.getCurrentProgram()==409&&p.presetName()=="Handheld Pulse Motion - Afterglow","Appended retro host program is unreachable");
         set(p,"volume",.43f);juce::MemoryBlock retroState;p.getStateInformation(retroState);
@@ -357,6 +357,13 @@ int main(int argc,char** argv) {
             subfolder->setText("Sax-Style Leads",juce::sendNotificationSync);check(rows()==16,"Sax lead sounds are not inside the Brass browser");query("tenor");check(rows()==2,"Sax family and search did not intersect");query("");
             snapshot(*editor,"ui-snapshots/Sax-in-Brass-960.png");
             subfolder->setText("Trumpets",juce::sendNotificationSync);check(rows()==4,"New trumpet sounds are missing");
+            categoryFilter->setText("Percussion",juce::sendNotificationSync);check(rows()==24&&subfolder->isVisible(),"Percussion browser or family selector is incomplete");
+            subfolder->setText("Kicks",juce::sendNotificationSync);check(rows()==4,"Percussion kicks subfolder is incomplete");snapshot(*editor,"ui-snapshots/Percussion-Browser-960.png");
+            categoryFilter->setText("Woodwinds",juce::sendNotificationSync);check(rows()==20,"Woodwinds category retained the old family filter");
+            subfolder->setText("Clarinets",juce::sendNotificationSync);check(rows()==4,"Woodwind clarinet subfolder is incomplete");snapshot(*editor,"ui-snapshots/Woodwinds-Browser-960.png");
+            categoryFilter->setText("Hip Hop Milwaukee",juce::sendNotificationSync);check(rows()==24&&!subfolder->isVisible(),"Milwaukee bank is incomplete");query("piano");check(rows()==4,"Milwaukee piano tags do not search");query("");snapshot(*editor,"ui-snapshots/Milwaukee-Browser-960.png");
+            categoryFilter->setText("Vocals",juce::sendNotificationSync);check(rows()==86&&subfolder->isVisible(),"Vocals lost retained sounds or new Vox patches");
+            subfolder->setText("Vox Stabs",juce::sendNotificationSync);check(rows()==12,"New Vox stabs are not merged into Vocals");snapshot(*editor,"ui-snapshots/Vox-in-Vocals-960.png");
             categoryFilter->setText("Retro Games",juce::sendNotificationSync);check(rows()==56,"Factory/category browser intersection failed");
             check(!subfolder->isVisible()&&subfolder->getSelectedId()==1,"Changing category retained a stale brass subfolder filter");
             auto beforeBrowse=p.presetId();presetList->selectRow(0);check(p.presetId()==beforeBrowse,"Keyboard browsing changes the loaded sound");presetList->keyPressed(juce::KeyPress(juce::KeyPress::downKey));check(presetList->getSelectedRow()==1&&p.presetId()==beforeBrowse,"List arrow navigation loads a patch or fails to move");presetList->keyPressed(juce::KeyPress(juce::KeyPress::returnKey));check(p.presetCategory()=="Retro Games","Enter did not load the selected preset");render(p,audio,8);check(p.voiceCount()>0,"Browser Enter did not preview real audio");button(*editor,"B  STOP")->onClick();p.panic();render(p,audio,1);
@@ -371,7 +378,7 @@ int main(int argc,char** argv) {
             auto* select=button(*editor,"SELECT");select->onClick();check(button(*editor,"BACK / SELECT")!=nullptr,"SELECT did not open advanced editor");
             auto* synthTabs=dynamic_cast<juce::TabbedComponent*>(named(*editor,"Advanced tabs"));
             check(synthTabs&&synthTabs->getNumTabs()==4&&!synthTabs->getTabNames().contains("SAMPLES"),"Sample playback controls remain in the editor");
-            auto* skin=dynamic_cast<juce::ComboBox*>(named(*editor,"UI skin"));check(skin&&skin->getNumItems()==20,"Twenty-skin selector missing");
+            auto* skin=dynamic_cast<juce::ComboBox*>(named(*editor,"UI skin"));check(skin&&skin->getNumItems()==30,"Thirty-skin selector missing");
             auto* autoSkin=dynamic_cast<juce::ToggleButton*>(named(*editor,"New colour on load"));check(autoSkin!=nullptr,"Launch-colour preference is missing");
             autoSkin->setToggleState(false,juce::dontSendNotification);autoSkin->onClick();p.setEditorSkin(0);juce::MessageManager::getInstance()->runDispatchLoopUntil(60);
             const auto sound=p.snapshot();const auto presetId=p.presetId();

@@ -2,6 +2,7 @@
 #include <atomic>
 #include <iostream>
 #include <memory>
+#include <limits>
 #include <stdexcept>
 #include <string>
 #include <vector>
@@ -16,6 +17,14 @@ gba::Settings dry(){gba::Settings s;s.set(gba::Param::Drive,0);s.set(gba::Param:
 void process(gba::Effects& fx,Audio& a,const gba::Settings& s){for(std::size_t n=0;n<a.l.size();++n)fx.process(a.l[n],a.r[n],s);}
 double energy(const std::vector<float>& a,int first,int last){double v=0;for(int i=first;i<last;++i)v+=double(a[std::size_t(i)])*a[std::size_t(i)];return v;}
 double component(const std::vector<float>& a,double hz,double sr,int start=0){double re=0,im=0;for(std::size_t n=std::size_t(start);n<a.size();++n){const double p=2*std::numbers::pi_v<double>*hz*double(n)/sr;re+=a[n]*std::cos(p);im+=a[n]*std::sin(p);}return 2*std::hypot(re,im)/double(a.size()-std::size_t(start));}
+void softLimitAccuracy(){
+    double error=0;bool bounded=true,odd=true;
+    for(int n=-800000;n<=800000;++n){const float x=float(n)*.00001f,y=gba::softLimit(x);error=std::max(error,double(std::abs(y-std::tanh(x))));bounded&=std::isfinite(y)&&std::abs(y)<=1;odd&=gba::softLimit(-x)==-y;}
+    check(error<=1.2e-7&&bounded&&odd,"Optimized soft limiter changes the saturation response beyond float precision");
+    check(gba::softLimit(0)==0&&gba::softLimit(100)==1&&gba::softLimit(-100)==-1,"Soft limiter zero or outer-range response is wrong");
+    check(std::isnan(gba::softLimit(std::numeric_limits<float>::quiet_NaN()))&&gba::softLimit(std::numeric_limits<float>::infinity())==1,"Soft limiter no longer preserves libm special-value behavior");
+    std::cout<<"PASS 1,600,001-point limiter reference sweep; max absolute error "<<error<<"\n";
+}
 void bypassAndLatency(){
     gba::Effects fx;float l=1,r=1;fx.process(l,r,dry());check(l==0&&r==0,"Unprepared effects must safely return silence");
     for(float sr:{44100.f,48000.f,96000.f}) {
@@ -145,4 +154,4 @@ void crusherBypassTransitions(){
     }
     std::cout<<"PASS crusher re-enable captures fresh latency-aligned audio after short/long bypass at all prior counter phases and three rates\n";
 }
-int main(){try{bypassAndLatency();nonlinear();delays();reverb();modulationAndEq();crusherWidthAndStress();crusherBypassTransitions();std::cout<<"All "<<checks<<" Phase 5 effects checks passed.\n";return 0;}catch(const std::exception& e){trackAllocations=false;std::cerr<<"FAIL: "<<e.what()<<"\n";return 1;}}
+int main(){try{softLimitAccuracy();bypassAndLatency();nonlinear();delays();reverb();modulationAndEq();crusherWidthAndStress();crusherBypassTransitions();std::cout<<"All "<<checks<<" Phase 5 effects checks passed.\n";return 0;}catch(const std::exception& e){trackAllocations=false;std::cerr<<"FAIL: "<<e.what()<<"\n";return 1;}}

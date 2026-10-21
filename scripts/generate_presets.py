@@ -279,7 +279,7 @@ def diversity_refinements():
 
 def recipe_digest():
     digest=hashlib.sha256()
-    for name in ['scripts/generate_presets.py','Presets/instrument-designs.json','Presets/vocal-designs.json','Presets/retro-designs.json','Presets/hiphop-designs.json','Presets/diversity-refinements.json','Presets/groove-designs.json','Presets/brass-designs.json','Source/dsp/RetroEngine.h','Source/dsp/ParameterList.inc','Source/dsp/VocalEngine.h','Source/dsp/SynthEngine.cpp','Source/dsp/SynthEngine.h','Source/dsp/Effects.cpp','Source/dsp/Effects.h','Source/dsp/DspMath.h']:
+    for name in ['scripts/generate_presets.py','Presets/instrument-designs.json','Presets/vocal-designs.json','Presets/retro-designs.json','Presets/hiphop-designs.json','Presets/diversity-refinements.json','Presets/groove-designs.json','Presets/brass-designs.json','Presets/expansion-designs.json','Source/dsp/RetroEngine.h','Source/dsp/ParameterList.inc','Source/dsp/VocalEngine.h','Source/dsp/SynthEngine.cpp','Source/dsp/SynthEngine.h','Source/dsp/Effects.cpp','Source/dsp/Effects.h','Source/dsp/DspMath.h']:
         digest.update(name.encode()+b'\0'+(ROOT/name).read_bytes().replace(b'\r\n',b'\n'))
     return digest.hexdigest()
 
@@ -327,6 +327,29 @@ def brass_patches(specs):
     assert actual==counts,actual
     return patches
 
+def expansion_patches(specs):
+    data=json.loads((ROOT/'Presets/expansion-designs.json').read_text())
+    assert data['format']=='gba2.expansion-designs' and data['schemaVersion']==1
+    counts={'Percussion':24,'Woodwinds':20,'Vocals':12,'Hip Hop Milwaukee':24}
+    actual=dict.fromkeys(counts,0);patches=[]
+    for name,profile in data['designs'].items():
+        assert profile['category'] in counts and profile['designNotes'] and profile['tags']
+        actual[profile['category']]+=1
+        assert set(profile['parameters'])=={row[0] for row in specs},name
+        values={}
+        for symbol,key,lo,hi,_,step in specs:
+            value=profile['parameters'][symbol]
+            assert type(value) in (int,float) and lo<=value<=hi,(name,symbol,value)
+            assert not step or abs((value-lo)/step-round((value-lo)/step))<1e-4,(name,symbol,value)
+            values[key]=round(value,6)
+        assert values['voice.count']<=8 and values['amp.release']<=1.6
+        patch=dict(id='factory.'+hashlib.sha256(name.encode()).hexdigest()[:16],name=name,
+                   category=profile['category'],tags=['synthesis','original','expansion',ENGINE_NAMES[int(values['engine'])],*profile['tags']],parameters=values)
+        if profile['category']!='Hip Hop Milwaukee':patch['subcategory']=profile['family']
+        patches.append(patch)
+    assert actual==counts,actual
+    return patches
+
 CATEGORY_NAMES = {
     'Hip-Hop - Detroit': 'Detroit',
     'Hip-Hop - West Coast': 'West Coast',
@@ -342,6 +365,7 @@ def generate(uncalibrated=False):
                 for name,profile in hiphop_designs().items() for variation in range(2)]
     patches += groove_patches(specs)
     patches += brass_patches(specs)
+    patches += expansion_patches(specs)
     # Keep legacy recipe groups and search tags: their names participate in the
     # authored voicing logic. Merge only the browser metadata, after synthesis.
     for patch in patches:

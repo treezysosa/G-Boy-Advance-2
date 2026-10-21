@@ -1,5 +1,8 @@
 #include "SynthEngine.h"
 #include <limits>
+#if defined(__SSE2__) || defined(_M_X64)
+#include <emmintrin.h>
+#endif
 
 namespace gba {
 void SynthEngine::prepare(double rate) {
@@ -53,7 +56,7 @@ void SynthEngine::buildTables() noexcept {
         }
     }
 }
-float SynthEngine::wavetable(float p,float frequency,float position,TableTuning& tuning) const noexcept {
+inline float SynthEngine::wavetable(float p,float frequency,float position,TableTuning& tuning) const noexcept {
     // Fade each level out one octave before its highest partial reaches 0.45 * sample rate.
     // Both contributing levels therefore stay below Nyquist, including between mip boundaries.
     if(tuning.frequency!=frequency||tuning.rate!=sampleRate) {
@@ -64,8 +67,11 @@ float SynthEngine::wavetable(float p,float frequency,float position,TableTuning&
     const int m=tuning.level,m2=tuning.next,a=std::clamp(int(position),0,3),b=std::min(a+1,3);
     float t=p*1024;int i=int(t)&1023,j=(i+1)&1023;float f=t-std::floor(t);
     const auto read=[&](int shape,int level) {const auto& table=tables[shape][level];return table[i]+f*(table[j]-table[i]);};
-    float x=std::lerp(read(a,m),read(a,m2),tuning.blend),y=std::lerp(read(b,m),read(b,m2),tuning.blend);
-    return std::lerp(x,y,position-float(a));
+    // Both blends are bounded to [0,1]; a direct interpolation avoids
+    // the extra sign/range branches in the generic std::lerp implementation.
+    const auto linear=[](float x,float y,float blend){return x+(y-x)*blend;};
+    float x=linear(read(a,m),read(a,m2),tuning.blend),y=linear(read(b,m),read(b,m2),tuning.blend);
+    return linear(x,y,position-float(a));
 }
 void SynthEngine::start(Voice& v,int channel,int note,float velocity,bool preview,bool legato) noexcept {
     const bool active=v.amp.stage!=Envelope::Off;
@@ -208,17 +214,38 @@ inline float SynthEngine::excitation(Voice& v,int engine,float frequency,float d
             // Double precision keeps the recurrence stable near the phase boundaries.
             const double phase=double(v.p1)*2*std::numbers::pi_v<double>;
             const double factor=2*std::cos(phase);
-            double previous=0,partial=std::sin(phase),sum=0;
+            double partial=std::sin(phase),sum=0;
+#if !defined(__SSE2__) && !defined(_M_X64)
+            double previous=0;
+#endif
             int used=int(s[Param::Harmonics]);
             // Most pad/string notes keep the entire bank below Nyquist. Check
             // its highest partial once; retain the exact original cutoff test
             // when a high note actually needs fewer harmonics.
             if(float(used)*dt>=0.45f){used=0;while(used<int(s[Param::Harmonics])&&float(used+1)*dt<0.45f)++used;}
+#if defined(__SSE2__) || defined(_M_X64)
+            // Four interleaved harmonic recurrences share two SSE2 double lanes.
+            // The scalar path below retains portability; both retain every partial.
+            const double sn=partial,cs=factor*.5,sn2=2*sn*cs,sn3=2*cs*sn2-sn,sn4=2*cs*sn3-sn2;
+            const double cs2=2*cs*cs-1;
+            const __m128d step=_mm_set1_pd(2*(2*cs2*cs2-1));
+            __m128d a=_mm_set_pd(sn2,sn),b=_mm_set_pd(sn4,sn3);
+            __m128d pa=_mm_set_pd(-sn2,-sn3),pb=_mm_set_pd(0,-sn),total=_mm_setzero_pd();
+            int h=0;
+            for(;h+3<used;h+=4) {
+                total=_mm_add_pd(total,_mm_add_pd(_mm_mul_pd(a,_mm_set_pd(harmonicWeight[std::size_t(h+1)],harmonicWeight[std::size_t(h)])),_mm_mul_pd(b,_mm_set_pd(harmonicWeight[std::size_t(h+3)],harmonicWeight[std::size_t(h+2)]))));
+                const auto na=_mm_sub_pd(_mm_mul_pd(step,a),pa),nb=_mm_sub_pd(_mm_mul_pd(step,b),pb);pa=a;pb=b;a=na;b=nb;
+            }
+            double lanes[2];_mm_storeu_pd(lanes,total);sum=lanes[0]+lanes[1];
+            double rest[4];_mm_storeu_pd(rest,a);_mm_storeu_pd(rest+2,b);
+            for(int i=0;h<used;++h,++i)sum+=rest[i]*harmonicWeight[std::size_t(h)];
+#else
             for(int h=0;h<used;++h) {
                 sum+=partial*harmonicWeight[std::size_t(h)];
                 const double next=factor*partial-previous;
                 previous=partial;partial=next;
             }
+#endif
             x=used>0?float(sum)*harmonicScale[std::size_t(used-1)]:0;
             break;
         }
@@ -292,7 +319,7 @@ template<int Engine> float SynthEngine::voiceSample(Voice& v,FrameCache& cache) 
     float env=v.amp.nextSteps(ampRates.attackStep,ampRates.decayStep,s[Param::Sustain]);
     float fenv=v.filterEnv.nextSteps(filterRates.attackStep,filterRates.decayStep,s[Param::FilterSustain]);
     const float syllableMotion=s[Param::Syllable]>0?cache.syllable.read(v.syllable):0;
-    if(v.controlCounter==0||(Engine<0&&engineFade.weights[4]>0&&!v.stringActive)) {
+    if(v.controlCounter==0||((Engine==4||(Engine<0&&engineFade.weights[4]>0))&&!v.stringActive)) {
         const float octaves=fenv*s[Param::FilterEnv]+modFilter;
         if(cache.filterBase!=s[Param::Cutoff]||cache.filterOctaves!=octaves) {
             cache.cutoff=std::clamp(s[Param::Cutoff]*std::exp2(octaves),15.0f,sampleRate*.44f);
@@ -308,9 +335,9 @@ template<int Engine> float SynthEngine::voiceSample(Voice& v,FrameCache& cache) 
             v.filterCutoff=cutoff;v.filterResonance=s[Param::Resonance];v.filterReady=true;
         }
         updateFormants(v,s[Param::Vowel]+modVowel+s[Param::Syllable]*syllableMotion*0.8f);
-        if constexpr(Engine<0) {
-          if(engineFade.weights[6]>0)v.retro.configure(s[Param::Brightness],sampleRate);
-          if(engineFade.weights[4]>0&&(v.stringFrequency!=frequency||v.stringBrightness!=s[Param::Brightness]||v.stringRate!=sampleRate)) {
+        if constexpr(Engine<0||Engine==4||Engine==6) {
+          if(Engine==6||(Engine<0&&engineFade.weights[6]>0))v.retro.configure(s[Param::Brightness],sampleRate);
+          if((Engine==4||(Engine<0&&engineFade.weights[4]>0))&&(v.stringFrequency!=frequency||v.stringBrightness!=s[Param::Brightness]||v.stringRate!=sampleRate)) {
             // Compensate the feedback low-pass phase delay so brightness does not detune the string.
             const float omega=tau*frequency/sampleRate,alpha=.15f+.8f*s[Param::Brightness],r=1-alpha;
             const float c=std::cos(omega),sn=std::sin(omega),den=1-2*r*c+r*r;
@@ -324,7 +351,9 @@ template<int Engine> float SynthEngine::voiceSample(Voice& v,FrameCache& cache) 
     v.controlCounter=(v.controlCounter+1)&15;
     float x=0;
     if constexpr(Engine>=0) {
-        v.stringActive=v.modalActive=false;x=excitation(v,Engine,frequency,dt,dt2,fenv);
+        if constexpr(Engine!=4)v.stringActive=false;
+        if constexpr(Engine!=7)v.modalActive=false;
+        x=excitation(v,Engine,frequency,dt,dt2,fenv);
     } else {
         if(engineFade.weights[4]==0)v.stringActive=false;
         if(engineFade.weights[7]==0)v.modalActive=false;
@@ -371,7 +400,7 @@ void SynthEngine::updateHarmonics() noexcept {
 }
 bool SynthEngine::canRenderStable() const noexcept {
     const int engine=int(current[Param::Engine]);
-    return movingCount==0&&previewSamples==0&&(engine==0||engine==2||engine==3)
+    return movingCount==0&&previewSamples==0
         &&engineFade.remaining==0&&engineFade.target==engine
         &&wave1Fade.remaining==0&&wave1Fade.target==int(current[Param::Wave1])
         &&wave2Fade.remaining==0&&wave2Fade.target==int(current[Param::Wave2])
@@ -382,8 +411,13 @@ bool SynthEngine::canRenderStable() const noexcept {
 void SynthEngine::renderStable(float* left,float* right,int samples) noexcept {
     switch(int(current[Param::Engine])) {
         case 0:renderStableEngine<0>(left,right,samples);break;
+        case 1:renderStableEngine<1>(left,right,samples);break;
         case 2:renderStableEngine<2>(left,right,samples);break;
-        default:renderStableEngine<3>(left,right,samples);break;
+        case 3:renderStableEngine<3>(left,right,samples);break;
+        case 4:renderStableEngine<4>(left,right,samples);break;
+        case 5:renderStableEngine<5>(left,right,samples);break;
+        case 6:renderStableEngine<6>(left,right,samples);break;
+        default:renderStableEngine<7>(left,right,samples);break;
     }
 }
 template<int Engine> void SynthEngine::renderStableEngine(float* left,float* right,int samples) noexcept {
@@ -404,8 +438,8 @@ template<int Engine> void SynthEngine::renderStableEngine(float* left,float* rig
         }
         for(int n=0;n<count;++n) {
             effects.process(l[std::size_t(n)],r[std::size_t(n)],current);
-            left[at+n]=std::tanh(l[std::size_t(n)])*current[Param::Volume];
-            right[at+n]=std::tanh(r[std::size_t(n)])*current[Param::Volume];
+            left[at+n]=softLimit(l[std::size_t(n)])*current[Param::Volume];
+            right[at+n]=softLimit(r[std::size_t(n)])*current[Param::Volume];
         }
     }
 }
@@ -445,7 +479,7 @@ void SynthEngine::render(float* left,float* right,int samples) noexcept {
         }
         effects.process(l,r,current);
         // Bounded soft limiting protects the host from extreme patch combinations.
-        left[i]=std::tanh(l)*current[Param::Volume];right[i]=std::tanh(r)*current[Param::Volume];
+        left[i]=softLimit(l)*current[Param::Volume];right[i]=softLimit(r)*current[Param::Volume];
     }
 }
 }

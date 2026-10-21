@@ -1,10 +1,10 @@
 # Factory library audit
 
-598 parameter-only presets across 18 categories. The 102 named instrument designs, 37 named vocal designs, 28 named retro designs and 60 regional hip-hop designs each have an active Afterglow voicing. The 120 groove-pack and 24 new brass designs are individually authored complete patches, without automatic Afterglow variants. Surviving IDs and all host program indices are frozen; seventy-six removed-category slots are reserved by `Presets/factory-index.json`.
+678 parameter-only presets across 21 categories. The 102 named instrument designs, 37 named vocal designs, 28 named retro designs and 60 regional hip-hop designs each have an active Afterglow voicing. The 120 groove-pack and 24 new brass designs are individually authored complete patches, without automatic Afterglow variants. Surviving IDs and all host program indices are frozen; seventy-six removed-category slots are reserved by `Presets/factory-index.json`.
 
 This report describes native numerical renders at 48 kHz. It does not certify perceptual uniqueness, natural acoustic realism or commercial sound quality. Human listening acceptance remains pending.
 
-Central-note maximum rolling 100 ms stereo RMS: 0.009269–0.036000 (11.78 dB spread). 514/598 patches are within 0.5 dB of their category target. 88 master gains reached 0.95; quieter articulations remain rather than changing the engine gain or adding hidden normalization.
+Central-note maximum rolling 100 ms stereo RMS: 0.009269–0.036000 (11.78 dB spread). 571/678 patches are within 0.5 dB of their category target. 112 master gains reached 0.95; quieter articulations remain rather than changing the engine gain or adding hidden normalization.
 
 | Category | Presets | Engines | Central RMS min–max |
 |---|---:|---|---:|
@@ -17,7 +17,7 @@ Central-note maximum rolling 100 ms stereo RMS: 0.009269–0.036000 (11.78 dB sp
 | Plucks | 20 | additive, chiptune, fm, physical modeling, subtractive, wavetable | 0.01132–0.02600 |
 | Brass | 40 | additive, chiptune, fm, formant, subtractive, wavetable | 0.01206–0.02600 |
 | Strings | 20 | additive, physical modeling, subtractive, wavetable | 0.01518–0.02800 |
-| Vocals | 74 | formant | 0.01425–0.02000 |
+| Vocals | 86 | formant | 0.01425–0.02000 |
 | Retro Games | 56 | additive, chiptune, fm, formant, modal, physical modeling, wavetable | 0.00975–0.02500 |
 | Detroit | 60 | additive, fm, formant, modal, physical modeling, subtractive, wavetable | 0.01372–0.03600 |
 | West Coast | 40 | additive, fm, formant, physical modeling, subtractive, wavetable | 0.02000–0.03600 |
@@ -26,6 +26,9 @@ Central-note maximum rolling 100 ms stereo RMS: 0.009269–0.036000 (11.78 dB sp
 | Funk | 24 | additive, fm, modal, physical modeling, subtractive, wavetable | 0.01127–0.03600 |
 | Japan Inspired | 24 | additive, chiptune, fm, formant, modal, physical modeling, subtractive, wavetable | 0.01466–0.03600 |
 | 80s Pop | 28 | additive, fm, formant, modal, subtractive, wavetable | 0.00927–0.03600 |
+| Percussion | 24 | additive, chiptune, fm, modal, physical modeling, subtractive | 0.00968–0.02600 |
+| Woodwinds | 20 | additive, chiptune, fm, formant, subtractive, wavetable | 0.01529–0.02600 |
+| Hip Hop Milwaukee | 24 | additive, chiptune, fm, formant, modal, subtractive, wavetable | 0.01017–0.03600 |
 
 ## Listening renders
 
@@ -36,14 +39,6 @@ Central-note maximum rolling 100 ms stereo RMS: 0.009269–0.036000 (11.78 dB sp
 The audit compares 32 log-frequency bands from three Hann-windowed 4096-point FFTs plus eight amplitude-envelope measurements, with effects disabled and volume normalized. It uses the same deterministic excitation seed for each patch. A distance below 0.025 flags a listening candidate; this metric can both miss perceptual similarity and flag intentionally related instruments.
 
 No pairs are below the configured dry spectral/envelope threshold on this audit grid. This does not establish that every listener will perceive every patch as distinct.
-
-## Multi-register all-pair audit (0.16.1)
-
-The additional `gba2-preset-diversity-tests` renders all 598 patches with and without effects at the same MIDI notes 48, 60 and 72, velocities 0.4 and 0.9, 48 kHz: 7,176 renders and 178,503 unique pairs. Each signature includes two 64-band spectra, sixteen held-envelope points and four release measurements. Spectra and envelopes are gain-normalized; dry rendering removes effects. Category names do not restrict comparisons. Renamed and gain/effects-only negative controls must be detected; a sine/saw positive control must remain distinct.
-
-Result: 0 duplicate candidates at <= 0.025; 0 close-pair review flags below 0.06. Minimum dry distance: 0.060104. CSVs record the nearest neighbor of every patch and every flagged pair. Numerical thresholds are screening tools, not perceptual guarantees.
-
-During the earlier 0.15.0 release, the initial screen flagged 26 closely related pairs. `Presets/diversity-refinements.json` records eighteen targeted original excitation/envelope/body revisions and their design notes. Factory IDs, names and program order remain stable. Projects and user presets retain their explicit parameters; explicitly loading a revised factory patch selects its new sound.
 
 ## Rebuilding the bank
 

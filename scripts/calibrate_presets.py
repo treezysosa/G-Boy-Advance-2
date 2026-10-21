@@ -23,7 +23,7 @@ def main():
     for row in rows:
         measured=float(row['max100msStereoRms']);prior=float(row['volume']);assert measured>0 and prior>0
         patch=by_id[row['id']];tags=patch['tags'];level=target(row['category'])
-        if row['category'].startswith('Hip-Hop - ') or row['category'] in CATEGORY_NAMES.values() or row['category'] in ('Funk','Japan Inspired','80s Pop'):level=.036 if 'bass' in tags else .028 if 'pad' in tags else .020 if 'vox' in tags else .026
+        if row['category'].startswith('Hip-Hop - ') or row['category'] in CATEGORY_NAMES.values() or row['category'] in ('Funk','Japan Inspired','80s Pop','Hip Hop Milwaukee'):level=.036 if 'bass' in tags else .028 if 'pad' in tags else .020 if 'vox' in tags else .026
         targets[row['id']]=level
         volume=preserved.get(row['id'],max(.05,min(.95,level*prior/measured)))
         volumes[row['id']]=round(volume,6)

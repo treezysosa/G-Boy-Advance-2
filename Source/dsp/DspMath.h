@@ -8,6 +8,15 @@ namespace gba {
 inline constexpr float pi = std::numbers::pi_v<float>;
 inline constexpr float tau = 2*pi;
 inline float sine(float phase) noexcept { return std::sin(tau * phase); }
+// [9/9] Pade approximation in its accurate central interval. Double arithmetic
+// retains float precision; the original libm response handles the outer range.
+// No lookup memory, initialization or allocation; checked against libm in tests.
+inline float softLimit(float value) noexcept {
+    if(std::abs(value)>4||!std::isfinite(value))return std::tanh(value);
+    const double x=value,z=x*x;
+    return float(x*(34459425+z*(4729725+z*(135135+z*(990+z)))) /
+                 (34459425+z*(16216200+z*(945945+z*(13860+z*45)))));
+}
 inline float midiHz(float note) noexcept { return 440.0f * std::exp2((note-69.0f)/12.0f); }
 inline float wrap(float p) noexcept { return p-std::floor(p); }
 inline float blep(float t, float dt) noexcept {

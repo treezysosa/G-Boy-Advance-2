@@ -76,7 +76,7 @@ for voices in (1,4,8):
         a=sum(float(r['mean_us'])*int(r['callbacks']) for r in chosen(before_play))
         b=sum(float(r['mean_us'])*int(r['callbacks']) for r in chosen(after_play))
         result['playing'][f'{voices}-{workload}']={'beforeMeasuredUs':a,'afterMeasuredUs':b,'reductionPercent':100*(1-b/a)}
-result['baselineDspCommit']='6d7eddf567cdd100acb42e0328983950ee92761c'
+result['baselineDspCommit']='f079323677e6024be8356a6afdfa333eb9db4558'
 def sustained_comparison():
     before_hash,after_hash=hashlib.sha256(),hashlib.sha256()
     total=changed=0;maximum=energy=noise=0.0
@@ -115,6 +115,12 @@ for repeat in range(2):
         x,y=list(csv.DictReader(a)),list(csv.DictReader(b))
         key=lambda r:tuple(r[k] for k in ('engine','fixture','workload','sample_rate','block','voices'))
         if len(x)!=672 or [key(r) for r in x]!=[key(r) for r in y]:raise SystemExit('Mismatched pad/string workloads.')
+# Report CPU time and reciprocal throughput separately: a 50% throughput gain
+# corresponds to one third less render time, not half. Keep the stricter CPU
+# reduction target explicit so neither interpretation can inflate the claim.
+for entry in [*(v for group in result['profiles'].values() for k,v in group.items() if isinstance(v,dict)), *result['playing'].values(), *(v for group in result['padStrings'].values() for v in group.values())]:
+    entry['throughputIncreasePercent']=100*(entry['beforeMeasuredUs']/entry['afterMeasuredUs']-1)
+result['performanceTarget']={'requestedPercent':50,'metric':'CPU render time reduction against 0.17.1; reciprocal throughput is also reported','synthPadStringVoicesMeeting50Percent':[int(k) for k,v in result['padStrings']['synth'].items() if v['reductionPercent']>=50],'sf2PadStringVoicesMeeting50Percent':[int(k) for k,v in result['padStrings']['sf2'].items() if v['reductionPercent']>=50],'universalGainGuaranteed':False}
 result['limit'] = 'Native DSP on one shared runner with identical current factory arrays; timings are observational, not FL Studio CPU percentages or physical-driver deadline certification.'
 (folder / 'cpu-comparison.json').write_text(json.dumps(result, indent=2) + '\n')
 print(json.dumps(result, indent=2))

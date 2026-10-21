@@ -6,6 +6,7 @@
 #include <iomanip>
 #include <iostream>
 #include <memory>
+#include <map>
 #include <numeric>
 #include <set>
 #include <stdexcept>
@@ -77,7 +78,7 @@ int main(int argc,char** argv){try{
         }
         if(++rendered%64==0)std::cout<<"Audited "<<rendered<<" factory patches\n"<<std::flush;
     }
-    check(gba::factoryPatches.size()==598&&categories.size()==18,"Factory coverage is incomplete");
+    check(gba::factoryPatches.size()==678&&categories.size()==21,"Factory coverage is incomplete");
     if(!levelsOnly){std::ofstream pairs("factory-similarity.csv");pairs<<"id,nearestId,dryAudioDistance\n";int close=0;
         for(std::size_t i=0;i<signatures.size();++i){double best=100;std::size_t nearest=i;for(std::size_t j=0;j<signatures.size();++j)if(i!=j&&signatures[i].note==signatures[j].note){const double d=distance(signatures[i],signatures[j]);if(d<best){best=d;nearest=j;}}pairs<<signatures[i].id<<","<<signatures[nearest].id<<","<<best<<"\n";if(best<.025)++close;}
         std::vector<int> parent(signatures.size());std::iota(parent.begin(),parent.end(),0);
@@ -98,6 +99,9 @@ int main(int argc,char** argv){try{
         std::cout<<"Dry spectral/envelope groups at 0.025 threshold: "<<groups.size()<<"\n";
         std::cout<<"Dry-spectrum/envelope near-neighbor flags (<0.025): "<<close<<" (listening review, not a perceptual certificate)\n";
     }
+    std::map<std::string,int> added;
+    for(const auto& p:gba::factoryPatches)if(p.program>=674){++added[p.category];check(p.values[gba::index(gba::Param::Voices)]<=8,"New factory patch exceeds its default voice budget");}
+    check(added==std::map<std::string,int>{{"Percussion",24},{"Woodwinds",20},{"Vocals",12},{"Hip Hop Milwaukee",24}},"Expansion bank coverage is wrong or Vox is outside Vocals");
     if(audition){
         const auto excerpt=[&](const gba::FactoryPatch& p,const std::filesystem::path& directory,int number,std::ofstream& index){
             gba::Settings s;s.values=p.values;auto e=engine(*prototype,s);Audio a(rate*6);int root=middle(p);e->noteOn(1,root,.85f);e->render(a.l.data(),a.r.data(),rate*2);e->noteOff(1,root);e->noteOn(1,root+7,.6f);e->render(a.l.data()+rate*2,a.r.data()+rate*2,rate*2);e->allNotesOff();e->render(a.l.data()+rate*4,a.r.data()+rate*4,rate*2);
@@ -113,14 +117,20 @@ int main(int argc,char** argv){try{
         for(const auto& p:gba::factoryPatches)if(std::string_view(p.category)=="Retro Games"&&std::string_view(p.name).find(" - Afterglow")==std::string_view::npos)excerpt(p,"retro-auditions",++number,retroIndex);
         std::filesystem::create_directories("brass-auditions");std::ofstream brassIndex("brass-auditions/README.txt");number=0;
         brassIndex<<"24 original synthesized brass audition renders. Never installed or loaded by the instrument. Human listening acceptance pending.\n";
-        for(const auto& p:gba::factoryPatches)if(p.program>=650)excerpt(p,"brass-auditions",++number,brassIndex);
+        for(const auto& p:gba::factoryPatches)if(p.program>=650&&p.program<674)excerpt(p,"brass-auditions",++number,brassIndex);
+        for(const auto* category:{"Percussion","Woodwinds","Vocals","Hip Hop Milwaukee"}) {
+            const auto directory=std::filesystem::path("expansion-auditions")/category;
+            std::filesystem::create_directories(directory);std::ofstream newIndex(directory/"README.txt");number=0;
+            newIndex<<"Original synthesized 0.18.0 audit renders. Not loaded or installed with the instrument. Human listening acceptance pending.\n";
+            for(const auto& p:gba::factoryPatches)if(p.program>=674&&std::string_view(p.category)==category)excerpt(p,directory,++number,newIndex);
+        }
         std::filesystem::create_directories("hiphop-auditions");std::ofstream hiphopIndex("hiphop-auditions/README.txt");hiphopIndex<<"Original Detroit, West Coast and Florida synthesis examples. Not samples for the instrument. Human listening acceptance pending.\n";number=0;
         for(const auto& p:gba::factoryPatches)if((std::string_view(p.category)=="Detroit"||std::string_view(p.category)=="West Coast"||std::string_view(p.category)=="Florida"||std::string_view(p.category)=="Chicago")&&std::string_view(p.name).find(" - Afterglow")==std::string_view::npos)excerpt(p,"hiphop-auditions",++number,hiphopIndex);
         for(const auto& category:{"Detroit","Chicago","Funk","Japan Inspired","80s Pop"}) {
             const auto directory=std::filesystem::path("groove-auditions")/category;
             std::filesystem::create_directories(directory);std::ofstream grooveIndex(directory/"README.txt");number=0;
             grooveIndex<<"Original synthesis test renders for the 0.16.0 additions. Not installed or read by the plugin. Human listening acceptance pending.\n";
-            for(std::size_t i=0;i<gba::factoryPatches.size();++i)if(gba::factoryPatches[i].program>=530&&std::string_view(gba::factoryPatches[i].category)==category)excerpt(gba::factoryPatches[i],directory,++number,grooveIndex);
+            for(std::size_t i=0;i<gba::factoryPatches.size();++i)if(gba::factoryPatches[i].program>=530&&gba::factoryPatches[i].program<650&&std::string_view(gba::factoryPatches[i].category)==category)excerpt(gba::factoryPatches[i],directory,++number,grooveIndex);
         }
 
     }

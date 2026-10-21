@@ -130,7 +130,11 @@ void SoundFont::render(float* left,float* right,int frames) noexcept{
             d.filters[0].coefficients(d.current[Param::Cutoff],d.current[Param::Resonance],d.rate);d.filters[1].copyTuningFrom(d.filters[0]);
             d.filterCutoff=d.current[Param::Cutoff];d.filterResonance=d.current[Param::Resonance];
         }
-        for(int c=0;c<17;++c)tsf_channel_set_pitchrange(d.font,c,d.target[Param::BendRange]);
+        // Channels were allocated when loading the bank. Avoid re-entering the
+        // channel initializer 17 times per quantum when the range is unchanged.
+        // Read the actual range so RPN/CC121 changes retain the original behavior.
+        for(int c=0;c<17;++c)if(tsf_channel_get_pitchrange(d.font,c)!=d.target[Param::BendRange])
+            tsf_channel_set_pitchrange(d.font,c,d.target[Param::BendRange]);
         d.phase+=float(count)*5.2f/d.rate;d.phase-=std::floor(d.phase);
         if(d.glideCount!=count||d.glideTime!=d.target[Param::Glide]) {
             d.glideDecay=d.target[Param::Glide]>.0001f?std::exp(-float(count)/(d.rate*d.target[Param::Glide])):0;
@@ -151,7 +155,7 @@ void SoundFont::render(float* left,float* right,int frames) noexcept{
         }
         tsf_render_float(d.font,d.buffer.data(),count,0);
         for(int i=0;i<count;++i){float l=d.filters[0].next(d.buffer[std::size_t(i*2)],std::clamp(int(d.target[Param::FilterType]),0,3));float r=d.filters[1].next(d.buffer[std::size_t(i*2+1)],std::clamp(int(d.target[Param::FilterType]),0,3));
-            d.effects.process(l,r,d.current);d.volume+=(d.target[Param::Volume]-d.volume)*d.volumeStep;l=std::tanh(l*d.volume);r=std::tanh(r*d.volume);
+            d.effects.process(l,r,d.current);d.volume+=(d.target[Param::Volume]-d.volume)*d.volumeStep;l=softLimit(l*d.volume);r=softLimit(r*d.volume);
             if(d.fade>0){float f=float(d.fade--)/240;l=l*(1-f)+d.tailL*f;r=r*(1-f)+d.tailR*f;}
             left[at+i]=d.lastL=std::isfinite(l)?l:0;right[at+i]=d.lastR=std::isfinite(r)?r:0;
         }

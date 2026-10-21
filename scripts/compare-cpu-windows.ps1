@@ -6,9 +6,9 @@ New-Item -ItemType Directory -Force $logs | Out-Null
 $baseline=Join-Path $root 'build/cpu-baseline-source'
 $baselineBuild=Join-Path $root 'build/cpu-baseline-build'
 $archive=Join-Path $root 'build/cpu-baseline.tar'
-$baselineCommit='6d7eddf567cdd100acb42e0328983950ee92761c'
+$baselineCommit='f079323677e6024be8356a6afdfa333eb9db4558'
 git fetch --no-tags --depth=1 origin $baselineCommit
-if ($LASTEXITCODE -ne 0) {throw 'Could not fetch the immutable 0.16.1 comparison baseline.'}
+if ($LASTEXITCODE -ne 0) {throw 'Could not fetch the immutable 0.17.1 comparison baseline.'}
 git archive --format=tar --output=$archive $baselineCommit
 if ($LASTEXITCODE -ne 0) {throw 'Could not export the comparison baseline.'}
 New-Item -ItemType Directory -Force $baseline | Out-Null

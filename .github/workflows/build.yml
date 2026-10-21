@@ -86,7 +86,7 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           name: G-Boy-Advance-2-Installer-x64
-          run-id: 39460496611
+          run-id: 39465006237
           github-token: ${{ github.token }}
           path: build/previous-installer
       - name: Exercise install, upgrade, reinstall, standalone launch and uninstall
@@ -112,7 +112,6 @@ jobs:
             build/GBoyAdvance2_artefacts/Release/VST3/**
             build/GBoyAdvance2_artefacts/Release/Standalone/**
             build/GBA2-editor.png
-            build/ui-snapshots/**
             build/preset-validation.csv
             build/factory-diversity*.csv
             build/factory-diversity.json
@@ -163,3 +162,28 @@ jobs:
         with:
           name: Eighties-auditions-Windows
           path: build/groove-auditions/80s Pop/**
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: UI-skins-and-browser-Windows
+          path: build/ui-snapshots/**
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: Percussion-auditions-Windows
+          path: build/expansion-auditions/Percussion/**
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: Woodwinds-auditions-Windows
+          path: build/expansion-auditions/Woodwinds/**
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: Vox-auditions-Windows
+          path: build/expansion-auditions/Vocals/**
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: Milwaukee-auditions-Windows
+          path: build/expansion-auditions/Hip Hop Milwaukee/**
