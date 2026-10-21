@@ -77,11 +77,12 @@ private:ParameterGrid grid;juce::Viewport viewport;
 };
 class SoundFontPanel final : public juce::Component,private juce::Timer {
 public:
-    SoundFontPanel(GbaProcessor& p,std::function<void()> close):processor(p){
-        setName("ROM Hacks browser");setWantsKeyboardFocus(true);processor.romHacks.startLibrary();
+    SoundFontPanel(GbaProcessor& p,std::function<void()> close,bool embedded=false):processor(p),inPresetBrowser(embedded){
+        setName(inPresetBrowser?"Preset SoundFonts":"ROM Hacks browser");setWantsKeyboardFocus(true);processor.romHacks.startLibrary();
         for(auto* c:std::initializer_list<juce::Component*>{&load,&back,&instruments,&file,&status,&preview,&stop,&synth,&enable,&bankFiles,&folder,&openFolder,&chooseFolder,&refreshFolder,&remember,&libraryStatus})addAndMakeVisible(c);
         instruments.setName("SoundFont instrument");file.setName("SoundFont file");status.setName("SoundFont status");bankFiles.setName("SoundFont bank");folder.setName("SoundFont folder");libraryStatus.setName("SoundFont library status");remember.setName("Remember last SoundFont");
         file.setFont(font(16,true));status.setFont(font(14));folder.setFont(font(12));libraryStatus.setFont(font(12));
+        back.setVisible(!inPresetBrowser);
         load.onClick=[this]{choose(false);};back.onClick=[this,close]{asyncClose(this,close);};
         instruments.onChange=[this]{processor.romHacks.select(instruments.getSelectedId()-1);refresh();};
         bankFiles.onChange=[this]{const int index=bankFiles.getSelectedId()-1;if(index>=0&&index<shownFiles.size())processor.romHacks.loadFile(juce::File(shownFiles[index]));refresh();};
@@ -96,21 +97,25 @@ public:
     }
     ~SoundFontPanel() override{stopTimer();}
     void paint(juce::Graphics& g) override{
-        panel(*this,g,getLocalBounds().toFloat(),14);caption(g,"ROM HACKS",{22,15,float(getWidth()-300),28},25);
-        const float sy=float(getHeight())/455;
+        panel(*this,g,getLocalBounds().toFloat(),14);if(!inPresetBrowser)caption(g,"ROM HACKS",{22,15,float(getWidth()-300),28},25);
+        const float sy=float(getHeight())/(inPresetBrowser?398:455);
         g.setColour(text.withAlpha(.8f));g.setFont(font(std::max(12.0f,15*sy)));
-        g.drawFittedText("Choose a bank from your SoundFont folder, drop one .sf2 anywhere, or use LOAD SF2.",24,int(57*sy),getWidth()-48,int(31*sy),juce::Justification::centredLeft,2);
+        g.drawFittedText("Choose a bank from your SoundFont folder, drop one .sf2 anywhere, or use LOAD SF2.",24,inPresetBrowser?0:int(57*sy),getWidth()-48,int(31*sy),juce::Justification::centredLeft,2);
     }
     void resized() override{
-        const int w=getWidth();const float sy=float(getHeight())/455;
-        auto place=[sy](juce::Component& c,int x,int y,int width,int height){c.setBounds(x,int(float(y)*sy),width,int(float(height)*sy));};
+        const int w=getWidth();const float sy=float(getHeight())/(inPresetBrowser?398:455);
+        auto place=[this,sy](juce::Component& c,int x,int y,int width,int height){c.setBounds(x,int(float(y-(inPresetBrowser?57:0))*sy),width,int(float(height)*sy));};
         place(back,w-245,14,220,30);place(folder,24,96,w-480,28);place(openFolder,w-445,96,130,28);place(chooseFolder,w-305,96,165,28);place(refreshFolder,w-130,96,105,28);
         place(bankFiles,24,140,w-250,34);place(load,w-205,140,180,34);place(file,24,183,w-48,28);place(instruments,24,220,w-48,34);
         place(preview,24,270,135,30);place(stop,170,270,105,30);place(enable,300,270,185,30);place(synth,w-245,270,220,30);
         place(remember,24,315,w-48,28);place(status,24,353,w-48,58);place(libraryStatus,24,419,w-48,24);
     }
 private:
-    GbaProcessor& processor;juce::TextButton load{"LOAD SF2"},back{"BACK / ROM HACKS"},preview{"A  PREVIEW"},stop{"B  STOP"},synth{"RETURN TO SYNTH"},enable{"USE SOUNDFONT"},openFolder{"OPEN FOLDER"},chooseFolder{"CHOOSE FOLDER"},refreshFolder{"REFRESH"};
+    bool keyPressed(const juce::KeyPress& key) override {
+        if(key==juce::KeyPress::F5Key){processor.romHacks.refreshLibrary();refresh();return true;}
+        if(key==juce::KeyPress::escapeKey){back.onClick();return true;}return false;
+    }
+    GbaProcessor& processor;bool inPresetBrowser=false;juce::TextButton load{"LOAD SF2"},back{"BACK / ROM HACKS"},preview{"A  PREVIEW"},stop{"B  STOP"},synth{"RETURN TO SYNTH"},enable{"USE SOUNDFONT"},openFolder{"OPEN FOLDER"},chooseFolder{"CHOOSE FOLDER"},refreshFolder{"REFRESH"};
     juce::ComboBox instruments,bankFiles;juce::Label file,status,folder,libraryStatus;juce::ToggleButton remember{"REMEMBER LAST BANK"};juce::StringArray shown,shownFiles;std::unique_ptr<juce::FileChooser> chooser;
     void choose(bool directory){
         const auto initial=processor.romHacks.libraryView().folder;
@@ -118,7 +123,7 @@ private:
         juce::Component::SafePointer<SoundFontPanel> safe(this);
         chooser->launchAsync(juce::FileBrowserComponent::openMode|(directory?juce::FileBrowserComponent::canSelectDirectories:juce::FileBrowserComponent::canSelectFiles),[safe,directory](const juce::FileChooser& dialog){if(safe!=nullptr&&dialog.getResult()!=juce::File()){if(directory)safe->processor.romHacks.setLibraryFolder(dialog.getResult());else safe->processor.romHacks.loadFile(dialog.getResult());safe->refresh();}});
     }
-    void timerCallback() override{refresh();}
+    void timerCallback() override{if(isVisible())refresh();}
     void refresh(){const auto info=processor.romHacks.view();const auto library=processor.romHacks.libraryView();
         if(shown!=info.instruments){shown=info.instruments;instruments.clear(juce::dontSendNotification);instruments.addItemList(shown,1);}
         if(shownFiles!=library.files){shownFiles=library.files;bankFiles.clear(juce::dontSendNotification);bankFiles.addItemList(library.names,1);}
@@ -163,6 +168,8 @@ class BrowserPanel final : public juce::Component,private juce::ListBoxModel,pri
 public:
     BrowserPanel(GbaProcessor& p,std::function<void()> close):processor(p),closePanel(std::move(close)),list("Presets",this){
         for(auto* c:std::initializer_list<juce::Component*>{&search,&category,&subcategory,&source,&favoritesOnly,&recentOnly,&list,&back,&preview,&stop,&favorite,&save,&rename,&remove,&restore,&name,&tags,&rescan,&importSound,&exportSound,&status}){addAndMakeVisible(c);c->addKeyListener(this);}
+        addChildComponent(soundFontSource);soundFontSource.setText("SF2 LIBRARY",juce::dontSendNotification);soundFontSource.setJustificationType(juce::Justification::centred);soundFontSource.setFont(font(13));
+        category.setTooltip("Choose a factory preset folder or SoundFonts to browse your SF2 library.");
         setName("Preset browser");setWantsKeyboardFocus(true);search.setName("Preset search");category.setName("Preset category");source.setName("Preset source");name.setName("Preset name");tags.setName("Preset tags");status.setName("Preset status");
         search.setTextToShowWhenEmpty("Search words or \"quoted phrases\", names and tags...",text.withAlpha(.55f));search.onTextChange=[this]{message.clear();refresh();};
         subcategory.setName("Preset subfolder");subcategory.setTooltip("Choose a folder inside the selected preset category, or browse all its sounds.");
@@ -186,7 +193,8 @@ public:
     ~BrowserPanel() override {stopTimer();list.setModel(nullptr);}
     void paint(juce::Graphics& g) override {panel(*this,g,getLocalBounds().toFloat(),14);caption(g,"PRESET LIBRARY",{20,10,float(std::max(100,getWidth()-620)),30},22);}
     void resized() override {
-        int w=getWidth(),h=getHeight();back.setBounds(w-160,12,140,30);source.setBounds(w-300,12,130,30);category.setBounds(w-550,12,240,30);
+        int w=getWidth(),h=getHeight();back.setBounds(w-160,12,140,30);source.setBounds(w-300,12,130,30);category.setBounds(w-550,12,240,30);soundFontSource.setBounds(source.getBounds());
+        if(soundFonts&&soundFonts->isVisible()){soundFonts->setBounds(0,50,w,h-50);return;}
         search.setBounds(20,56,w-(subcategory.isVisible()?660:470),30);subcategory.setBounds(w-630,56,180,30);favoritesOnly.setBounds(w-440,56,135,30);recentOnly.setBounds(w-300,56,135,30);rescan.setBounds(w-155,56,135,30);list.setBounds(20,99,w-40,h-221);
         preview.setBounds(20,h-110,110,29);stop.setBounds(138,h-110,90,29);favorite.setBounds(236,h-110,145,29);importSound.setBounds(389,h-110,125,29);exportSound.setBounds(522,h-110,135,29);restore.setBounds(w-215,h-110,195,29);
         const int input=w-490,n=int(input*.55);name.setBounds(20,h-69,n,30);tags.setBounds(30+n,h-69,input-n,30);save.setBounds(w-450,h-69,130,30);rename.setBounds(w-310,h-69,135,30);remove.setBounds(w-165,h-69,145,30);status.setBounds(20,h-35,w-40,25);
@@ -196,8 +204,10 @@ private:
     juce::TextEditor search,name,tags;juce::ComboBox category,subcategory,source;
     juce::ToggleButton favoritesOnly {"Favorites only"},recentOnly {"Recently used"};juce::ListBox list;
     juce::TextButton back {"BACK / START"},preview {"A  PREVIEW"},stop {"B  STOP"},favorite {"FAVORITE"},save {"SAVE AS"},rename {"RENAME"},remove {"DELETE"},restore {"RESTORE DREAM PAD"},rescan {"REFRESH"},importSound {"IMPORT"},exportSound {"EXPORT SOUND"};
+    static constexpr int soundFontCategory=10000;
+    std::unique_ptr<SoundFontPanel> soundFonts;
     std::unique_ptr<juce::FileChooser> chooser;
-    juce::Label status;std::vector<juce::String> visible;juce::String activeSeen,shownId,message;std::uint64_t revisionSeen=0;bool updating=false;
+    juce::Label soundFontSource,status;std::vector<juce::String> visible;juce::String activeSeen,shownId,message;std::uint64_t revisionSeen=0;bool updating=false;
     void choosePreset(bool exporting) {
         const auto initial=exporting?juce::File::getSpecialLocation(juce::File::userDocumentsDirectory).getChildFile(juce::File::createLegalFileName(processor.presetName())+".gba2preset"):juce::File::getSpecialLocation(juce::File::userDocumentsDirectory);
         chooser=std::make_unique<juce::FileChooser>(exporting?"Export current synthesis sound":"Import synthesis preset",initial,"*.gba2preset",true);
@@ -214,7 +224,14 @@ private:
     juce::String selectedId() const {int row=list.getSelectedRow();return row>=0&&row<int(visible.size())?visible[std::size_t(row)]:juce::String();}
     void result(juce::Result r,const juce::String& success,bool selectActive=false){message=r.failed()?r.getErrorMessage():(processor.presets.lastError.isEmpty()?success:processor.presets.lastError);refresh(selectActive);if(r.wasOk()&&(selectActive||success=="Library refreshed."))updateButtons(true);}
     void refresh(bool selectActive=false){
-        updating=true;auto keep=selectActive?processor.presetId():selectedId();auto selectedCategory=category.getSelectedId()>1?category.getText():juce::String();category.clear(juce::dontSendNotification);category.addItem("All categories",1);category.addItemList(processor.presets.categories(),2);int index=processor.presets.categories().indexOf(selectedCategory);category.setSelectedId(index<0?1:index+2,juce::dontSendNotification);
+        updating=true;auto keep=selectActive?processor.presetId():selectedId();auto selectedCategory=category.getSelectedId()>1?category.getText():juce::String();category.clear(juce::dontSendNotification);category.addItem("All categories",1);category.addItemList(processor.presets.categories(),2);category.addSeparator();category.addItem("SoundFonts",soundFontCategory);int index=processor.presets.categories().indexOf(selectedCategory);category.setSelectedId(selectedCategory=="SoundFonts"?soundFontCategory:index<0?1:index+2,juce::dontSendNotification);
+        const bool browseSoundFonts=category.getSelectedId()==soundFontCategory;
+        if(browseSoundFonts&&!soundFonts){
+            soundFonts=std::make_unique<SoundFontPanel>(processor,[this]{category.setSelectedId(1,juce::sendNotificationSync);},true);addChildComponent(*soundFonts);
+        }
+        for(auto* c:std::initializer_list<juce::Component*>{&search,&subcategory,&source,&favoritesOnly,&recentOnly,&list,&preview,&stop,&favorite,&save,&rename,&remove,&restore,&name,&tags,&rescan,&importSound,&exportSound,&status})c->setVisible(!browseSoundFonts);
+        soundFontSource.setVisible(browseSoundFonts);if(soundFonts)soundFonts->setVisible(browseSoundFonts);
+        if(browseSoundFonts){activeSeen=processor.presetId();revisionSeen=processor.presets.revision();updating=false;if(getWidth()>0)resized();return;}
         auto folders=processor.presets.subcategories(category.getSelectedId()>1?category.getText():juce::String());auto selectedFolder=subcategory.getSelectedId()>1?subcategory.getText():juce::String();subcategory.clear(juce::dontSendNotification);subcategory.addItem("All subfolders",1);subcategory.addItemList(folders,2);int folderIndex=folders.indexOf(selectedFolder);subcategory.setSelectedId(folderIndex<0?1:folderIndex+2,juce::dontSendNotification);subcategory.setVisible(!folders.isEmpty());if(getWidth()>0)resized();
         PresetManager::Filter filter;filter.query=search.getText();filter.subcategory=subcategory.getSelectedId()>1?subcategory.getText():juce::String();filter.category=category.getSelectedId()>1?category.getText():juce::String();filter.source=source.getSelectedId()==2?PresetManager::Source::factory:source.getSelectedId()==3?PresetManager::Source::user:PresetManager::Source::all;filter.favorites=favoritesOnly.getToggleState();filter.recent=recentOnly.getToggleState();visible=processor.presets.filtered(filter);
         list.updateContent();list.deselectAllRows();int row=-1;for(std::size_t i=0;i<visible.size();++i)if(visible[i]==keep)row=int(i);if(row<0)for(std::size_t i=0;i<visible.size();++i)if(visible[i]==processor.presetId())row=int(i);if(row>=0)list.selectRow(row);
@@ -231,7 +248,7 @@ private:
     bool keyPressed(const juce::KeyPress& key,juce::Component* origin) override {
         if(key==juce::KeyPress::escapeKey){asyncClose(this,closePanel);return true;}
         if(key.getModifiers().isCtrlDown()&&(key.getKeyCode()=='F'||key.getKeyCode()=='f')){search.grabKeyboardFocus();search.selectAll();return true;}
-        if(key==juce::KeyPress::F5Key){rescan.triggerClick();return true;}
+        if(key==juce::KeyPress::F5Key){if(category.getSelectedId()==soundFontCategory)processor.romHacks.refreshLibrary();else rescan.triggerClick();return true;}
         if(origin==&search&&(key==juce::KeyPress::downKey||key==juce::KeyPress::upKey)){if(!visible.empty()){list.selectRow(juce::jlimit(0,int(visible.size())-1,list.getSelectedRow()+(key==juce::KeyPress::downKey?1:-1)));list.grabKeyboardFocus();}return true;}
         if(origin==&list&&key==juce::KeyPress::spaceKey){activate(true);return true;}return false;
     }

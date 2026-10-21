@@ -1,4 +1,4 @@
-> Current version: **0.18.1**. 678 presets in 21 categories, 30 skins. Added Percussion (24), Woodwinds (20), Milwaukee (24) and 12 Vox stabs in Vocals (86). SELECT → SKIN selects the new colors. [Current changes](RELEASE_0_18_1.md).
+> Current version: **0.18.2**. 678 presets in 21 categories, 30 skins. Added Percussion (24), Woodwinds (20), Milwaukee (24) and 12 Vox stabs in Vocals (86). SELECT → SKIN selects the new colors. [Current changes](RELEASE_0_18_2.md).
 
 
 
@@ -172,3 +172,12 @@ Milwaukee contains 24 original bounce-oriented pianos, bells, plucks, basses, le
 The new skins are Amethyst, Seafoam, Sunset, Ice Blue, Wine Red, Olive, Pearl, Bronze, Bubblegum and Smoke, in addition to the previous 20. SELECT → SKIN changes the current instance; BACK returns immediately. NEW COLOUR ON LOAD continues to choose a different color on each launch. Disable it to save a fixed skin in the project. Skins do not change your preset or DSP settings.
 
 CPU measurements use identical native workloads against 0.17.1; a universal 50% gain is not promised. The runtime retains the same voice limits, tails and full-rate controls. On dense chords, lowering the voice count to 8–16 and using a larger device buffer can still help, especially with large external SoundFonts. See PERFORMANCE.md and the current release evidence for measured results and their limits.
+
+
+## SoundFonts in the preset folders (0.18.2)
+
+Press START, open the category/folder menu and select **SoundFonts**. Choose an `.sf2` bank from the bank selector, then choose its instrument and play the keyboard or MIDI. This is the same default/custom library used by ROM Hacks, including remembered banks and saved-project recall.
+
+Use OPEN FOLDER to open your configured library folder, add your `.sf2` files there and click REFRESH (or F5). CHOOSE FOLDER changes the library folder; LOAD SF2 can load an individual bank. The default folder remains `%APPDATA%\Treezy Audio\G Boy Advance 2\SoundFont Library`. Personal banks are not bundled with the plugin.
+
+While SoundFonts is selected, bank/instrument controls replace the synthesis search, favorites, recent and Save As controls. Changing back to a native folder restores your synthesis filters. Click a native preset to return to synthesis playback. Browsing folders alone does not change the sound. BACK / START closes the browser while SoundFont playback continues. Esc inside the SoundFont controls returns to the native preset folders. ROM Hacks, SF2 drag/drop, project bank/instrument restoration and the existing 678 factory sounds remain available. SoundFonts is a navigation folder; it does not add or renumber factory programs.

@@ -1,0 +1,95 @@
+name: SoundFonts preset folder Windows
+on:
+  push:
+    branches: ['support/soundfonts-folder-0182']
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  windows:
+    runs-on: windows-2022
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Require unchanged audio engine, factory bank and state management
+        shell: pwsh
+        run: |
+          git diff --exit-code aff23f224f58197af054bb2fee5d185d3e0210f0 -- Source/dsp Source/FactoryData.h Presets Source/PluginProcessor.cpp Source/PluginProcessor.h Source/PresetManager.cpp Source/PresetManager.h Source/SoundFontManager.cpp Source/SoundFontManager.h
+          if ($LASTEXITCODE -ne 0) { throw 'This UI-only workflow requires the verified 0.18.1 DSP, bank and managers.' }
+          python scripts/generate_presets.py
+          if ($LASTEXITCODE -ne 0) { throw 'Factory generation failed.' }
+          git diff --exit-code -- Presets/factory.json Source/FactoryData.h
+          if ($LASTEXITCODE -ne 0) { throw 'Generated factory data changed.' }
+          python scripts/check-notices.py
+          if ($LASTEXITCODE -ne 0) { throw 'Third-party notice verification failed.' }
+          python scripts/package-source.py
+          if ($LASTEXITCODE -ne 0) { throw 'Source packaging failed.' }
+          Get-ChildItem scripts/*.ps1 | ForEach-Object {
+            $tokens=$null; $parseErrors=$null
+            [System.Management.Automation.Language.Parser]::ParseFile($_.FullName,[ref]$tokens,[ref]$parseErrors) | Out-Null
+            if ($parseErrors) { throw ($parseErrors | Out-String) }
+          }
+      - uses: actions/checkout@v4
+        with:
+          repository: juce-framework/JUCE
+          ref: 8.0.6
+          path: Dependencies/JUCE
+      - uses: actions/checkout@v4
+        with:
+          repository: steinbergmedia/vst3sdk
+          ref: cc2adc90382dded9e347caf74e4532f1458715db
+          submodules: recursive
+          path: Dependencies/vst3sdk
+      - name: Configure Visual Studio 2022 x64
+        run: cmake -S . -B build -G "Visual Studio 17 2022" -A x64 -DGBA_JUCE_PATH="${{ github.workspace }}/Dependencies/JUCE" -DBUILD_TESTING=ON -DGBA_BUILD_BENCHMARKS=OFF
+      - name: Build instrument, standalone, application tests and native bundle host
+        run: cmake --build build --config Release --target GBoyAdvance2_VST3 GBoyAdvance2_Standalone gba2-integration gba2-host-tests --parallel 2
+      - name: Test preset SoundFonts, state, complete UI and actual VST3 bundle hosts
+        run: ctest --test-dir build -C Release -R 'plugin-state-and-presets|vst3-.*acceptance' --output-on-failure
+      - name: Validate the actual VST3 in pluginval
+        shell: pwsh
+        run: ./scripts/validate-windows.ps1 -Strictness 10
+      - name: Run official Steinberg validator
+        shell: pwsh
+        run: ./scripts/validate-steinberg-windows.ps1
+      - name: Package portable archive and installer
+        shell: pwsh
+        run: ./scripts/package-windows.ps1 -Iscc 'C:\Program Files (x86)\Inno Setup 6\ISCC.exe'
+      - uses: actions/download-artifact@v4
+        with:
+          name: G-Boy-Advance-2-Installer-x64
+          run-id: 39600289352
+          github-token: ${{ github.token }}
+          path: build/previous-installer
+      - name: Test 0.18.1 upgrade, reinstall, diagnostics, launch and uninstall
+        shell: pwsh
+        run: ./scripts/test-installer-windows.ps1 -PreviousInstaller build/previous-installer/G-Boy-Advance-2-Setup-x64.exe
+      - uses: actions/upload-artifact@v4
+        with:
+          name: G-Boy-Advance-2-Installer-x64
+          path: dist/G-Boy-Advance-2-Setup-x64.exe
+          if-no-files-found: error
+      - uses: actions/upload-artifact@v4
+        with:
+          name: G-Boy-Advance-2-Portable-x64
+          path: dist/G Boy Advance 2/**
+          if-no-files-found: error
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: G-Boy-Advance-2-Windows-x64
+          path: |
+            dist/*.zip
+            dist/*.exe
+            build/GBoyAdvance2_artefacts/Release/VST3/**
+            build/GBoyAdvance2_artefacts/Release/Standalone/**
+            build/Testing/Temporary/LastTest.log
+            build/validation-logs/**
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: UI-skins-and-browser-Windows
+          path: build/ui-snapshots/**

@@ -1,6 +1,6 @@
-# G BOY ADVANCE 2 — 0.18.1
+# G BOY ADVANCE 2 — 0.18.2
 
-**0.18.1 renames the factory folder to Milwaukee. Its 24 sounds, all synthesis settings and saved preset identities are unchanged. The Windows build, plugin validation and installer upgrade checks passed.**
+**0.18.2 adds SoundFonts to the preset-folder menu. Open START → SoundFonts to choose a bank and instrument from your existing default/custom SF2 library. The updated Windows installer is pending validation.**
 
 **678 factory presets across 21 categories and 30 UI skins.** The expansion adds 24 Percussion, 20 Woodwinds, 24 Milwaukee sounds and 12 synthetic Vox stabs inside **Vocals** (86 total). The four regional folders remain Detroit, West Coast, Florida and Chicago; Brass still includes all 16 sax sounds. Removed vocal categories remain removed.
 
@@ -10,7 +10,7 @@ The audio engine now uses four interleaved SSE2 double-precision additive recurr
 
 All 598 prior factory parameter dictionaries, 674 existing host slots and 64 parameter IDs remain intact. Eighty new host slots are appended (754 total, including 76 reserved); user presets, SoundFonts and projects remain available. ROM Hacks still supports SF2 drag/drop, the default/custom library folder and bank/instrument recall.
 
-[Current folder rename and validation](docs/RELEASE_0_18_1.md) · [Source branch](https://github.com/treezysosa/G-Boy-Advance-2/tree/feature/milwaukee-folder-0181). [Download Windows installer 0.18.1](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39600289352/artifacts/12347416437) · [Portable/manual install](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39600289352/artifacts/12346941648). Close FL Studio and standalone, extract into a fresh folder, and run `G-Boy-Advance-2-Setup-x64.exe`. The prepared build is unsigned; the owner's licensing decision remains deferred. Real FL Studio/physical audio-device checks and human listening remain manual acceptance work.
+[Current changes and validation](docs/RELEASE_0_18_2.md) · [Source branch](https://github.com/treezysosa/G-Boy-Advance-2/tree/feature/soundfonts-folder-0182). [Previous Windows installer 0.18.1](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39600289352/artifacts/12347416437) · [Portable/manual install](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39600289352/artifacts/12346941648). Close FL Studio and standalone, extract into a fresh folder, and run `G-Boy-Advance-2-Setup-x64.exe`. The prepared build is unsigned; the owner's licensing decision remains deferred. Real FL Studio/physical audio-device checks and human listening remain manual acceptance work.
 
 ## Previous 0.18.0 build and CPU results
 
@@ -34,12 +34,12 @@ Actual Phase 2 Windows JUCE component render at 1280×646 from [passing CI run 3
 Install Visual Studio 2022 with **Desktop development with C++**, a Windows SDK, CMake 3.24+, and Git. In PowerShell:
 
 ```powershell
-git clone --branch feature/milwaukee-folder-0181 https://github.com/treezysosa/G-Boy-Advance-2.git
+git clone --branch feature/soundfonts-folder-0182 https://github.com/treezysosa/G-Boy-Advance-2.git
 cd G-Boy-Advance-2
 powershell -ExecutionPolicy Bypass -File scripts/build-windows.ps1
 ```
 
-You can also use [Build and validate in GitHub Actions](https://github.com/treezysosa/G-Boy-Advance-2/actions?query=branch%3Afeature%2Fmilwaukee-folder-0181). Factory/vocal and retro audition files are separate test outputs and are never installed or loaded by the instrument.
+You can also use [Build and validate in GitHub Actions](https://github.com/treezysosa/G-Boy-Advance-2/actions?query=branch%3Afeature%2Fsoundfonts-folder-0182). Factory/vocal and retro audition files are separate test outputs and are never installed or loaded by the instrument.
 
 The first local build downloads the pinned JUCE 8.0.6 source. For an offline build, supply an existing checkout:
 

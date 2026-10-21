@@ -40,6 +40,34 @@ void libraryTests(const juce::File& root,const std::vector<unsigned char>& data)
         auto* path=dynamic_cast<juce::Label*>(namedSf(*editor,"SoundFont folder"));ensure(path&&path->getText()==folder.getFullPathName(),"Default folder path is not shown");
         picture(*editor,"ui-snapshots/SF2-Library-960.png");editor->setSize(1920,969);picture(*editor,"ui-snapshots/SF2-Library-1920.png");
     }
+    {
+        // Load the real managed library through the preset category menu, with
+        // stale synthesis filters, then return to a native patch and restore SF2.
+        std::unique_ptr<juce::AudioProcessorEditor> editor(p->createEditor());editor->setSize(960,485);buttonSf(*editor,"START")->onClick();
+        auto* category=dynamic_cast<juce::ComboBox*>(namedSf(*editor,"Preset category"));auto* sourceFilter=dynamic_cast<juce::ComboBox*>(namedSf(*editor,"Preset source"));auto* search=dynamic_cast<juce::TextEditor*>(namedSf(*editor,"Preset search"));
+        ensure(category&&sourceFilter&&search,"Preset-folder controls are missing");
+        sourceFilter->setSelectedId(2,juce::sendNotificationSync);search->setText("no matching synthesis patch");category->setText("SoundFonts",juce::sendNotificationSync);
+        auto* sf=namedSf(*editor,"Preset SoundFonts");ensure(sf&&sf->isVisible()&&!sf->getBounds().isEmpty()&&category->getText()=="SoundFonts","SoundFonts is not a folder in the preset browser");
+        ensure(!sourceFilter->isVisible()&&!search->isVisible(),"Synthesis filters remain active over the SF2 library");
+        ensure(p->getNumPrograms()==754&&!p->presets.categories().contains("SoundFonts"),"SoundFont navigation changed factory program identities");
+        auto* banks=dynamic_cast<juce::ComboBox*>(namedSf(*sf,"SoundFont bank"));ensure(banks&&banks->getNumItems()==2,"Preset SoundFonts folder did not show the configured library");
+        banks->setSelectedId(1,juce::sendNotificationSync);ensure(p->romHacks.waitUntilIdle(10000),"Preset-folder bank load timed out");juce::MessageManager::getInstance()->runDispatchLoopUntil(120);
+        ensure(p->romHacks.enabled()&&p->romHacks.view().fileName==alpha.getFileName()&&play(*p)>.001f,"Preset-folder bank selection did not produce audible SoundFont MIDI");
+        auto* instruments=dynamic_cast<juce::ComboBox*>(namedSf(*sf,"SoundFont instrument"));ensure(instruments&&instruments->getNumItems()==2,"Preset-folder instruments are missing");instruments->setSelectedId(2,juce::sendNotificationSync);
+        ensure(p->romHacks.view().selected==1,"Preset-folder instrument selection is inert");
+        buttonSf(*sf,"A  PREVIEW")->onClick();ensure(play(*p)>.001f,"Preset-folder preview failed");buttonSf(*sf,"B  STOP")->onClick();
+        picture(*editor,"ui-snapshots/SF2-Preset-Folder-960.png");editor->setSize(1920,969);picture(*editor,"ui-snapshots/SF2-Preset-Folder-1920.png");editor->setSize(960,485);
+        category->setText("Milwaukee",juce::sendNotificationSync);ensure(!sf->isVisible()&&sourceFilter->isVisible()&&sourceFilter->getSelectedId()==2&&search->getText()=="no matching synthesis patch","Leaving SoundFonts did not restore synthesis filters");
+        search->setText("");juce::MessageManager::getInstance()->runDispatchLoopUntil(30);auto* list=dynamic_cast<juce::ListBox*>(namedSf(*editor,"Presets"));
+        ensure(list&&list->getListBoxModel()->getNumRows()==24,"SoundFonts folder displaced Milwaukee presets");list->selectRow(0);list->keyPressed(juce::KeyPress(juce::KeyPress::returnKey));
+        ensure(!p->romHacks.enabled()&&p->presetCategory()=="Milwaukee"&&play(*p)>.001f,"Loading a factory patch did not return to audible synthesis");
+        category->setText("SoundFonts",juce::sendNotificationSync);ensure(sf->isVisible(),"SoundFonts folder cannot be reopened");banks->setSelectedId(2,juce::sendNotificationSync);ensure(p->romHacks.waitUntilIdle(10000),"Second preset-folder bank load timed out");juce::MessageManager::getInstance()->runDispatchLoopUntil(120);instruments->setSelectedId(2,juce::sendNotificationSync);dry(*p);
+        juce::MemoryBlock folderProject;p->getStateInformation(folderProject);auto restored=std::make_unique<GbaProcessor>(root.getChildFile("PresetFolderProject"));restored->setStateInformation(folderProject.getData(),int(folderProject.getSize()));restored->prepareToPlay(48000,256);
+        ensure(restored->romHacks.enabled()&&restored->romHacks.view().fileName==zulu.getFileName()&&restored->romHacks.view().selected==1&&play(*restored)>.001f,"SoundFont chosen in preset folders did not restore audible bank/instrument in a project");
+        for(int i=0;i<6;++i){category->setText("Brass",juce::sendNotificationSync);category->setText("SoundFonts",juce::sendNotificationSync);}ensure(sf->isVisible()&&p->romHacks.enabled(),"Repeated preset-folder navigation changed SoundFont playback");
+        buttonSf(*editor,"BACK / START")->onClick();juce::MessageManager::getInstance()->runDispatchLoopUntil(30);ensure(namedSf(*editor,"Preset browser")==nullptr&&p->romHacks.enabled(),"Closing the preset SoundFont folder stopped playback or retained the overlay");
+        std::cout<<"PASS SoundFonts preset folder: configured banks, instrument selection, audible MIDI/preview, preserved filters, factory return and project recall\n";
+    }
     p.reset();ensure(zulu.deleteFile(),"Library source removal fixture failed");
     auto reload=std::make_unique<GbaProcessor>(user);reload->setRateAndBufferSizeDetails(48000,256);reload->prepareToPlay(48000,256);dry(*reload);
     ensure(reload->romHacks.waitUntilIdle(10000),"Startup bank recall timed out");
