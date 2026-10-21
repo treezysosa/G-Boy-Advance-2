@@ -361,7 +361,7 @@ int main(int argc,char** argv) {
             subfolder->setText("Kicks",juce::sendNotificationSync);check(rows()==4,"Percussion kicks subfolder is incomplete");snapshot(*editor,"ui-snapshots/Percussion-Browser-960.png");
             categoryFilter->setText("Woodwinds",juce::sendNotificationSync);check(rows()==20,"Woodwinds category retained the old family filter");
             subfolder->setText("Clarinets",juce::sendNotificationSync);check(rows()==4,"Woodwind clarinet subfolder is incomplete");snapshot(*editor,"ui-snapshots/Woodwinds-Browser-960.png");
-            categoryFilter->setText("Hip Hop Milwaukee",juce::sendNotificationSync);check(rows()==24&&!subfolder->isVisible(),"Milwaukee bank is incomplete");query("piano");check(rows()==4,"Milwaukee piano tags do not search");query("");snapshot(*editor,"ui-snapshots/Milwaukee-Browser-960.png");
+            categoryFilter->setText("Milwaukee",juce::sendNotificationSync);check(rows()==24&&!subfolder->isVisible(),"Milwaukee bank is incomplete");query("piano");check(rows()==4,"Milwaukee piano tags do not search");query("");snapshot(*editor,"ui-snapshots/Milwaukee-Browser-960.png");
             categoryFilter->setText("Vocals",juce::sendNotificationSync);check(rows()==86&&subfolder->isVisible(),"Vocals lost retained sounds or new Vox patches");
             subfolder->setText("Vox Stabs",juce::sendNotificationSync);check(rows()==12,"New Vox stabs are not merged into Vocals");snapshot(*editor,"ui-snapshots/Vox-in-Vocals-960.png");
             categoryFilter->setText("Retro Games",juce::sendNotificationSync);check(rows()==56,"Factory/category browser intersection failed");

@@ -107,6 +107,6 @@ The generator maps its original regional recipe categories to Detroit, West Coas
 
 ## Expansion designs (0.18.0)
 
-`Presets/expansion-designs.json` contains 80 independent complete 64-symbol synthesis dictionaries, each with category, family, tags and design notes. There is no generated Afterglow pairing. Percussion has 24, Woodwinds 20, Hip Hop Milwaukee 24 and Vocals 12. Percussion/Woodwinds use family subfolders; the Vox additions use Vocals / Vox Stabs. No samples or external assets are embedded.
+`Presets/expansion-designs.json` contains 80 independent complete 64-symbol synthesis dictionaries, each with category, family, tags and design notes. There is no generated Afterglow pairing. Percussion has 24, Woodwinds 20, Milwaukee 24 and Vocals 12. Percussion/Woodwinds use family subfolders; the Vox additions use Vocals / Vox Stabs. No samples or external assets are embedded.
 
 The registry appends slots 674–753 (zero-based), preserving all prior 674 entries verbatim. The factory bank now has 678 active patches and 76 retired slots. All 598 prior patch dictionaries, including gains, are retained exactly. The level recipe digest covers the new design file and current DSP. Recalibration preserves old gains explicitly while deriving the 80 new gains from native measurements. Rendered all-pair comparisons use both dry/wet voices at three pitches and two velocities across the complete bank.

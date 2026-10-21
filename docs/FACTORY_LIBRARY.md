@@ -1,6 +1,6 @@
 # Factory library audit
 
-678 parameter-only presets across 21 categories. The 102 named instrument designs, 37 named vocal designs, 28 named retro designs and 60 regional hip-hop designs each have an active Afterglow voicing. The 120 groove-pack, 24 brass and 80 expansion designs are individually authored complete patches, without automatic Afterglow variants. The expansion contains 24 Percussion, 20 Woodwinds, 24 Hip Hop Milwaukee and 12 Vox Stabs inside Vocals. Surviving IDs and all host program indices are frozen; seventy-six removed-category slots are reserved by `Presets/factory-index.json`.
+678 parameter-only presets across 21 categories. The 102 named instrument designs, 37 named vocal designs, 28 named retro designs and 60 regional hip-hop designs each have an active Afterglow voicing. The 120 groove-pack, 24 brass and 80 expansion designs are individually authored complete patches, without automatic Afterglow variants. The expansion contains 24 Percussion, 20 Woodwinds, 24 Milwaukee and 12 Vox Stabs inside Vocals. Surviving IDs and all host program indices are frozen; seventy-six removed-category slots are reserved by `Presets/factory-index.json`.
 
 This report describes native numerical renders at 48 kHz. It does not certify perceptual uniqueness, natural acoustic realism or commercial sound quality. Human listening acceptance remains pending.
 
@@ -28,7 +28,7 @@ Central-note maximum rolling 100 ms stereo RMS: 0.009269–0.036000 (11.78 dB sp
 | 80s Pop | 28 | additive, fm, formant, modal, subtractive, wavetable | 0.00927–0.03600 |
 | Percussion | 24 | additive, chiptune, fm, modal, physical modeling, subtractive | 0.00968–0.02600 |
 | Woodwinds | 20 | additive, chiptune, fm, formant, subtractive, wavetable | 0.01529–0.02600 |
-| Hip Hop Milwaukee | 24 | additive, chiptune, fm, formant, modal, subtractive, wavetable | 0.01017–0.03600 |
+| Milwaukee | 24 | additive, chiptune, fm, formant, modal, subtractive, wavetable | 0.01017–0.03600 |
 
 ## Listening renders
 

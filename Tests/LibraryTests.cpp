@@ -20,7 +20,7 @@ try{
     {
         auto a=std::make_unique<GbaProcessor>(root);auto& m=a->presets;const auto factory=m.all().front().id;
         check(m.all().size()==678,"Factory count/order drifted");check(!root.getChildFile("library.json").exists(),"Construction unexpectedly writes recent history");
-        for(const auto& entry:std::array<std::pair<const char*,std::size_t>,4>{{{"Percussion",24},{"Woodwinds",20},{"Hip Hop Milwaukee",24},{"Vocals",86}}}) {
+        for(const auto& entry:std::array<std::pair<const char*,std::size_t>,4>{{{"Percussion",24},{"Woodwinds",20},{"Milwaukee",24},{"Vocals",86}}}) {
             PresetManager::Filter f;f.category=entry.first;f.source=PresetManager::Source::factory;
             const auto ids=m.filtered(f);check(ids.size()==entry.second,"Expansion category is incomplete");
             for(const auto& id:ids)if(m.find(id)->name.startsWith("Vox ")||juce::String(entry.first)!="Vocals") {

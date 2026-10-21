@@ -1,4 +1,4 @@
-> Current version: **0.18.0**. 678 presets in 21 categories, 30 skins. Added Percussion (24), Woodwinds (20), Hip Hop Milwaukee (24) and 12 Vox stabs in Vocals (86). SELECT → SKIN selects the new colors. [Current changes](RELEASE_0_18_0.md).
+> Current version: **0.18.1**. 678 presets in 21 categories, 30 skins. Added Percussion (24), Woodwinds (20), Milwaukee (24) and 12 Vox stabs in Vocals (86). SELECT → SKIN selects the new colors. [Current changes](RELEASE_0_18_1.md).
 
 
 
@@ -167,7 +167,7 @@ The regional factory categories are **Detroit** (60 sounds), **West Coast** (40)
 
 START opens the browser. Choose Percussion for 24 original pitched electronic drums, hats, claps and wood/metal hits, or Woodwinds for 20 synthetic clarinet, oboe, bassoon, recorder and pipe sounds. Their subfolder selector narrows the instrument family; All subfolders shows the complete category. These are synthesized approximations, not acoustic recordings. The keyboard transposes percussion; lower notes suit kick/tom bodies and upper notes suit metal/chime sounds.
 
-Hip Hop Milwaukee contains 24 original bounce-oriented pianos, bells, plucks, basses, leads, brass stabs, vowel cuts and pads. Search a family tag to narrow the results. The 12 new Vox stabs are in Vocals → Vox Stabs, together with the 74 retained Vocals sounds under All subfolders. Vox is not a separate top-level folder. No deleted vocal category is recreated.
+Milwaukee contains 24 original bounce-oriented pianos, bells, plucks, basses, leads, brass stabs, vowel cuts and pads. Search a family tag to narrow the results. The 12 new Vox stabs are in Vocals → Vox Stabs, together with the 74 retained Vocals sounds under All subfolders. Vox is not a separate top-level folder. No deleted vocal category is recreated.
 
 The new skins are Amethyst, Seafoam, Sunset, Ice Blue, Wine Red, Olive, Pearl, Bronze, Bubblegum and Smoke, in addition to the previous 20. SELECT → SKIN changes the current instance; BACK returns immediately. NEW COLOUR ON LOAD continues to choose a different color on each launch. Disable it to save a fixed skin in the project. Skins do not change your preset or DSP settings.
 

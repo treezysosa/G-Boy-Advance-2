@@ -86,7 +86,7 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           name: G-Boy-Advance-2-Installer-x64
-          run-id: 39465006237
+          run-id: 39541516550
           github-token: ${{ github.token }}
           path: build/previous-installer
       - name: Exercise install, upgrade, reinstall, standalone launch and uninstall
@@ -186,4 +186,4 @@ jobs:
         if: always()
         with:
           name: Milwaukee-auditions-Windows
-          path: build/expansion-auditions/Hip Hop Milwaukee/**
+          path: build/expansion-auditions/Milwaukee/**

@@ -1,6 +1,8 @@
-# G BOY ADVANCE 2 — 0.18.0
+# G BOY ADVANCE 2 — 0.18.1
 
-**678 factory presets across 21 categories and 30 UI skins.** The expansion adds 24 Percussion, 20 Woodwinds, 24 Hip Hop Milwaukee sounds and 12 synthetic Vox stabs inside **Vocals** (86 total). The four regional folders remain Detroit, West Coast, Florida and Chicago; Brass still includes all 16 sax sounds. Removed vocal categories remain removed.
+**0.18.1 renames the factory folder to Milwaukee. Its 24 sounds, all synthesis settings and saved preset identities are unchanged. The updated installer is pending Windows verification.**
+
+**678 factory presets across 21 categories and 30 UI skins.** The expansion adds 24 Percussion, 20 Woodwinds, 24 Milwaukee sounds and 12 synthetic Vox stabs inside **Vocals** (86 total). The four regional folders remain Detroit, West Coast, Florida and Chicago; Brass still includes all 16 sax sounds. Removed vocal categories remain removed.
 
 The 10 new skins are Amethyst, Seafoam, Sunset, Ice Blue, Wine Red, Olive, Pearl, Bronze, Bubblegum and Smoke. SELECT → SKIN changes the appearance; NEW COLOUR ON LOAD keeps choosing a different color for each launch, or turn it off to pin a project color. Appearance never changes audio settings.
 
@@ -8,9 +10,9 @@ The audio engine now uses four interleaved SSE2 double-precision additive recurr
 
 All 598 prior factory parameter dictionaries, 674 existing host slots and 64 parameter IDs remain intact. Eighty new host slots are appended (754 total, including 76 reserved); user presets, SoundFonts and projects remain available. ROM Hacks still supports SF2 drag/drop, the default/custom library folder and bank/instrument recall.
 
-[Current changes and validation](docs/RELEASE_0_18_0.md) · [Source branch](https://github.com/treezysosa/G-Boy-Advance-2/tree/feature/expansion-performance-0180). [Download Windows installer 0.18.0](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39541516550/artifacts/12319808620) · [Portable/manual install](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39541516550/artifacts/12319554225). Close FL Studio and standalone, extract into a fresh folder, and run `G-Boy-Advance-2-Setup-x64.exe`. The prepared build is unsigned; the owner's licensing decision remains deferred. Real FL Studio/physical audio-device checks and human listening remain manual acceptance work.
+[Current folder rename and validation](docs/RELEASE_0_18_1.md) · [Source branch](https://github.com/treezysosa/G-Boy-Advance-2/tree/feature/milwaukee-folder-0181). [Previous Windows installer 0.18.0](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39541516550/artifacts/12319808620) · [Portable/manual install](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39541516550/artifacts/12319554225). Close FL Studio and standalone, extract into a fresh folder, and run `G-Boy-Advance-2-Setup-x64.exe`. The prepared build is unsigned; the owner's licensing decision remains deferred. Real FL Studio/physical audio-device checks and human listening remain manual acceptance work.
 
-## Verified build and CPU results
+## Previous 0.18.0 build and CPU results
 
 633,063 common DSP/preset checks, 3,996 Windows application checks, both bundle hosts, pluginval strictness 10, Steinberg 47/0 and six installer lifecycle checks passed. All 30 skins and all 678 presets were validated; there were no duplicate/close-pair flags across 229,503 comparisons. Numerical distinction is not a human listening certificate.
 
@@ -32,12 +34,12 @@ Actual Phase 2 Windows JUCE component render at 1280×646 from [passing CI run 3
 Install Visual Studio 2022 with **Desktop development with C++**, a Windows SDK, CMake 3.24+, and Git. In PowerShell:
 
 ```powershell
-git clone --branch feature/expansion-performance-0180 https://github.com/treezysosa/G-Boy-Advance-2.git
+git clone --branch feature/milwaukee-folder-0181 https://github.com/treezysosa/G-Boy-Advance-2.git
 cd G-Boy-Advance-2
 powershell -ExecutionPolicy Bypass -File scripts/build-windows.ps1
 ```
 
-You can also use [Build and validate in GitHub Actions](https://github.com/treezysosa/G-Boy-Advance-2/actions?query=branch%3Afeature%2Fexpansion-performance-0180). Factory/vocal and retro audition files are separate test outputs and are never installed or loaded by the instrument.
+You can also use [Build and validate in GitHub Actions](https://github.com/treezysosa/G-Boy-Advance-2/actions?query=branch%3Afeature%2Fmilwaukee-folder-0181). Factory/vocal and retro audition files are separate test outputs and are never installed or loaded by the instrument.
 
 The first local build downloads the pinned JUCE 8.0.6 source. For an offline build, supply an existing checkout:
 

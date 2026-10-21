@@ -355,6 +355,7 @@ CATEGORY_NAMES = {
     'Hip-Hop - West Coast': 'West Coast',
     'Hip-Hop - Florida': 'Florida',
     'Hip-Hop - Chicago Drill': 'Chicago',
+    'Hip Hop Milwaukee': 'Milwaukee',
 }
 
 def generate(uncalibrated=False):

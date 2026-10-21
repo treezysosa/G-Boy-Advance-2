@@ -1,7 +1,7 @@
 {
   "format": "gba2.factory-levels",
   "schemaVersion": 1,
-  "recipeSha256": "6778c28bc6e204dee147eea9a76febe2dc2b8874ab248cfeca945729d3e6f526",
+  "recipeSha256": "8c3d667f4930f9fe55635b5f00c0a669773abb250f50bf6626d3d0715ccb7337",
   "metric": "Maximum rolling 100 ms stereo RMS at 48 kHz, MIDI 60 (bass 48), velocity 0.9, hold max(0.8s, attack+0.35s). Master volume is after the limiter; no audio is stored.",
   "targets": {
     "80s Pop": 0.026,
@@ -14,7 +14,6 @@
     "Flutes": 0.026,
     "Funk": 0.026,
     "Guitars": 0.026,
-    "Hip Hop Milwaukee": 0.026,
     "Japan Inspired": 0.026,
     "Pads": 0.028,
     "Percussion": 0.026,
@@ -24,7 +23,8 @@
     "Strings": 0.028,
     "Vocals": 0.02,
     "West Coast": 0.026,
-    "Woodwinds": 0.026
+    "Woodwinds": 0.026,
+    "Milwaukee": 0.026
   },
   "presetTargets": {
     "factory.1d01b9c467ecfb27": 0.026,
