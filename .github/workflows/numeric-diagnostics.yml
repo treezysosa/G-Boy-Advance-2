@@ -1,0 +1,29 @@
+name: Diagnose Windows numerical precision
+on:
+  push:
+    branches: ['support/quantizer-0180']
+permissions:
+  contents: read
+jobs:
+  numeric:
+    runs-on: windows-2022
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Export immutable baseline
+        shell: pwsh
+        run: |
+          git fetch --no-tags --depth=1 origin f079323677e6024be8356a6afdfa333eb9db4558
+          if ($LASTEXITCODE -ne 0) {throw 'Baseline fetch failed'}
+          New-Item -ItemType Directory -Force build/cpu-baseline-source | Out-Null
+          git archive --format=tar --output=build/baseline.tar f079323677e6024be8356a6afdfa333eb9db4558
+          if ($LASTEXITCODE -ne 0) {throw 'Baseline export failed'}
+          tar -xf build/baseline.tar -C build/cpu-baseline-source
+          if ($LASTEXITCODE -ne 0) {throw 'Baseline extraction failed'}
+      - name: Compare isolated calculation variants
+        run: python scripts/diagnose-numerics.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: Windows-numeric-diagnostics
+          path: build/numeric-diagnostics/report.json
