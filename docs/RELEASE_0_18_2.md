@@ -6,13 +6,17 @@ SoundFonts is a navigation destination. It adds no factory program slots or auto
 
 ## Validation
 
-Pending Windows verification. The local application tests exercise bank/instrument selection through the preset folder menu with stale synthesis filters, audible SF2 MIDI/preview, return to native presets, repeated navigation, project recall and closing the browser without stopping playback. Windows tests will check both actual VST3 bundle hosts, pluginval strictness 10, the official Steinberg validator and the 0.18.1 → 0.18.2 installer upgrade.
+[Windows run 39624904122](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39624904122) passed all three selected application/bundle-host suites: **4,031 application checks**, including 199 SoundFont application checks and 578 preset-library checks, and **647/648** actual VST3 bundle-host checks. The hosts cover editor lifecycle and audible MIDI; the synthetic FL-named host is not FL Studio. Pluginval strictness **10** passed; the official Steinberg validator passed **47 tests / 0 failures**. All **six** installer lifecycle checks passed, including the 0.18.1 → 0.18.2 upgrade and user-preset/SoundFont/appearance preservation.
+
+The local suite passed **4,019 application checks**, including **194 SoundFont checks**. The new preset-folder tests exercise bank/instrument selection with stale synthesis filters, audible MIDI and preview, retained search/source filters, return to audible native presets, repeated category navigation, audible bank/instrument project reload and closing the browser while SF2 playback continues. Actual 960/1920 screenshots show the embedded view. All 30 main/advanced skin renders remain distinct.
+
+Source ZIP verification now closes the ZIP writer and reopens it before CRC checking. The previous Windows attempt caught a false CRC failure while reading through an active writer; compilation had not started in that attempt. The corrected Windows source packaging and CRC verification passed.
 
 The focused Windows workflow verifies that DSP, factory data, processor and preset/SF2 managers match the exact verified 0.18.1 source before running the complete application/UI suite and host/installer checks. The unchanged 0.18.1 DSP, sound-diversity and performance results remain historical evidence; those expensive DSP benchmarks are not rerun for this UI change. The prior 50% performance target remains unmet.
 
 ## Install and build
 
-The updated installer link will be added after Windows validation. Close FL Studio and standalone, extract the installer ZIP into a fresh folder and run G-Boy-Advance-2-Setup-x64.exe. The VST3 bundle installs to `C:\Program Files\Common Files\VST3\G Boy Advance 2.vst3`. User presets and SoundFonts stay in their existing application-data folders.
+[Download Windows installer](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39624904122/artifacts/12355949854) · [Portable/manual archive](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39624904122/artifacts/12355914996) · [SoundFonts folder and skin previews](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39624904122/artifacts/12358325100). Close FL Studio and standalone, extract the installer ZIP into a fresh folder and run G-Boy-Advance-2-Setup-x64.exe. The VST3 bundle installs to `C:\Program Files\Common Files\VST3\G Boy Advance 2.vst3`. User presets and SoundFonts stay in their existing application-data folders.
 
 Source branch: `feature/soundfonts-folder-0182`. Build using `powershell -ExecutionPolicy Bypass -File scripts/build-windows.ps1` with Visual Studio 2022 x64 and CMake 3.24+. Output: `build/GBoyAdvance2_artefacts/Release/VST3/G Boy Advance 2.vst3`; standalone is under `Standalone`. The complete source package includes the project, tests, presets, docs and packaging scripts.
 

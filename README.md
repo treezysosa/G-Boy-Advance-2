@@ -1,6 +1,6 @@
 # G BOY ADVANCE 2 — 0.18.2
 
-**0.18.2 adds SoundFonts to the preset-folder menu. Open START → SoundFonts to choose a bank and instrument from your existing default/custom SF2 library. The updated Windows installer is pending validation.**
+**0.18.2 adds SoundFonts to the preset-folder menu. Open START → SoundFonts to choose a bank and instrument from your existing default/custom SF2 library. The Windows build, complete application/UI tests, plugin validators and installer upgrade checks passed.**
 
 **678 factory presets across 21 categories and 30 UI skins.** The expansion adds 24 Percussion, 20 Woodwinds, 24 Milwaukee sounds and 12 synthetic Vox stabs inside **Vocals** (86 total). The four regional folders remain Detroit, West Coast, Florida and Chicago; Brass still includes all 16 sax sounds. Removed vocal categories remain removed.
 
@@ -10,7 +10,7 @@ The audio engine now uses four interleaved SSE2 double-precision additive recurr
 
 All 598 prior factory parameter dictionaries, 674 existing host slots and 64 parameter IDs remain intact. Eighty new host slots are appended (754 total, including 76 reserved); user presets, SoundFonts and projects remain available. ROM Hacks still supports SF2 drag/drop, the default/custom library folder and bank/instrument recall.
 
-[Current changes and validation](docs/RELEASE_0_18_2.md) · [Source branch](https://github.com/treezysosa/G-Boy-Advance-2/tree/feature/soundfonts-folder-0182). [Previous Windows installer 0.18.1](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39600289352/artifacts/12347416437) · [Portable/manual install](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39600289352/artifacts/12346941648). Close FL Studio and standalone, extract into a fresh folder, and run `G-Boy-Advance-2-Setup-x64.exe`. The prepared build is unsigned; the owner's licensing decision remains deferred. Real FL Studio/physical audio-device checks and human listening remain manual acceptance work.
+[Current changes and validation](docs/RELEASE_0_18_2.md) · [Source branch](https://github.com/treezysosa/G-Boy-Advance-2/tree/feature/soundfonts-folder-0182). [Download Windows installer 0.18.2](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39624904122/artifacts/12355949854) · [Portable/manual install](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39624904122/artifacts/12355914996). Close FL Studio and standalone, extract into a fresh folder, and run `G-Boy-Advance-2-Setup-x64.exe`. The prepared build is unsigned; the owner's licensing decision remains deferred. Real FL Studio/physical audio-device checks and human listening remain manual acceptance work.
 
 ## Previous 0.18.0 build and CPU results
 
