@@ -4,7 +4,7 @@
 
 The 10 new skins are Amethyst, Seafoam, Sunset, Ice Blue, Wine Red, Olive, Pearl, Bronze, Bubblegum and Smoke. SELECT → SKIN changes the appearance; NEW COLOUR ON LOAD keeps choosing a different color for each launch, or turn it off to pin a project color. Appearance never changes audio settings.
 
-The audio engine now uses four interleaved SSE2 double-precision additive recurrences, direct bounded wavetable interpolation, stable per-voice blocks for all eight synthesis engines and a float-accurate output soft-limiter calculation. The SoundFont wrapper avoids redundant channel initialization. Polyphony, harmonic counts, envelopes, oversampling and 16-frame latency are retained. The 50% performance target is measured against immutable 0.17.1 source, with identical patches and events. **Windows results are pending; no 50% improvement is claimed.**
+The audio engine now uses four interleaved SSE2 double-precision additive recurrences, legacy-accurate wavetable interpolation, stable per-voice blocks for all eight synthesis engines and a float-accurate output soft-limiter calculation. The SoundFont wrapper avoids redundant channel initialization. Polyphony, harmonic counts, envelopes, oversampling and 16-frame latency are retained. The 50% performance target is measured against immutable 0.17.1 source, with identical patches and events. **Windows results are pending; no 50% improvement is claimed.**
 
 All 598 prior factory parameter dictionaries, 674 existing host slots and 64 parameter IDs remain intact. Eighty new host slots are appended (754 total, including 76 reserved); user presets, SoundFonts and projects remain available. ROM Hacks still supports SF2 drag/drop, the default/custom library folder and bank/instrument recall.
 

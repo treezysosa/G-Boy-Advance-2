@@ -67,11 +67,8 @@ inline float SynthEngine::wavetable(float p,float frequency,float position,Table
     const int m=tuning.level,m2=tuning.next,a=std::clamp(int(position),0,3),b=std::min(a+1,3);
     float t=p*1024;int i=int(t)&1023,j=(i+1)&1023;float f=t-std::floor(t);
     const auto read=[&](int shape,int level) {const auto& table=tables[shape][level];return table[i]+f*(table[j]-table[i]);};
-    // Both blends are bounded to [0,1]; a direct interpolation avoids
-    // the extra sign/range branches in the generic std::lerp implementation.
-    const auto linear=[](float x,float y,float blend){return x+(y-x)*blend;};
-    float x=linear(read(a,m),read(a,m2),tuning.blend),y=linear(read(b,m),read(b,m2),tuning.blend);
-    return linear(x,y,position-float(a));
+    float x=std::lerp(read(a,m),read(a,m2),tuning.blend),y=std::lerp(read(b,m),read(b,m2),tuning.blend);
+    return std::lerp(x,y,position-float(a));
 }
 void SynthEngine::start(Voice& v,int channel,int note,float velocity,bool preview,bool legato) noexcept {
     const bool active=v.amp.stage!=Envelope::Off;

@@ -8,7 +8,7 @@
 - 12 short synthetic Vox patches merged into Vocals (86 total). Deleted vocal categories remain removed.
 - 10 additional skins: Amethyst, Seafoam, Sunset, Ice Blue, Wine Red, Olive, Pearl, Bronze, Bubblegum and Smoke. All 30 retain independent instance/project state and optional nonrepeat launch colors.
 - 678 active presets across 21 categories; 754 stable host slots including 76 reserved. The original 598 dictionaries and 674 registry entries are byte-for-byte unchanged after parsing.
-- SSE2 double-precision interleaved additive recurrences, simpler bounded wavetable blends, stable blocks for all eight engines and a float-accurate output Pade soft limiter; SoundFont channel setup is skipped when unchanged. No reduction in voice limits, harmonic counts, modulation rate, oversampling or tail length. Reported latency remains 16 frames.
+- SSE2 double-precision interleaved additive recurrences, the original wavetable interpolation, stable blocks for all eight engines and a float-accurate output Pade soft limiter; SoundFont channel setup is skipped when unchanged. No reduction in voice limits, harmonic counts, modulation rate, oversampling or tail length. Reported latency remains 16 frames.
 
 ## Validation status
 
