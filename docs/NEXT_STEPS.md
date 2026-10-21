@@ -1,4 +1,12 @@
-> Current update: **0.18.0**, 80 additional synthesis patches, 30 skins and DSP optimizations. Full Windows build, numerical comparisons, bank audit and installer upgrade are pending. The 50% target is not yet verified. [Current evidence](RELEASE_0_18_0.md). Earlier entries below are historical.
+> Current update: **0.18.0**, verified Windows VST3/standalone and 0.17.1 upgrade. 678 presets in 21 categories, 30 skins, zero all-pair duplicate/close-pair flags. The 50% performance target was not reached. [Current evidence](RELEASE_0_18_0.md). Earlier entries below are historical.
+
+## Remaining acceptance and performance target
+
+1. Recheck this build in the owner's FL Studio 20.8.3 x64 with real audio/MIDI devices, low buffers, multi-instance projects, external SF2 banks and project reload. The synthetic FL-named host is not FL Studio.
+2. The requested 50% reduction remains outstanding. Profile the slowest rows in `pad-string-*.csv` and `play-*.csv`; investigate further voice/oscillator SIMD and block effects work. Use identical patches/events and `scripts/compare-cpu-windows.ps1`; preserve the existing 1e-6 / 110 dB audio bounds and quantizer boundaries. Do not claim a target by lowering voices, harmonics or quality silently.
+3. Listen to all 678 presets, particularly new percussion articulation, synthetic woodwinds and Milwaukee/Vox patches, in real musical phrases and across registers. Automated uniqueness is supporting evidence, not human acceptance.
+4. Review all 30 skins on physical high/mixed-DPI monitors and complete the remaining named-DAW/device/manual installer matrix. Signing and distribution licensing remain deferred by the owner.
+
 
 > Current update: **0.17.1**, folders renamed to Detroit, West Coast, Florida and Chicago. All 598 sounds, DSP and program/parameter identities are unchanged. Windows/Ubuntu suites, both VST3 validators and the 0.17.0 → 0.17.1 installer upgrade passed. [Current evidence](RELEASE_0_17_1.md). Earlier results below retain their historical baselines.
 

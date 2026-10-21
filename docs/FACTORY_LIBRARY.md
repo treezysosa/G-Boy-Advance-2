@@ -1,6 +1,6 @@
 # Factory library audit
 
-678 parameter-only presets across 21 categories. The 102 named instrument designs, 37 named vocal designs, 28 named retro designs and 60 regional hip-hop designs each have an active Afterglow voicing. The 120 groove-pack and 24 new brass designs are individually authored complete patches, without automatic Afterglow variants. Surviving IDs and all host program indices are frozen; seventy-six removed-category slots are reserved by `Presets/factory-index.json`.
+678 parameter-only presets across 21 categories. The 102 named instrument designs, 37 named vocal designs, 28 named retro designs and 60 regional hip-hop designs each have an active Afterglow voicing. The 120 groove-pack, 24 brass and 80 expansion designs are individually authored complete patches, without automatic Afterglow variants. The expansion contains 24 Percussion, 20 Woodwinds, 24 Hip Hop Milwaukee and 12 Vox Stabs inside Vocals. Surviving IDs and all host program indices are frozen; seventy-six removed-category slots are reserved by `Presets/factory-index.json`.
 
 This report describes native numerical renders at 48 kHz. It does not certify perceptual uniqueness, natural acoustic realism or commercial sound quality. Human listening acceptance remains pending.
 
@@ -39,6 +39,14 @@ Central-note maximum rolling 100 ms stereo RMS: 0.009269–0.036000 (11.78 dB sp
 The audit compares 32 log-frequency bands from three Hann-windowed 4096-point FFTs plus eight amplitude-envelope measurements, with effects disabled and volume normalized. It uses the same deterministic excitation seed for each patch. A distance below 0.025 flags a listening candidate; this metric can both miss perceptual similarity and flag intentionally related instruments.
 
 No pairs are below the configured dry spectral/envelope threshold on this audit grid. This does not establish that every listener will perceive every patch as distinct.
+
+## Multi-register all-pair audit (0.18.0)
+
+The additional `gba2-preset-diversity-tests` renders all 678 patches with and without effects at the same MIDI notes 48, 60 and 72, velocities 0.4 and 0.9, 48 kHz: 8,136 renders and 229,503 unique pairs. Each signature includes two 64-band spectra, sixteen held-envelope points and four release measurements. Spectra and envelopes are gain-normalized; dry rendering removes effects. Category names do not restrict comparisons. Renamed and gain/effects-only negative controls must be detected; a sine/saw positive control must remain distinct.
+
+Result: 0 duplicate candidates at <= 0.025; 0 close-pair review flags below 0.06. Minimum dry distance: 0.060104. CSVs record the nearest neighbor of every patch and every flagged pair. Numerical thresholds are screening tools, not perceptual guarantees.
+
+During the earlier 0.15.0 release, the initial screen flagged 26 closely related pairs. `Presets/diversity-refinements.json` records eighteen targeted original excitation/envelope/body revisions and their design notes. Factory IDs, names and program order remain stable. Projects and user presets retain their explicit parameters; explicitly loading a revised factory patch selects its new sound.
 
 ## Rebuilding the bank
 

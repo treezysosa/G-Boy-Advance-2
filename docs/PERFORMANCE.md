@@ -1,4 +1,24 @@
-> Current update: **0.18.0**, 80 additional synthesis patches, 30 skins and DSP optimizations. Full Windows build, numerical comparisons, bank audit and installer upgrade are pending. The 50% target is not yet verified. [Current evidence](RELEASE_0_18_0.md). Earlier entries below are historical.
+> Current update: **0.18.0**, verified Windows VST3/standalone and 0.17.1 upgrade. 678 presets in 21 categories, 30 skins, zero all-pair duplicate/close-pair flags. The 50% performance target was not reached. [Current evidence](RELEASE_0_18_0.md). Earlier entries below are historical.
+
+## 0.18.0 matched Windows measurements
+
+Matched Windows measurements: 672 native/SF2 pad/string held/overlap workloads, 44.1/48/96 kHz, 64/256-frame callbacks, 4/8/16/32 voices; measured twice per version in before/after/after/before order. Setup and warmup are excluded. The separate 612-scene ordinary-note/chord/retrigger and 66-scene stress profiles are included in the artifact.
+
+| Voices | Native pad/string CPU time reduction | SF2 fixture CPU time reduction |
+|---:|---:|---:|
+| 4 | 5.34% | 1.68% |
+| 8 | 6.06% | 1.67% |
+| 16 | 6.68% | 1.40% |
+| 32 | 7.21% | 0.91% |
+
+The requested 50% CPU-time reduction was **not achieved** in these matched workloads. Both CPU time and reciprocal throughput are recorded in `cpu-comparison.json`; neither is a promised FL Studio CPU percentage. The optimizations retain voice limits, harmonic counts, envelopes, full-rate modulation, oversampling and tail lengths.
+
+Local GCC 14.2 matched measurements showed 6.28–9.69% native pad/string CPU time reduction and 0.18–9.04% SF2 fixture CPU time reduction. These local numbers are separate observations, not substitutions for the Windows table. Arbitrary large external SoundFonts, audio drivers and machines need their own measurements.
+
+The same compiler and identical current factory arrays/drivers were used with immutable 0.17.1 baseline `f079323677e6024be8356a6afdfa333eb9db4558` and build `833aff0d45259db03a6ae1c49edbb55f2f143cf6`. The 798-scene probe contains 12,263,424 finite floats: maximum absolute difference 5.960464478e-08, signal/error 159.39 dB. The additional 148 eight-second pad/string/SF2 scenes contain 147,532,832 finite floats: maximum difference 5.960464478e-08, signal/error 157.23 dB. Both satisfy the pre-existing 1e-6 / 110 dB tolerance; neither is claimed bit-identical. Latency remains 16 samples.
+
+An upstream limiter approximation was rejected because it changed bitcrusher rounding boundaries. Drive/distortion retain the original libm curve; the approximation is used only for final output limiting. Isolated MSVC probes also rejected direct wavetable blends: retaining the original std::lerp rounding restored the 1e-6 / 110 dB bounds. The faster interpolation was removed. A new Milwaukee pluck was redesigned after the single-register screen found it close to a Detroit pluck. The final full bank passes both screens. Existing patch IDs/settings remain unchanged.
+
 
 > Current update: **0.17.1**, folders renamed to Detroit, West Coast, Florida and Chicago. All 598 sounds, DSP and program/parameter identities are unchanged. Windows/Ubuntu suites, both VST3 validators and the 0.17.0 → 0.17.1 installer upgrade passed. [Current evidence](RELEASE_0_17_1.md). Earlier results below retain their historical baselines.
 

@@ -4,11 +4,24 @@
 
 The 10 new skins are Amethyst, Seafoam, Sunset, Ice Blue, Wine Red, Olive, Pearl, Bronze, Bubblegum and Smoke. SELECT → SKIN changes the appearance; NEW COLOUR ON LOAD keeps choosing a different color for each launch, or turn it off to pin a project color. Appearance never changes audio settings.
 
-The audio engine now uses four interleaved SSE2 double-precision additive recurrences, legacy-accurate wavetable interpolation, stable per-voice blocks for all eight synthesis engines and a float-accurate output soft-limiter calculation. The SoundFont wrapper avoids redundant channel initialization. Polyphony, harmonic counts, envelopes, oversampling and 16-frame latency are retained. The 50% performance target is measured against immutable 0.17.1 source, with identical patches and events. **Windows results are pending; no 50% improvement is claimed.**
+The audio engine now uses four interleaved SSE2 double-precision additive recurrences, legacy-accurate wavetable interpolation, stable per-voice blocks for all eight synthesis engines and a float-accurate output soft-limiter calculation. The SoundFont wrapper avoids redundant channel initialization. Polyphony, harmonic counts, envelopes, oversampling and 16-frame latency are retained. The 50% performance target is measured against immutable 0.17.1 source, with identical patches and events. The Windows results below do not establish the requested 50% gain.
 
 All 598 prior factory parameter dictionaries, 674 existing host slots and 64 parameter IDs remain intact. Eighty new host slots are appended (754 total, including 76 reserved); user presets, SoundFonts and projects remain available. ROM Hacks still supports SF2 drag/drop, the default/custom library folder and bank/instrument recall.
 
-[Current changes and validation](docs/RELEASE_0_18_0.md) · [Source branch](https://github.com/treezysosa/G-Boy-Advance-2/tree/feature/expansion-performance-0180). The new installer link will be added after Windows validation. The prepared build is unsigned; the owner's licensing decision remains deferred. Real FL Studio/physical audio-device checks and human listening remain manual acceptance work.
+[Current changes and validation](docs/RELEASE_0_18_0.md) · [Source branch](https://github.com/treezysosa/G-Boy-Advance-2/tree/feature/expansion-performance-0180). [Download Windows installer 0.18.0](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39541516550/artifacts/12319808620) · [Portable/manual install](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39541516550/artifacts/12319554225). Close FL Studio and standalone, extract into a fresh folder, and run `G-Boy-Advance-2-Setup-x64.exe`. The prepared build is unsigned; the owner's licensing decision remains deferred. Real FL Studio/physical audio-device checks and human listening remain manual acceptance work.
+
+## Verified build and CPU results
+
+633,063 common DSP/preset checks, 3,996 Windows application checks, both bundle hosts, pluginval strictness 10, Steinberg 47/0 and six installer lifecycle checks passed. All 30 skins and all 678 presets were validated; there were no duplicate/close-pair flags across 229,503 comparisons. Numerical distinction is not a human listening certificate.
+
+| Voices | Native pad/string CPU time reduction | SF2 fixture CPU time reduction |
+|---:|---:|---:|
+| 4 | 5.34% | 1.68% |
+| 8 | 6.06% | 1.67% |
+| 16 | 6.68% | 1.40% |
+| 32 | 7.21% | 0.91% |
+
+The requested 50% CPU-time reduction was **not achieved** in these matched workloads. Both CPU time and reciprocal throughput are recorded in `cpu-comparison.json`; neither is a promised FL Studio CPU percentage. The optimizations retain voice limits, harmonic counts, envelopes, full-rate modulation, oversampling and tail lengths.
 
 ![G Boy Advance 2 Phase 2 native JUCE editor](docs/images/phase2-main.png)
 
@@ -64,9 +77,9 @@ Close your DAW, copy the entire `.vst3` directory into `C:\Program Files\Common 
 - Sine, harmonic-limited triangle, PolyBLEP saw / square / pulse, and noise; resonant low-pass, high-pass, band-pass, notch, and formant filters.
 - Two ADSRs, two routable LFOs, vibrato, tremolo, velocity, 16-channel MIDI pitch bend / modulation / sustain, 1–32 voices, stealing, mono / legato, glide.
 - Reverb, delay, chorus, phaser, flanger, saturation, distortion, bitcrusher, tape wow / flutter, low / high shelves, and stereo width.
-- 598 original factory patches across 18 categories, explicit named-instrument, vocal and retro profiles, calibrated levels and stable program identities. Vocal patches are synthesized vowel-like timbres and contain no recorded voices or speech.
+- 678 factory patches across 21 categories, explicit named-instrument, vocal and retro profiles, calibrated levels and stable program identities. Vocal patches are synthesized vowel-like timbres and contain no recorded voices or speech.
 - Reference-based vector UI, playable keyboard, spring-return pitch wheel, functional D-pad, preview A / stop B, START browser, SELECT advanced editor, assignable A–D controls.
-- Twenty colour skins with nonrepeating launch colours or a fixed project choice; SoundFont drag and drop; host-visible parameters, project state, user preset Save As / import / export / rename / delete, favorites / recent patches, category search, tags, keyboard navigation.
+- Thirty colour skins with nonrepeating launch colours or a fixed project choice; SoundFont drag and drop; host-visible parameters, project state, user preset Save As / import / export / rename / delete, favorites / recent patches, category search, tags, keyboard navigation.
 - Windows CI, portable packaging and Inno Setup installer script, DSP and JUCE integration tests.
 
 ## Factory and user presets
