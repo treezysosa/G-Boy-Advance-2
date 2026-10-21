@@ -1,6 +1,10 @@
 param([string]$Configuration='Release',[string]$Iscc='ISCC.exe')
 $ErrorActionPreference='Stop'
 $root=Split-Path $PSScriptRoot -Parent
+# CMake is the single release-version source for plugin and installer.
+$project=Get-Content -LiteralPath (Join-Path $root 'CMakeLists.txt') -Raw
+$version=[regex]::Match($project,'(?m)^project\(GBoyAdvance2\s+VERSION\s+(\d+\.\d+\.\d+)').Groups[1].Value
+if (-not $version) { throw 'Cannot read the product version from CMakeLists.txt.' }
 $artifacts=Join-Path $root "build\GBoyAdvance2_artefacts\$Configuration"
 $vst=Join-Path $artifacts 'VST3\G Boy Advance 2.vst3'
 $standalone=Join-Path $artifacts 'Standalone\G Boy Advance 2.exe'
@@ -20,5 +24,5 @@ Copy-Item -Force (Join-Path $root 'Presets\factory.json') $factory
 Copy-Item -Force (Join-Path $root 'docs\LICENSING.md') $stage
 Copy-Item -Recurse -Force (Join-Path $root 'docs\licenses') (Join-Path $stage 'Third-party notices')
 Compress-Archive -Force -Path "$stage\*" -DestinationPath (Join-Path $dist 'G-Boy-Advance-2-Windows-x64.zip')
-& $Iscc "/DArtifacts=$artifacts" "/DOutput=$dist" (Join-Path $root 'packaging\installer.iss')
+& $Iscc "/DAppVersion=$version" "/DArtifacts=$artifacts" "/DOutput=$dist" (Join-Path $root 'packaging\installer.iss')
 if ($LASTEXITCODE -ne 0) { throw 'Inno Setup compilation failed.' }

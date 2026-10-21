@@ -1,0 +1,82 @@
+name: Package verified 0.18.0 binaries
+on:
+  push:
+    branches: ['support/release-0180']
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  installer:
+    runs-on: windows-2022
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Require the exact validated runtime source
+        shell: pwsh
+        run: |
+          git diff --exit-code 833aff0d45259db03a6ae1c49edbb55f2f143cf6 -- CMakeLists.txt Source Tests Presets
+          if ($LASTEXITCODE -ne 0) { throw 'Runtime source differs from the validated Windows build.' }
+          Get-ChildItem scripts/*.ps1 | ForEach-Object {
+            $tokens=$null; $parseErrors=$null
+            [System.Management.Automation.Language.Parser]::ParseFile($_.FullName,[ref]$tokens,[ref]$parseErrors) | Out-Null
+            if ($parseErrors) { throw ($parseErrors | Out-String) }
+          }
+      - uses: actions/download-artifact@v4
+        with:
+          name: G-Boy-Advance-2-Windows-x64
+          run-id: 39533676959
+          github-token: ${{ github.token }}
+          path: .
+      - name: Verify both previously validated binary hashes
+        shell: pwsh
+        run: |
+          $base='build/GBoyAdvance2_artefacts/Release'
+          $pairs=@(
+            @('VST3/G Boy Advance 2.vst3/Contents/x86_64-win/G Boy Advance 2.vst3','52f156e59f85ffed4edb6cc941a2aa295f687abd3cd377d542b56c1bf9091718'),
+            @('Standalone/G Boy Advance 2.exe','09ab81d6355260e2d8a6db078c2b9a4c0be2462d54db68848e1195e7f5f380f7')
+          )
+          foreach($pair in $pairs) {
+            if ((Get-FileHash -Algorithm SHA256 -LiteralPath (Join-Path $base $pair[0])).Hash -ne $pair[1]) { throw 'Validated binary hash mismatch.' }
+          }
+          # Old failed installer reports must not look like evidence for this run.
+          Remove-Item -LiteralPath build/validation-logs/installer-acceptance.txt -Force
+      - name: Repackage with the CMake product version
+        shell: pwsh
+        run: ./scripts/package-windows.ps1 -Iscc 'C:\Program Files (x86)\Inno Setup 6\ISCC.exe'
+      - uses: actions/download-artifact@v4
+        with:
+          name: G-Boy-Advance-2-Installer-x64
+          run-id: 39465006237
+          github-token: ${{ github.token }}
+          path: build/previous-installer
+      - name: Test upgrade, reinstall, installed diagnostics, launch and uninstall
+        shell: pwsh
+        run: ./scripts/test-installer-windows.ps1 -PreviousInstaller build/previous-installer/G-Boy-Advance-2-Setup-x64.exe
+      - uses: actions/upload-artifact@v4
+        with:
+          name: G-Boy-Advance-2-Installer-x64
+          path: dist/G-Boy-Advance-2-Setup-x64.exe
+          if-no-files-found: error
+      - uses: actions/upload-artifact@v4
+        with:
+          name: G-Boy-Advance-2-Portable-x64
+          path: dist/G Boy Advance 2/**
+          if-no-files-found: error
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: G-Boy-Advance-2-Windows-x64
+          path: |
+            dist/*.zip
+            dist/*.exe
+            build/GBoyAdvance2_artefacts/Release/VST3/**
+            build/GBoyAdvance2_artefacts/Release/Standalone/**
+            build/GBA2-editor.png
+            build/preset-validation.csv
+            build/factory-diversity*.csv
+            build/factory-diversity.json
+            build/Testing/Temporary/LastTest.log
+            build/validation-logs/**
