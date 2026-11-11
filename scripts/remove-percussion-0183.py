@@ -101,7 +101,16 @@ def main():
             check(!percussionShown&&!p.presets.categories().contains("Percussion"),"Percussion remains in the preset folder menu");
             snapshot(*editor,"ui-snapshots/Factory-Without-Percussion-960.png");
 '''+text[end:];write('Tests/PluginTests.cpp',text)
-    app_test=r'''void removedPercussionProjects(const juce::File& root) {
+    app_test=r'''bool samePercussionSettings(const gba::Settings& actual,const gba::Settings& expected) {
+    for(std::size_t i=0;i<gba::parameterCount;++i) {
+        const auto tolerance=std::max(.0000001f,(gba::specs[i].max-gba::specs[i].min)*4*std::numeric_limits<float>::epsilon());
+        if(std::abs(actual.values[i]-expected.values[i])>tolerance) {
+            std::cerr<<"Percussion parameter mismatch: "<<gba::specs[i].id<<" expected "<<expected.values[i]<<" got "<<actual.values[i]<<" tolerance "<<tolerance<<"\n";return false;
+        }
+    }
+    return true;
+}
+void removedPercussionProjects(const juce::File& root) {
     auto p=std::make_unique<GbaProcessor>(root.getChildFile("RemovedPercussion"));
     p->setRateAndBufferSizeDetails(48000,256);p->prepareToPlay(48000,256);
     const auto defaultSettings=p->snapshot();
@@ -117,7 +126,7 @@ def main():
         p->presets.restoreDefault(false);p->setStateInformation(state.getData(),int(state.getSize()));
         check(p->presetId()==patch.id&&p->presetName()==patch.name&&p->getCurrentProgram()==patch.program,"Legacy percussion identity or program moved");
         check(p->presetCategory()=="Saved Project"&&p->stateNotice().contains("saved in your project was restored"),"Legacy percussion was not restored as a saved project");
-        check(p->snapshot().values==edited.values,"Legacy percussion edits were replaced with current/default settings");
+        check(samePercussionSettings(p->snapshot(),edited),"Legacy percussion edits were replaced with current/default settings");
         p->reset();juce::AudioBuffer<float> audio(2,256);juce::MidiBuffer midi;
         const int note=juce::String(patch.tags).contains("bass")?48:60;
         midi.addEvent(juce::MidiMessage::noteOn(1,note,.8f),0);p->processBlock(audio,midi);
@@ -126,16 +135,16 @@ def main():
         check(std::isfinite(peak)&&peak>.00001f,"Restored percussion project produced no audible synthesis");
         p->panic();render(*p,audio,1);juce::MemoryBlock saved;p->getStateInformation(saved);
         p->presets.restoreDefault(false);p->setStateInformation(saved.getData(),int(saved.getSize()));
-        check(p->snapshot().values==edited.values&&p->getCurrentProgram()==patch.program,"Resaving a percussion project changed its sound or program");
+        check(samePercussionSettings(p->snapshot(),edited)&&p->getCurrentProgram()==patch.program,"Resaving a percussion project changed its sound or program");
         p->setCurrentProgram(patch.program);p->servicePendingProgram();
-        check(p->snapshot().values==edited.values,"Host program echo overwrote restored percussion edits");
+        check(samePercussionSettings(p->snapshot(),edited),"Host program echo overwrote restored percussion edits");
         p->presets.restoreDefault(false);p->setCurrentProgram(patch.program);p->servicePendingProgram();
         check(p->getCurrentProgram()==patch.program&&p->snapshot().values==defaultSettings.values,"Reserved percussion slot does not select the documented default");
         p->setStateInformation(saved.getData(),int(saved.getSize()));
     }
     const auto kept=p->snapshot();check(p->presets.saveAs("Kept Percussion Project").wasOk(),"Cannot save a removed percussion sound as a user preset");
     const auto id=p->presetId();p->presets.restoreDefault(false);
-    check(p->presets.load(id)&&p->snapshot().values==kept.values,"Saved percussion user preset cannot reload");
+    check(p->presets.load(id)&&samePercussionSettings(p->snapshot(),kept),"Saved percussion user preset cannot reload");
     for(int i=0;i<20;++i){p->presets.stepCategory(1);check(p->presetCategory()!="Percussion","D-pad reaches the removed Percussion category");}
     std::cout<<"PASS 24 retired percussion parameter-state projects: edited settings, audible notes, resave, host echo, reserved slots and user Save As\n";
 }

@@ -1,0 +1,106 @@
+name: Finish Percussion removal release
+on:
+  push:
+    branches: ['support/percussion-verify-0183']
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  windows:
+    runs-on: windows-2022
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Verify exact unchanged production source
+        shell: pwsh
+        run: |
+          git diff --exit-code 0856bd8c3f31a3ab041aa39016dd0e2fb908b6fe -- Source Presets CMakeLists.txt
+          if ($LASTEXITCODE -ne 0) { throw 'Production source differs from the already compiled and hosted binary.' }
+          python scripts/check-notices.py
+          if ($LASTEXITCODE -ne 0) { throw 'Notice verification failed.' }
+          python scripts/package-source.py
+          if ($LASTEXITCODE -ne 0) { throw 'Source archive verification failed.' }
+      - uses: actions/download-artifact@v4
+        with:
+          name: G-Boy-Advance-2-Windows-x64
+          run-id: 43056128423
+          github-token: ${{ github.token }}
+          path: .
+      - name: Preserve passed factory/host tests and unchanged binary fingerprints
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force build/validation-logs | Out-Null
+          Copy-Item -LiteralPath build/Testing/Temporary/LastTest.log -Destination build/validation-logs/first-pass-tests.txt
+          Get-ChildItem build/GBoyAdvance2_artefacts/Release -Recurse -File | Get-FileHash -Algorithm SHA256 | ConvertTo-Json | Set-Content build/validation-logs/reused-binary-hashes.json
+      - uses: actions/checkout@v4
+        with:
+          repository: juce-framework/JUCE
+          ref: 8.0.6
+          path: Dependencies/JUCE
+      - uses: actions/checkout@v4
+        with:
+          repository: steinbergmedia/vst3sdk
+          ref: cc2adc90382dded9e347caf74e4532f1458715db
+          submodules: recursive
+          path: Dependencies/vst3sdk
+      - name: Configure and build the corrected application test
+        shell: pwsh
+        run: |
+          cmake -S . -B build -G 'Visual Studio 17 2022' -A x64 -DGBA_JUCE_PATH="${{ github.workspace }}/Dependencies/JUCE" -DBUILD_TESTING=ON -DGBA_BUILD_BENCHMARKS=OFF
+          if ($LASTEXITCODE -ne 0) { throw 'Application test configuration failed.' }
+          cmake --build build --config Release --target gba2-integration --parallel 2
+          if ($LASTEXITCODE -ne 0) { throw 'Application test build failed.' }
+      - name: Run the corrected application and complete UI/state tests
+        run: ctest --test-dir build -C Release -R '^plugin-state-and-presets$' --output-on-failure
+      - name: Validate unchanged actual VST3 in pluginval
+        shell: pwsh
+        run: ./scripts/validate-windows.ps1 -Strictness 10
+      - name: Run official Steinberg validator
+        shell: pwsh
+        run: ./scripts/validate-steinberg-windows.ps1
+      - name: Package installer, portable and complete source
+        shell: pwsh
+        run: |
+          python scripts/package-source.py
+          if ($LASTEXITCODE -ne 0) { throw 'Source archive failed.' }
+          ./scripts/package-windows.ps1 -Iscc 'C:\Program Files (x86)\Inno Setup 6\ISCC.exe'
+      - uses: actions/download-artifact@v4
+        with:
+          name: G-Boy-Advance-2-Installer-x64
+          run-id: 39624904122
+          github-token: ${{ github.token }}
+          path: build/previous-installer
+      - name: Test 0.18.2 upgrade, reinstall, launch, diagnostics and uninstall
+        shell: pwsh
+        run: ./scripts/test-installer-windows.ps1 -PreviousInstaller build/previous-installer/G-Boy-Advance-2-Setup-x64.exe
+      - name: Verify archives, old/new test evidence and native binary hashes
+        run: python scripts/verify-percussion-release-0183.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: G-Boy-Advance-2-Installer-x64
+          path: dist/G-Boy-Advance-2-Setup-x64.exe
+          if-no-files-found: error
+      - uses: actions/upload-artifact@v4
+        with:
+          name: G-Boy-Advance-2-Portable-x64
+          path: dist/G Boy Advance 2/**
+          if-no-files-found: error
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: G-Boy-Advance-2-Windows-x64
+          path: |
+            dist/*.zip
+            dist/*.exe
+            build/GBoyAdvance2_artefacts/Release/VST3/**
+            build/GBoyAdvance2_artefacts/Release/Standalone/**
+            build/Testing/Temporary/LastTest.log
+            build/validation-logs/**
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: UI-skins-and-browser-Windows
+          path: build/ui-snapshots/**

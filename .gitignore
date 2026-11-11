@@ -9,3 +9,6 @@
 *.wav
 preset-validation.csv
 .DS_Store
+
+# Python build metadata is not source.
+__pycache__/
