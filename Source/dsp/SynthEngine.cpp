@@ -25,6 +25,7 @@ void SynthEngine::reset() noexcept {
     lfo1Route.reset(int(target[Param::Lfo1Dest]));lfo2Route.reset(int(target[Param::Lfo2Dest]));
     additiveBrightness=-1;additiveHarmonics=0;additiveBuilt=0;
     cachedGlide=-1;cachedOscillatorInterval=1000;cachedBrightness=-1;
+    modulationGeneration=0;samplePosition=0;velocityDepth=-1;
     scalarCache={};frameCaches={};cachedFormantVowel=cachedVocalVowel=-100;
 }
 void SynthEngine::setSettings(const Settings& s) noexcept {
@@ -140,12 +141,13 @@ void SynthEngine::start(Voice& v,int channel,int note,float velocity,bool previe
     const bool active=v.amp.stage!=Envelope::Off;
     v.tail=active?v.last:0;v.tailStep=v.tail/64;
     v.channel=channel;v.note=note;v.held=true;v.preview=preview;v.age=++clock;v.velocity=velocity;v.targetFrequency=midiHz(float(note));
-    v.velocityRoot=std::sqrt(velocity);
+    v.velocityRoot=std::sqrt(velocity);v.velocityGain=std::lerp(1.0f,v.velocityRoot,current[Param::Velocity]);
     const float pan=std::clamp(0.5f+0.16f*float((note%5)-2),0.0f,1.0f);
     v.panLeft=std::sqrt(1-pan);v.panRight=std::sqrt(pan);
     if(!legato) {
         v.frequency=(target[Param::Glide]>0 && lastFrequency>0)?lastFrequency:v.targetFrequency;
         v.amp.start(true);v.filterEnv.start(true);v.p1=0;v.p2=0;v.fmPhase=0;v.subPhase=0;v.modalPhase={};v.modalElapsed=0;v.stringActive=false;v.modalActive=false;
+        v.modulationOrigin=samplePosition;
         v.lfo1={};v.lfo2={};v.vibrato={};v.tremolo={};v.syllable={};v.panMod=0;
         v.filter.clear();for(auto& f:v.formants) f.clear();v.vocal.reset();v.retro.reset();v.controlCounter=0;
     } else {v.frequency=std::max(v.frequency,1.0f);v.tail=0;}
@@ -321,16 +323,18 @@ inline float SynthEngine::excitation(Voice& v,int engine,float frequency,float d
     }
     return x;
 }
-template<int Engine> float SynthEngine::voiceSample(Voice& v,FrameCache& cache) noexcept {
+template<int Engine> void SynthEngine::updateModulation(Voice& v,FrameCache& cache) noexcept {
     const auto& s=current;
-    v.lfo1.advanceIncrement(lfo1Increment);v.lfo2.advanceIncrement(lfo2Increment);
-    v.vibrato.advanceIncrement(vibratoIncrement);v.tremolo.advanceIncrement(tremoloIncrement);v.syllable.advanceIncrement(syllableIncrement);
+    // Equal reset origins guarantee identical modulation-clock history. Each
+    // stable sub-block/sample gets a new generation, including automation.
+    if(cache.modulationGeneration==modulationGeneration&&cache.modulationOrigin==v.modulationOrigin)return;
+    cache.modulationGeneration=modulationGeneration;cache.modulationOrigin=v.modulationOrigin;
     // Keep both clocks advancing, but zero depth needs no sine evaluation.
     const float lfo1=s[Param::Lfo1Depth]>0?cache.lfo1.read(v.lfo1):0;
     const float lfo2=s[Param::Lfo2Depth]>0?cache.lfo2.read(v.lfo2):0;
-    float modPitch=0,modFilter=0,modAmp=0,modVowel=0;
+    cache.modPitch=cache.modFilter=cache.modAmp=cache.modVowel=0;
     const auto route=[&](int destination,float amount) {
-        switch(destination) {case 1:modPitch+=amount*2;break;case 2:modFilter+=amount*3;break;case 3:modAmp+=amount*0.45f;break;case 4:modVowel+=amount*2;break;default:break;}
+        switch(destination) {case 1:cache.modPitch+=amount*2;break;case 2:cache.modFilter+=amount*3;break;case 3:cache.modAmp+=amount*0.45f;break;case 4:cache.modVowel+=amount*2;break;default:break;}
     };
     const auto applyRoute=[&](const ChoiceFade<6>& fade,float amount) {
         if constexpr(Engine>=0)route(fade.target,amount);
@@ -340,7 +344,20 @@ template<int Engine> float SynthEngine::voiceSample(Voice& v,FrameCache& cache) 
         }
     };
     applyRoute(lfo1Route,lfo1*s[Param::Lfo1Depth]);applyRoute(lfo2Route,lfo2*s[Param::Lfo2Depth]);
-    v.panMod=lfo1*s[Param::Lfo1Depth]*.45f*lfo1Route.weights[5]+lfo2*s[Param::Lfo2Depth]*.45f*lfo2Route.weights[5];
+    cache.pan=lfo1*s[Param::Lfo1Depth]*.45f*lfo1Route.weights[5]+lfo2*s[Param::Lfo2Depth]*.45f*lfo2Route.weights[5];
+    cache.syllableMotion=s[Param::Syllable]>0?cache.syllable.read(v.syllable):0;
+    cache.syllableGain=1-s[Param::Syllable]*0.6f*(0.5f+0.5f*cache.syllableMotion);
+    const float amount=s[Param::Tremolo]>0?s[Param::Tremolo]*(0.5f+0.5f*cache.tremolo.read(v.tremolo)):0;
+    cache.amplitude=std::max(0.0f,1+cache.modAmp-amount);
+}
+
+template<int Engine> float SynthEngine::voiceSample(Voice& v,FrameCache& cache) noexcept {
+    const auto& s=current;
+    v.lfo1.advanceIncrement(lfo1Increment);v.lfo2.advanceIncrement(lfo2Increment);
+    v.vibrato.advanceIncrement(vibratoIncrement);v.tremolo.advanceIncrement(tremoloIncrement);v.syllable.advanceIncrement(syllableIncrement);
+    updateModulation<Engine>(v,cache);
+    float modPitch=cache.modPitch;const float modFilter=cache.modFilter,modVowel=cache.modVowel;
+    v.panMod=cache.pan;
     const float vibrato=s[Param::Vibrato]+wheel[v.channel-1]*0.6f;
     if(vibrato>0)modPitch+=cache.vibrato.read(v.vibrato)*vibrato*0.6f;
     v.frequency+=(v.targetFrequency-v.frequency)*glideStep;
@@ -364,7 +381,7 @@ template<int Engine> float SynthEngine::voiceSample(Voice& v,FrameCache& cache) 
     v.p1=wrap(v.p1+dt);v.p2=wrap(v.p2+dt2);
     float env=v.amp.nextSteps(ampRates.attackStep,ampRates.decayStep,s[Param::Sustain]);
     float fenv=v.filterEnv.nextSteps(filterRates.attackStep,filterRates.decayStep,s[Param::FilterSustain]);
-    const float syllableMotion=s[Param::Syllable]>0?cache.syllable.read(v.syllable):0;
+    const float syllableMotion=cache.syllableMotion;
     if(v.controlCounter==0||((Engine==4||(Engine<0&&engineFade.weights[4]>0))&&!v.stringActive)) {
         const float octaves=fenv*s[Param::FilterEnv]+modFilter;
         if(cache.filterBase!=s[Param::Cutoff]||cache.filterOctaves!=octaves) {
@@ -412,14 +429,16 @@ template<int Engine> float SynthEngine::voiceSample(Voice& v,FrameCache& cache) 
     if(filterFade.target==4||filterFade.weights[4]>0) {for(auto& f:v.formants)formant+=f.next(x,2)*0.22f;}
     if(filterFade.remaining==0)x=filterFade.target==4?formant:filtered.select(filterFade.target);
     else x=filtered.low*filterFade.weights[0]+filtered.high*filterFade.weights[1]+filtered.band*filterFade.weights[2]+filtered.notch*filterFade.weights[3]+formant*filterFade.weights[4];
-    float syllable=1-s[Param::Syllable]*0.6f*(0.5f+0.5f*syllableMotion);
-    float velocity=std::lerp(1.0f,v.velocityRoot,s[Param::Velocity]);
-    const float tremolo=s[Param::Tremolo]>0?s[Param::Tremolo]*(0.5f+0.5f*cache.tremolo.read(v.tremolo)):0;
-    x*=env*velocity*std::max(0.0f,1+modAmp-tremolo)*syllable*0.16f;
+    x*=env*v.velocityGain*cache.amplitude*cache.syllableGain*0.16f;
     if(std::abs(v.tail)>std::abs(v.tailStep)) {x+=v.tail;v.tail-=v.tailStep;} else v.tail=0;
     v.last=x;return x;
 }
 void SynthEngine::updateSharedControls() noexcept {
+    ++modulationGeneration;
+    if(velocityDepth!=current[Param::Velocity]) {
+        velocityDepth=current[Param::Velocity];
+        for(auto& v:voices)if(v.amp.stage!=Envelope::Off)v.velocityGain=std::lerp(1.0f,v.velocityRoot,velocityDepth);
+    }
     // Shared by every voice, including continuously smoothed automation.
     const float glide=current[Param::Glide];
     if(glide!=cachedGlide) {glideStep=glide<0.001f?1.0f:1-std::exp(-1/(glide*sampleRate));cachedGlide=glide;}
@@ -472,6 +491,7 @@ template<int Engine> void SynthEngine::renderStableEngine(float* left,float* rig
     // per-frame exact-input caches retain the original chord sharing of LFO,
     // bend and filter math. Mixing still visits voices in their original order.
     for(int at=0;at<samples;at+=int(frameCaches.size())) {
+        ++modulationGeneration;
         const int count=std::min(int(frameCaches.size()),samples-at);
         if constexpr(Engine==2)buildAdditiveCache(count*2);
         std::array<float,32> l{},r{};
@@ -492,6 +512,7 @@ template<int Engine> void SynthEngine::renderStableEngine(float* left,float* rig
 }
 void SynthEngine::render(float* left,float* right,int samples) noexcept {
     if(!prepared) {std::fill_n(left,samples,0.0f);std::fill_n(right,samples,0.0f);return;}
+    samplePosition+=std::uint64_t(samples);
     if(canRenderStable()){renderStable(left,right,samples);return;}
     // MIDI starts voices between render segments. Collect the current voices
     // once per segment, in the original summation order, using fixed stack storage.

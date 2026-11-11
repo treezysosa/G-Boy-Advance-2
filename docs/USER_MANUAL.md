@@ -1,4 +1,4 @@
-> Current version: **0.19.0**. 654 presets in 20 factory categories, plus SoundFonts navigation, and 40 skins. Percussion is removed from Factory; existing projects retain their saved sounds. [Current changes](RELEASE_0_19_0.md).
+> Current version: **0.19.1**. 654 presets in 20 factory categories, plus SoundFonts navigation, and 40 skins. Percussion is removed from Factory; existing projects retain their saved sounds. [Current changes](RELEASE_0_19_1.md).
 
 
 
@@ -189,3 +189,9 @@ SELECT → SKIN includes ten new two-tone finishes: Onyx & Gold, Neon Circuit, P
 The additive engine caches its mathematically generated harmonic curve after brightness settles. Every harmonic remains present, with the original high-note Nyquist handling and exact synthesis path during automation/cache preparation. This adds about 224 KiB per instance, avoids new audio-thread allocations and retains the same voice limits and 16-frame latency. Bypassed drive filters sleep after their finite history becomes inaudible and reconstruct that history before reactivation. Modulation clocks still run at the original rate.
 
 On older computers, use a 44.1 or 48 kHz project and an ASIO buffer of 256 or 512 samples if your playing latency permits. Very large SoundFonts and many sustained release voices can still consume substantial CPU. See the release notes for measured workload results; a percentage improvement is not guaranteed for every patch or computer.
+
+## Pad/string and SoundFont CPU improvements (0.19.1)
+
+Native voices that reset their modulation clocks on the same audio frame share modulation calculations. Individual clocks, note velocities, wheel/bend controls and release voices keep their original behavior. Flat EQ shelves with zero internal state use an exact identity path. With distortion at zero, saturation uses the original tanh/FIR processing with a simpler blend path. No approximation, reduced polyphony, shortened release or effects-quality setting is introduced.
+
+See the current release notes for matched CPU and audio results against 0.19.0. Results on a specific older computer or user SoundFont require testing that computer and bank. The SoundFont stress bank used in development contains four layers per key and original generated waves; it is test data only.

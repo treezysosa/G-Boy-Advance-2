@@ -10,6 +10,10 @@ int main(int argc,char** argv) {
             if(n==0)s.set(gba::Param::Drive,.6f);
             if(n==64+offset)s.set(gba::Param::Drive,0);
             if(n==64+offset+bypass)s.set(gba::Param::Drive,.6f);
+            if(n==128){s.set(gba::Param::EqLow,12);s.set(gba::Param::EqHigh,-9);}
+            if(n==256){s.set(gba::Param::EqLow,0);s.set(gba::Param::EqHigh,0);}
+            if(n==512){s.set(gba::Param::EqLow,-7);s.set(gba::Param::EqHigh,6);}
+            if(n==1280){s.set(gba::Param::EqLow,0);s.set(gba::Param::EqHigh,0);}
             if(n==768+offset)s.set(gba::Param::Drive,0);
             if(n==1280+offset){s.set(gba::Param::Drive,.4f);s.set(gba::Param::Distortion,.3f);}
             if(n==1536){s.set(gba::Param::Drive,0);s.set(gba::Param::Distortion,0);}

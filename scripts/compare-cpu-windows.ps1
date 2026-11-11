@@ -6,16 +6,16 @@ New-Item -ItemType Directory -Force $logs | Out-Null
 $baseline=Join-Path $root 'build/cpu-baseline-source'
 $baselineBuild=Join-Path $root 'build/cpu-baseline-build'
 $archive=Join-Path $root 'build/cpu-baseline.tar'
-$baselineCommit='0712bc83bfcad19cac9a1e35a76732078937e58e'
+$baselineCommit='4d6011fd971e1e0e73a8aeab2e6195811baf4896'
 git fetch --no-tags --depth=1 origin $baselineCommit
-if ($LASTEXITCODE -ne 0) {throw 'Could not fetch the immutable 0.18.3 comparison baseline.'}
+if ($LASTEXITCODE -ne 0) {throw 'Could not fetch the immutable 0.19.0 comparison baseline.'}
 git archive --format=tar --output=$archive $baselineCommit
 if ($LASTEXITCODE -ne 0) {throw 'Could not export the comparison baseline.'}
 New-Item -ItemType Directory -Force $baseline | Out-Null
 tar -xf $archive -C $baseline
 if ($LASTEXITCODE -ne 0) {throw 'Could not extract the comparison baseline.'}
 # Use identical drivers with both DSP versions: only the engine under test differs.
-Copy-Item (Join-Path $root 'Tests/PerformanceProbe.cpp'),(Join-Path $root 'Tests/Benchmark.cpp'),(Join-Path $root 'Tests/PlayBenchmark.cpp'),(Join-Path $root 'Tests/PadStringBenchmark.cpp'),(Join-Path $root 'Tests/SustainedProbe.cpp'),(Join-Path $root 'Tests/SoundFontFixture.h') (Join-Path $baseline 'Tests')
+Copy-Item (Join-Path $root 'Tests/PerformanceProbe.cpp'),(Join-Path $root 'Tests/Benchmark.cpp'),(Join-Path $root 'Tests/PlayBenchmark.cpp'),(Join-Path $root 'Tests/PadStringBenchmark.cpp'),(Join-Path $root 'Tests/SustainedProbe.cpp'),(Join-Path $root 'Tests/SoundFontFixture.h'),(Join-Path $root 'Tests/StressSoundFontFixture.h'),(Join-Path $root 'Tests/SoundFontStress.cpp') (Join-Path $baseline 'Tests')
 Copy-Item (Join-Path $root 'Source/FactoryData.h') (Join-Path $baseline 'Source/FactoryData.h')
 @'
 cmake_minimum_required(VERSION 3.24)
@@ -31,6 +31,8 @@ add_library(gba_soundfont STATIC Source/dsp/SoundFont.cpp Source/dsp/Sf2Validati
 target_link_libraries(gba_soundfont PUBLIC gba_dsp)
 add_executable(gba2-pad-string-benchmark Tests/PadStringBenchmark.cpp)
 target_link_libraries(gba2-pad-string-benchmark PRIVATE gba_soundfont)
+add_executable(gba2-soundfont-stress Tests/SoundFontStress.cpp)
+target_link_libraries(gba2-soundfont-stress PRIVATE gba_soundfont)
 add_executable(gba2-sustained-probe Tests/SustainedProbe.cpp)
 target_link_libraries(gba2-sustained-probe PRIVATE gba_soundfont)
 add_executable(gba2-benchmark Tests/Benchmark.cpp)
@@ -44,7 +46,7 @@ target_link_libraries(gba2-play-benchmark PRIVATE gba_dsp)
 # project uses the same Release compiler/runtime flags and the untouched old DSP.
 cmake -S $baseline -B $baselineBuild -G 'Visual Studio 17 2022' -A x64
 if ($LASTEXITCODE -ne 0) {throw 'Baseline configure failed.'}
-cmake --build $baselineBuild --config $Configuration --parallel 2 --target gba2-benchmark gba2-performance-probe gba2-play-benchmark gba2-pad-string-benchmark gba2-sustained-probe
+cmake --build $baselineBuild --config $Configuration --parallel 2 --target gba2-soundfont-stress gba2-benchmark gba2-performance-probe gba2-play-benchmark gba2-pad-string-benchmark gba2-sustained-probe
 if ($LASTEXITCODE -ne 0) {throw 'Baseline build failed.'}
 $before=Join-Path $baselineBuild $Configuration
 $after=Join-Path $root "build/$Configuration"
@@ -68,6 +70,10 @@ try {
     if ($LASTEXITCODE -ne 0) {throw 'Baseline sustained render failed.'}
     & (Join-Path $after 'gba2-sustained-probe.exe') (Join-Path $logs 'sustained-after.f32')
     if ($LASTEXITCODE -ne 0) {throw 'Optimized sustained render failed.'}
+    & (Join-Path $before 'gba2-soundfont-stress.exe') --probe (Join-Path $logs 'sf2stress-before.f32')
+    if ($LASTEXITCODE -ne 0) {throw 'Baseline layered SoundFont render failed.'}
+    & (Join-Path $after 'gba2-soundfont-stress.exe') --probe (Join-Path $logs 'sf2stress-after.f32')
+    if ($LASTEXITCODE -ne 0) {throw 'Optimized layered SoundFont render failed.'}
     foreach($repeat in @(0,1)) {
         $order=if($repeat -eq 0){@('before','after')}else{@('after','before')}
         foreach($kind in $order) {
@@ -76,11 +82,19 @@ try {
             if ($LASTEXITCODE -ne 0) {throw 'Pad/string/SF2 profile produced invalid audio.'}
         }
     }
+    foreach($repeat in @(0,1)) {
+        $order=if($repeat -eq 0){@('before','after')}else{@('after','before')}
+        foreach($kind in $order) {
+            $directory=if($kind -eq 'before'){$before}else{$after}
+            & (Join-Path $directory 'gba2-soundfont-stress.exe') --benchmark (Join-Path $logs "sf2stress-$kind-$repeat.csv")
+            if ($LASTEXITCODE -ne 0) {throw 'Layered SoundFont CPU profile failed.'}
+        }
+    }
     python (Join-Path $root 'scripts/compare-cpu.py') $logs
     if ($LASTEXITCODE -ne 0) {throw 'CPU/audio comparison failed.'}
 } finally {
     # Keep hashes/metrics, not large temporary numerical render files.
-    foreach($name in @('cpu-before.f32','cpu-after.f32','sustained-before.f32','sustained-after.f32')) {
+    foreach($name in @('cpu-before.f32','cpu-after.f32','sustained-before.f32','sustained-after.f32','sf2stress-before.f32','sf2stress-after.f32')) {
         $file=Join-Path $logs $name
         if(Test-Path -LiteralPath $file){Remove-Item -LiteralPath $file -Force}
     }

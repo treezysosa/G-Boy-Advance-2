@@ -41,9 +41,15 @@ void Effects::Shelf::coefficients(float hz,float db,float rate,bool high) noexce
     b2=a*(high?plus+minus*c-beta:plus-minus*c-beta)/a0;
     a1=(high?2*(minus-plus*c):-2*(minus+plus*c))/a0;
     a2=(high?plus-minus*c-beta:plus+minus*c-beta)/a0;
+    flat=b0==1&&b1==a1&&b2==a2;
+    identity=flat&&z1==0&&z2==0;
 }
 float Effects::Shelf::next(float x) noexcept {
+    // An identity shelf with zero state returns exactly x + 0. Keep the
+    // ordinary path for non-finite/very large input and any remaining tail.
+    if(identity&&std::abs(x)<1e30f){z1=z2=0;return x+0.0f;}
     const float y=b0*x+z1;z1=b1*x-a1*y+z2;z2=b2*x-a2*y;
+    if(flat)identity=z1==0&&z2==0;
     return y;
 }
 void Effects::prepare(float rate) {
@@ -109,6 +115,13 @@ float Effects::nonlinear(float x,int c) noexcept {
         firSleeping[std::size_t(c)]=false;
     }
     bypassFrames[std::size_t(c)]=0;
+    if(hardness==0) {
+        // lerp(a,b,0) is a: saturation-only patches need neither a hard clip
+        // nor the generic blend. Retain both FIR phases and float divisions.
+        const float a=down[c].next(std::tanh(up[c].upEven(2*x,halfband)*driveGain)/driveNorm,halfband);
+        down[c].push(std::tanh(up[c].next(0,halfband)*driveGain)/driveNorm);
+        return std::lerp(delayed,a,driveMix);
+    }
     const auto shape=[&](float v) {
         const float driven=v*driveGain;
         return std::lerp(std::tanh(driven),std::clamp(driven,-1.0f,1.0f),hardness)/driveNorm;

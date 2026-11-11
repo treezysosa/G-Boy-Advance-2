@@ -30,6 +30,7 @@ private:
     };
     struct Shelf {
         float b0=1,b1=0,b2=0,a1=0,a2=0,z1=0,z2=0;
+        bool flat=false,identity=false;
         void coefficients(float hz,float db,float sr,bool high) noexcept;
         float next(float x) noexcept;
     };

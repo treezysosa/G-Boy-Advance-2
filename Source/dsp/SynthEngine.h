@@ -30,6 +30,10 @@ private:
         int level=0,next=0;
     };
     struct FrameCache {
+        std::uint64_t modulationGeneration=0;
+        std::uint64_t modulationOrigin=~std::uint64_t(0);
+        float modPitch=0,modFilter=0,modAmp=0,modVowel=0,pan=0;
+        float syllableMotion=0,syllableGain=1,amplitude=1;
         float pitch=-1000,pitchRatio=1;
         float filterBase=-1,filterOctaves=0,cutoff=0,filterHz=-1,filterResonance=-1;
         SVF filterTuning;
@@ -38,9 +42,9 @@ private:
     struct Voice {
         int note=-1,channel=1,controlCounter=0;
         bool held=false,preview=false;
-        std::uint64_t age=0;
+        std::uint64_t age=0,modulationOrigin=0;
         float velocity=1,frequency=440,targetFrequency=440,p1=0,p2=0,fmPhase=0,subPhase=0;
-        float velocityRoot=1,panLeft=0,panRight=0;
+        float velocityRoot=1,velocityGain=1,panLeft=0,panRight=0;
         float filterCutoff=0,filterResonance=0,formantVowel=0,formantShift=0;
         float vocalVowel=0,vocalShift=0,vocalBrightness=0;
         TableTuning table1,table2;
@@ -84,6 +88,8 @@ private:
     VocalEngine vocalTuning;
     Envelope::Rates ampRates,filterRates;
     double lfo1Increment=0,lfo2Increment=0,vibratoIncrement=0,tremoloIncrement=0,syllableIncrement=0;
+    std::uint64_t modulationGeneration=0,samplePosition=0;
+    float velocityDepth=-1;
     FrameCache scalarCache;
     std::array<FrameCache,32> frameCaches{};
     std::array<Voice,maxVoices> voices{};
@@ -112,6 +118,7 @@ private:
     float oscillator(int wave,float phase,float dt,float width,Random&) noexcept;
     float mixedOscillator(const ChoiceFade<6>&,float phase,float dt,float width,Random&) noexcept;
     float wavetable(float phase,float frequency,float position,TableTuning&) const noexcept;
+    template<int Engine> void updateModulation(Voice&,FrameCache&) noexcept;
     template<int Engine> float voiceSample(Voice&,FrameCache&) noexcept;
     void updateSharedControls() noexcept;
     void updateHarmonics() noexcept;

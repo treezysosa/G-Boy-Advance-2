@@ -80,13 +80,19 @@ jobs:
       - name: Compare CPU and audio against the previous engine
         shell: pwsh
         run: ./scripts/compare-cpu-windows.ps1
+      - name: Compare effects bypass and EQ automation with the previous release
+        shell: cmd
+        run: |
+          call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\Tools\VsDevCmd.bat" -arch=x64
+          if errorlevel 1 exit /b 1
+          python scripts/check-drive-bypass-reference.py build/cpu-baseline-source --compiler cl --report build/validation-logs/drive-bypass-reference.json
       - name: Package portable archive and installer
         shell: pwsh
         run: ./scripts/package-windows.ps1 -Iscc 'C:\Program Files (x86)\Inno Setup 6\ISCC.exe'
       - uses: actions/download-artifact@v4
         with:
           name: G-Boy-Advance-2-Installer-x64
-          run-id: 43060644657
+          run-id: 43076162724
           github-token: ${{ github.token }}
           path: build/previous-installer
       - name: Exercise install, upgrade, reinstall, standalone launch and uninstall

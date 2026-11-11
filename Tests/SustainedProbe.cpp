@@ -24,9 +24,9 @@ template<class Engine> bool scene(Engine& e,gba::Settings s,double rate,std::ost
                 case 2:e.controller(1,64,127);for(int note:{48,55,60,64})e.noteOff(1,note);break;
                 case 3:for(int note:{50,57,62,65})e.noteOn(1,note,.7f);break;
                 case 4:e.controller(1,64,0);e.noteOff(2,67);break;
-                case 5:s.set(gba::Param::Cutoff,4321);s.set(gba::Param::Brightness,.74f);s.set(gba::Param::Lfo1Dest,5);e.setSettings(s);break;
+                case 5:s.set(gba::Param::Cutoff,4321);s.set(gba::Param::Brightness,.74f);s.set(gba::Param::Lfo1Dest,5);s.set(gba::Param::Velocity,.21f);s.set(gba::Param::Tremolo,.4f);s.set(gba::Param::Syllable,.2f);e.setSettings(s);break;
                 case 6:e.controller(1,121,0);e.pitchWheel(1,10000);e.noteOn(1,69,.75f,true);break;
-                case 7:e.stopPreview();s.set(gba::Param::Reverb,.2f);s.set(gba::Param::Lfo1Dest,2);e.setSettings(s);break;
+                case 7:e.stopPreview();s.set(gba::Param::Reverb,.2f);s.set(gba::Param::Lfo1Dest,2);s.set(gba::Param::Velocity,.94f);s.set(gba::Param::Tremolo,.07f);s.set(gba::Param::Syllable,.65f);e.setSettings(s);break;
                 case 8:for(int note:{50,57,62,65})e.noteOff(1,note);break;
                 case 9:if(soundfont){e.controller(1,101,0);e.controller(1,100,1);e.controller(1,6,65);}break;
             }

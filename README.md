@@ -1,14 +1,10 @@
-# G BOY ADVANCE 2 — 0.19.0
+# G BOY ADVANCE 2 — 0.19.1
 
-**40 UI skins and lower CPU use, with 654 factory presets across 20 categories.** This build adds ten two-tone finishes: Onyx & Gold, Neon Circuit, Polar Cobalt, Sakura Peach, Desert Sand, Aurora, Ruby Noir, Espresso Cream, Glacier Night and Lilac Mint. SELECT → SKIN changes colors; NEW COLOUR ON LOAD keeps its nonrepeating launch behavior.
+This candidate reduces repeated modulation and effects work during sustained pad/string chords and SoundFont playback. It retains 654 factory presets, 20 categories, 40 skins and the original voice counts, sound parameters, envelopes and effects quality.
 
-The additive engine caches its original harmonic curve while controls are settled. Drive-filter bypass avoids inaudible processing and restores finite history on reactivation. Shared effects clocks avoid repeated divisions. Voice counts, harmonics, envelopes, tail lengths, oversampling, stable parameter IDs and 16-frame latency are retained.
+[Changes, audio checks and CPU results](docs/RELEASE_0_19_1.md) · [Source branch](https://github.com/treezysosa/G-Boy-Advance-2/tree/feature/pad-sf2-performance-0191). Linux audio comparisons and core tests passed. Windows build, real bundle loading, matched CPU results and 0.19.0-to-0.19.1 installer validation are pending. The 50% target is not established. Measurements on real user banks and an older physical PC remain separate acceptance work.
 
-All 654 factory parameter dictionaries and 754 host slots (100 reserved) stay unchanged. SoundFont drag/drop, default/custom folders, saved projects, user presets and the SoundFonts navigation folder remain available. Percussion and previously removed vocal categories remain removed.
-
-[Download Windows installer 0.19.0](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/43076162724/artifacts/13882352121) · [Portable/manual install](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/43076162724/artifacts/13882986703) · [Changes and validation](docs/RELEASE_0_19_0.md) · [Source branch](https://github.com/treezysosa/G-Boy-Advance-2/tree/feature/skins-performance-0190). Windows VST3 builds, all 12 test suites, 40 skin roundtrips, pluginval strictness 10 and Steinberg 47/0 passed. All six final installer lifecycle checks passed, including the 0.18.3 upgrade and user-data preservation. Matched Windows native pad/string workloads used 6.27–9.93% less CPU time; the SF2 fixtures were 0.33–0.70% slower. **The 50% target was not achieved.** These measurements do not guarantee an exact gain on an older computer. Prepared binaries are unsigned; the owner's licensing decision remains deferred. Actual FL Studio and physical audio/MIDI checks remain manual acceptance.
-
-Close FL Studio and standalone before upgrading. Extract the installer artifact ZIP into a fresh folder and run `G-Boy-Advance-2-Setup-x64.exe`. The complete VST3 bundle installs to `C:\Program Files\Common Files\VST3\G Boy Advance 2.vst3`; your existing user presets and SoundFont folders are preserved.
+The 64 parameter IDs, 754 host slots including 100 reserved slots, saved project settings, user presets, SF2 library behavior and all 40 skin IDs are preserved. Prepared binaries are unsigned; the owner deferred licensing.
 
 ![Ten new native Windows UI skins](docs/images/skins-0190.jpg)
 
@@ -19,7 +15,7 @@ Native Windows JUCE component renders of the ten added skins. All 40 main/advanc
 Install Visual Studio 2022 with **Desktop development with C++**, a Windows SDK, CMake 3.24+, and Git. In PowerShell:
 
 ```powershell
-git clone --branch feature/skins-performance-0190 https://github.com/treezysosa/G-Boy-Advance-2.git
+git clone --branch feature/pad-sf2-performance-0191 https://github.com/treezysosa/G-Boy-Advance-2.git
 cd G-Boy-Advance-2
 powershell -ExecutionPolicy Bypass -File scripts/build-windows.ps1
 ```

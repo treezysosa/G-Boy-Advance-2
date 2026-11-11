@@ -76,7 +76,7 @@ for voices in (1,4,8):
         a=sum(float(r['mean_us'])*int(r['callbacks']) for r in chosen(before_play))
         b=sum(float(r['mean_us'])*int(r['callbacks']) for r in chosen(after_play))
         result['playing'][f'{voices}-{workload}']={'beforeMeasuredUs':a,'afterMeasuredUs':b,'reductionPercent':100*(1-b/a)}
-result['baselineDspCommit']='0712bc83bfcad19cac9a1e35a76732078937e58e'
+result['baselineDspCommit']='4d6011fd971e1e0e73a8aeab2e6195811baf4896'
 def sustained_comparison():
     before_hash,after_hash=hashlib.sha256(),hashlib.sha256()
     total=changed=0;maximum=energy=noise=0.0
@@ -115,13 +115,50 @@ for repeat in range(2):
         x,y=list(csv.DictReader(a)),list(csv.DictReader(b))
         key=lambda r:tuple(r[k] for k in ('engine','fixture','workload','sample_rate','block','voices'))
         if len(x)!=672 or [key(r) for r in x]!=[key(r) for r in y]:raise SystemExit('Mismatched pad/string workloads.')
+# More demanding original SF2 data: four layers per key and optional native
+# bank filter/pitch/volume modulation. Both engines use identical MIDI/events.
+left=(folder/'sf2stress-before.f32').read_bytes()
+right=(folder/'sf2stress-after.f32').read_bytes()
+if len(left)!=len(right) or len(left)!=11332824*4:raise SystemExit('Incomplete layered SoundFont comparison.')
+maximum_stress=power_stress=noise_stress=0.0
+changed_stress=0
+if left!=right:
+    a=array.array('f');a.frombytes(left)
+    b=array.array('f');b.frombytes(right)
+    for x,y in zip(a,b):
+        if not math.isfinite(x) or not math.isfinite(y):raise SystemExit('Nonfinite layered SoundFont comparison.')
+        delta=x-y;maximum_stress=max(maximum_stress,abs(delta));power_stress+=x*x;noise_stress+=delta*delta;changed_stress+=x!=y
+snr_stress=None if noise_stress==0 else 10*math.log10(max(power_stress,1e-300)/noise_stress)
+if maximum_stress>1e-6 or (snr_stress is not None and snr_stress<110):raise SystemExit('Layered SoundFont audio exceeded the existing tolerance.')
+result['layeredSoundFontAudio']={'scenes':16,'secondsPerScene':6,'layersPerKey':4,'floatSamples':len(left)//4,'bitIdentical':left==right,'differentSamples':changed_stress,'maxAbsoluteDifference':maximum_stress,'signalToErrorDb':snr_stress,'beforeSha256':hashlib.sha256(left).hexdigest(),'afterSha256':hashlib.sha256(right).hexdigest()}
+result['layeredSoundFonts']={}
+stress_rows={}
+for kind in ('before','after'):
+    for repeat in range(2):
+        rows=list(csv.DictReader((folder/f'sf2stress-{kind}-{repeat}.csv').open()))
+        if len(rows)!=256 or any(int(r['invalid_samples']) for r in rows):raise SystemExit('Incomplete/nonfinite layered SoundFont CPU profile.')
+        stress_rows[kind,repeat]=rows
+for repeat in range(2):
+    identity=lambda r:tuple(r[k] for k in ('dynamic','program','workload','sample_rate','block','voices'))
+    if [identity(r) for r in stress_rows['before',repeat]]!=[identity(r) for r in stress_rows['after',repeat]]:raise SystemExit('Layered SoundFont workloads differ.')
+for dynamic,label in [('0','static'),('1','modulated')]:
+    result['layeredSoundFonts'][label]={}
+    for voices in (4,8,16,32):
+        measurements={}
+        for kind in ('before','after'):
+            rows=[r for repeat in range(2) for r in stress_rows[kind,repeat] if r['dynamic']==dynamic and int(r['voices'])==voices]
+            if len(rows)!=64:raise SystemExit('Missing layered SoundFont group.')
+            measurements[kind+'MeasuredUs']=sum(float(r['mean_us'])*int(r['callbacks']) for r in rows)
+            measurements[kind+'OverBudget']=sum(int(r['over_budget']) for r in rows)
+        measurements['reductionPercent']=100*(1-measurements['afterMeasuredUs']/measurements['beforeMeasuredUs'])
+        result['layeredSoundFonts'][label][str(voices)]=measurements
 # Report CPU time and reciprocal throughput separately: a 50% throughput gain
 # corresponds to one third less render time, not half. Keep the stricter CPU
 # reduction target explicit so neither interpretation can inflate the claim.
-for entry in [*(v for group in result['profiles'].values() for k,v in group.items() if isinstance(v,dict)), *result['playing'].values(), *(v for group in result['padStrings'].values() for v in group.values())]:
+for entry in [*(v for group in result['profiles'].values() for k,v in group.items() if isinstance(v,dict)), *result['playing'].values(), *(v for group in result['padStrings'].values() for v in group.values()), *(v for group in result['layeredSoundFonts'].values() for v in group.values())]:
     entry['throughputIncreasePercent']=100*(entry['beforeMeasuredUs']/entry['afterMeasuredUs']-1)
-result['performanceTarget']={'requestedPercent':50,'metric':'CPU render time reduction against 0.18.3; reciprocal throughput is also reported','synthPadStringVoicesMeeting50Percent':[int(k) for k,v in result['padStrings']['synth'].items() if v['reductionPercent']>=50],'sf2PadStringVoicesMeeting50Percent':[int(k) for k,v in result['padStrings']['sf2'].items() if v['reductionPercent']>=50],'universalGainGuaranteed':False}
-result['limit'] = 'Native DSP on one shared runner with identical current factory arrays; timings are observational, not FL Studio CPU percentages or physical-driver deadline certification.'
+result['performanceTarget']={'requestedPercent':50,'metric':'CPU render time reduction against 0.19.0; reciprocal throughput is also reported','synthPadStringVoicesMeeting50Percent':[int(k) for k,v in result['padStrings']['synth'].items() if v['reductionPercent']>=50],'sf2PadStringVoicesMeeting50Percent':[int(k) for k,v in result['padStrings']['sf2'].items() if v['reductionPercent']>=50],'universalGainGuaranteed':False}
+result['limit'] = 'Native DSP on one shared runner with identical current factory arrays; timings are observational, generated SF2 test banks only, not real user banks or measurements on the owner PC; not FL Studio CPU percentages or physical-driver deadline certification.'
 (folder / 'cpu-comparison.json').write_text(json.dumps(result, indent=2) + '\n')
 print(json.dumps(result, indent=2))
 if maximum > 1e-6 or (snr is not None and snr < 110):
