@@ -1,0 +1,161 @@
+name: Remove Percussion and validate Windows
+on:
+  push:
+    branches: ['support/percussion-removed-0183']
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  migrate:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    outputs:
+      commit: ${{ steps.commit.outputs.commit }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: support/percussion-removed-0183
+      - name: Remove the bank and prove unchanged retained presets and slots
+        run: |
+          python3 scripts/remove-percussion-0183.py
+          python3 scripts/generate_presets.py
+          git diff --check
+          python3 scripts/check-notices.py
+          python3 scripts/package-source.py
+      - name: Commit the verified generated source
+        id: commit
+        shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add Source/FactoryData.h Presets CMakeLists.txt Tests scripts docs README.md .github/workflows/build.yml
+          if ! git diff --cached --quiet; then
+            git commit -m 'Remove factory Percussion while preserving 654 sounds and 754 program identities (0.18.3) [skip ci]'
+            git push origin HEAD:support/percussion-removed-0183
+          fi
+          printf 'commit=%s\n' "$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Percussion-removal-proof
+          path: build/percussion-removal-proof.json
+          if-no-files-found: error
+  core:
+    needs: migrate
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.migrate.outputs.commit }}
+      - name: Build and run the complete independent DSP and preset suites
+        run: |
+          cmake -S . -B build -DGBA_BUILD_PLUGIN=OFF -DCMAKE_BUILD_TYPE=Release
+          cmake --build build --parallel 2
+          ctest --test-dir build --output-on-failure
+          python3 scripts/report_presets.py build --output build/FACTORY_LIBRARY_CURRENT.md
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: DSP-validation
+          path: |
+            build/Testing/Temporary/LastTest.log
+            build/preset-validation.csv
+            build/factory-audit.csv
+            build/factory-similarity.csv
+            build/factory-diversity*.csv
+            build/factory-diversity.json
+            build/factory-summary.json
+            build/FACTORY_LIBRARY_CURRENT.md
+  windows:
+    needs: migrate
+    runs-on: windows-2022
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ needs.migrate.outputs.commit }}
+      - name: Require unchanged audio DSP and verify generated data
+        shell: pwsh
+        run: |
+          git diff --exit-code 9517f59b4a32290209dccb0307d08d17822a0621 -- Source/dsp Source/PluginProcessor.cpp Source/PluginProcessor.h Source/PresetManager.cpp Source/PresetManager.h Source/SoundFontManager.cpp Source/SoundFontManager.h Source/PluginEditor.cpp Source/PluginEditor.h Source/UiSkins.h
+          if ($LASTEXITCODE -ne 0) { throw 'Audio engine, managers or UI changed outside the preset removal.' }
+          python scripts/generate_presets.py
+          if ($LASTEXITCODE -ne 0) { throw 'Factory generation failed.' }
+          git diff --exit-code -- Source/FactoryData.h Presets/factory.json
+          if ($LASTEXITCODE -ne 0) { throw 'Generated data is not reproducible.' }
+          python scripts/check-notices.py
+          if ($LASTEXITCODE -ne 0) { throw 'Third-party notices failed.' }
+          python scripts/package-source.py
+          if ($LASTEXITCODE -ne 0) { throw 'Source ZIP validation failed.' }
+          Get-ChildItem scripts/*.ps1 | ForEach-Object {
+            $tokens=$null; $parseErrors=$null
+            [System.Management.Automation.Language.Parser]::ParseFile($_.FullName,[ref]$tokens,[ref]$parseErrors) | Out-Null
+            if ($parseErrors) { throw ($parseErrors | Out-String) }
+          }
+      - uses: actions/checkout@v4
+        with:
+          repository: juce-framework/JUCE
+          ref: 8.0.6
+          path: Dependencies/JUCE
+      - uses: actions/checkout@v4
+        with:
+          repository: steinbergmedia/vst3sdk
+          ref: cc2adc90382dded9e347caf74e4532f1458715db
+          submodules: recursive
+          path: Dependencies/vst3sdk
+      - name: Configure Visual Studio 2022 x64
+        run: cmake -S . -B build -G "Visual Studio 17 2022" -A x64 -DGBA_JUCE_PATH="${{ github.workspace }}/Dependencies/JUCE" -DBUILD_TESTING=ON -DGBA_BUILD_BENCHMARKS=OFF
+      - name: Build VST3, standalone, application, preset and native host tests
+        run: cmake --build build --config Release --target GBoyAdvance2_VST3 GBoyAdvance2_Standalone gba2-integration gba2-host-tests gba2-preset-tests --parallel 2
+      - name: Validate all active presets, legacy projects and actual bundle hosts
+        run: ctest --test-dir build -C Release -R 'factory-presets|plugin-state-and-presets|vst3-.*acceptance' --output-on-failure
+      - name: Validate actual VST3 in pluginval
+        shell: pwsh
+        run: ./scripts/validate-windows.ps1 -Strictness 10
+      - name: Run official Steinberg validator
+        shell: pwsh
+        run: ./scripts/validate-steinberg-windows.ps1
+      - name: Package installer and portable archive
+        shell: pwsh
+        run: ./scripts/package-windows.ps1 -Iscc 'C:\Program Files (x86)\Inno Setup 6\ISCC.exe'
+      - uses: actions/download-artifact@v4
+        with:
+          name: G-Boy-Advance-2-Installer-x64
+          run-id: 39624904122
+          github-token: ${{ github.token }}
+          path: build/previous-installer
+      - name: Test 0.18.2 upgrade, reinstall, diagnostics, launch and uninstall
+        shell: pwsh
+        run: ./scripts/test-installer-windows.ps1 -PreviousInstaller build/previous-installer/G-Boy-Advance-2-Setup-x64.exe
+      - uses: actions/upload-artifact@v4
+        with:
+          name: G-Boy-Advance-2-Installer-x64
+          path: dist/G-Boy-Advance-2-Setup-x64.exe
+          if-no-files-found: error
+      - uses: actions/upload-artifact@v4
+        with:
+          name: G-Boy-Advance-2-Portable-x64
+          path: dist/G Boy Advance 2/**
+          if-no-files-found: error
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: G-Boy-Advance-2-Windows-x64
+          path: |
+            dist/*.zip
+            dist/*.exe
+            build/GBoyAdvance2_artefacts/Release/VST3/**
+            build/GBoyAdvance2_artefacts/Release/Standalone/**
+            build/preset-validation.csv
+            build/factory-audit.csv
+            build/factory-similarity.csv
+            build/Testing/Temporary/LastTest.log
+            build/validation-logs/**
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: UI-skins-and-browser-Windows
+          path: build/ui-snapshots/**
