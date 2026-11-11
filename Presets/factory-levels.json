@@ -1,7 +1,7 @@
 {
   "format": "gba2.factory-levels",
   "schemaVersion": 1,
-  "recipeSha256": "5a88bcdfb5c3670cd0f3a2aabe9c7281a32c7312f93284f06bbbd999f56d168e",
+  "recipeSha256": "10f41e0493714d22faf1eee9d400e15a2799777933405bd8dfd65ceefc19c313",
   "metric": "Maximum rolling 100 ms stereo RMS at 48 kHz, MIDI 60 (bass 48), velocity 0.9, hold max(0.8s, attack+0.35s). Master volume is after the limiter; no audio is stored.",
   "targets": {
     "80s Pop": 0.026,

@@ -6,7 +6,7 @@ This source candidate adds ten distinct two-tone skins, bringing the total to 40
 
 A 4,096-cell, double-precision, fifth-degree polynomial cache represents the existing additive harmonic curve. It retains all partials and normalization. The original recurrence handles Nyquist-truncated notes and brightness automation. Cache construction after parameter changes uses a fixed per-frame budget; preparation can build it before playback. No heap allocation, locks or I/O are introduced in render. Added per-instance cache storage is 224 KiB.
 
-Drive bypass keeps the original 16-frame dry delay. After 64 exact-zero drive frames it sleeps the inaudible FIR processing; on reactivation, bounded history replay restores both filters before the current frame. Full 2x oversampling remains active for driven sound. Five fixed effects modulation increments are calculated once per sample-rate preparation.
+Drive bypass keeps the original 16-frame dry delay. After 64 exact-zero drive frames it sleeps the inaudible FIR processing; on reactivation, bounded history replay restores both filters before the current frame. Full 2x oversampling remains active for driven sound. Five fixed effects modulation increments are calculated once per sample-rate preparation. Three independent oscillator phase divisions share one SSE2 instruction with the original float rounding; a portable scalar path remains. Bypass history is recorded only while drive is off, avoiding extra history writes on driven presets.
 
 No voice caps, harmonic reductions, shortened envelopes/tails, changed presets, lower modulation rates or reduced oversampling are used to obtain the measurements. The baseline is immutable 0.18.3 source 0712bc83bfcad19cac9a1e35a76732078937e58e; identical current factory arrays, drivers, compiler flags, notes, automation, sample rates and blocks are used in each comparison.
 
@@ -16,7 +16,7 @@ No voice caps, harmonic reductions, shortened envelopes/tails, changed presets, 
 
 Build with Visual Studio 2022 x64 and CMake 3.24+: `powershell -ExecutionPolicy Bypass -File scripts/build-windows.ps1`. VST3: `build/GBoyAdvance2_artefacts/Release/VST3/G Boy Advance 2.vst3`; standalone: the adjacent `Standalone` directory. Installer: `dist/G-Boy-Advance-2-Setup-x64.exe`. Close all hosts before upgrading. The installer puts the complete VST3 bundle in `C:\Program Files\Common Files\VST3\`.
 
-User presets: `%APPDATA%\Treezy Audio\G Boy Advance 2\Presets`. SoundFont library: the default folder shown in ROM Hacks or your selected custom folder. Installation preserves user data.
+User presets: `%APPDATA%\Treezy Audio\G Boy Advance 2\Presets`. SoundFont library: `%APPDATA%\Treezy Audio\G Boy Advance 2\SoundFont Library` or your selected custom folder. Installation preserves user data.
 
 ## Validation and performance
 

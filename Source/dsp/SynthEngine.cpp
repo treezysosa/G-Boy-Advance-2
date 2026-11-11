@@ -349,8 +349,18 @@ template<int Engine> float SynthEngine::voiceSample(Voice& v,FrameCache& cache) 
     // exact offset's exponential; each voice retains its own glide and frequency.
     if(pitch!=0&&pitch!=cache.pitch){cache.pitchRatio=std::exp2(pitch/12);cache.pitch=pitch;}
     float frequency=std::clamp(pitch==0?v.frequency:v.frequency*cache.pitchRatio,8.0f,sampleRate*0.4f);
-    v.fmPhase=wrap(v.fmPhase+frequency*current[Param::FmRatio]/sampleRate);v.subPhase=wrap(v.subPhase+frequency*0.5f/sampleRate);
-    float dt=frequency/sampleRate,dt2=std::min(0.45f,dt*oscillator2Ratio);
+    float dt;
+#if defined(__SSE2__) || defined(_M_X64)
+    // Three independent IEEE float divisions share one SSE2 instruction. Keep
+    // each original numerator's rounding, including the otherwise idle clocks.
+    const auto numerators=_mm_set_ps(0,frequency*.5f,frequency*current[Param::FmRatio],frequency);
+    float steps[4];_mm_storeu_ps(steps,_mm_div_ps(numerators,_mm_set1_ps(sampleRate)));
+    dt=steps[0];v.fmPhase=wrap(v.fmPhase+steps[1]);v.subPhase=wrap(v.subPhase+steps[2]);
+#else
+    v.fmPhase=wrap(v.fmPhase+frequency*current[Param::FmRatio]/sampleRate);v.subPhase=wrap(v.subPhase+frequency*.5f/sampleRate);
+    dt=frequency/sampleRate;
+#endif
+    const float dt2=std::min(.45f,dt*oscillator2Ratio);
     v.p1=wrap(v.p1+dt);v.p2=wrap(v.p2+dt2);
     float env=v.amp.nextSteps(ampRates.attackStep,ampRates.decayStep,s[Param::Sustain]);
     float fenv=v.filterEnv.nextSteps(filterRates.attackStep,filterRates.decayStep,s[Param::FilterSustain]);

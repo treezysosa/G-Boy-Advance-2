@@ -86,7 +86,19 @@ void Effects::update(const Settings& s) noexcept {
 }
 float Effects::nonlinear(float x,int c) noexcept {
     const float delayed=dry[c][std::size_t(dryPos)];dry[c][std::size_t(dryPos)]=x;
-    if(driveMix!=0&&firSleeping[std::size_t(c)]) {
+    if(driveMix==0) {
+        // Only bypassed input is needed for reconstruction; driven sound avoids
+        // the history writes entirely. Sixty-four consecutive bypass frames
+        // replace the complete history before a filter is allowed to sleep.
+        bypassInput[std::size_t(c)][std::size_t(bypassPosition[std::size_t(c)])]=x;
+        bypassPosition[std::size_t(c)]=(bypassPosition[std::size_t(c)]+1)&63;
+        if(bypassFrames[std::size_t(c)]<64) {
+            down[c].push(up[c].upEven(2*x,halfband));down[c].push(up[c].next(0,halfband));
+            ++bypassFrames[std::size_t(c)];
+        } else firSleeping[std::size_t(c)]=true;
+        return delayed;
+    }
+    if(firSleeping[std::size_t(c)]) {
         // A finite 33-tap filter has a bounded history. Reconstruct it from
         // exact recent dry inputs only when saturation is re-enabled.
         up[std::size_t(c)]={};down[std::size_t(c)]={};
@@ -96,18 +108,8 @@ float Effects::nonlinear(float x,int c) noexcept {
         }
         firSleeping[std::size_t(c)]=false;
     }
-    bypassInput[std::size_t(c)][std::size_t(bypassPosition[std::size_t(c)])]=x;
-    bypassPosition[std::size_t(c)]=(bypassPosition[std::size_t(c)]+1)&63;
-    if(driveMix==0) {
-        if(bypassFrames[std::size_t(c)]<64) {
-            down[c].push(up[c].upEven(2*x,halfband));down[c].push(up[c].next(0,halfband));
-            ++bypassFrames[std::size_t(c)];
-        } else firSleeping[std::size_t(c)]=true;
-        return delayed;
-    }
     bypassFrames[std::size_t(c)]=0;
     const auto shape=[&](float v) {
-        if(driveMix==0)return v;
         const float driven=v*driveGain;
         return std::lerp(std::tanh(driven),std::clamp(driven,-1.0f,1.0f),hardness)/driveNorm;
     };

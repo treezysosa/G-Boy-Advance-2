@@ -120,7 +120,7 @@ for repeat in range(2):
 # reduction target explicit so neither interpretation can inflate the claim.
 for entry in [*(v for group in result['profiles'].values() for k,v in group.items() if isinstance(v,dict)), *result['playing'].values(), *(v for group in result['padStrings'].values() for v in group.values())]:
     entry['throughputIncreasePercent']=100*(entry['beforeMeasuredUs']/entry['afterMeasuredUs']-1)
-result['performanceTarget']={'requestedPercent':50,'metric':'CPU render time reduction against 0.17.1; reciprocal throughput is also reported','synthPadStringVoicesMeeting50Percent':[int(k) for k,v in result['padStrings']['synth'].items() if v['reductionPercent']>=50],'sf2PadStringVoicesMeeting50Percent':[int(k) for k,v in result['padStrings']['sf2'].items() if v['reductionPercent']>=50],'universalGainGuaranteed':False}
+result['performanceTarget']={'requestedPercent':50,'metric':'CPU render time reduction against 0.18.3; reciprocal throughput is also reported','synthPadStringVoicesMeeting50Percent':[int(k) for k,v in result['padStrings']['synth'].items() if v['reductionPercent']>=50],'sf2PadStringVoicesMeeting50Percent':[int(k) for k,v in result['padStrings']['sf2'].items() if v['reductionPercent']>=50],'universalGainGuaranteed':False}
 result['limit'] = 'Native DSP on one shared runner with identical current factory arrays; timings are observational, not FL Studio CPU percentages or physical-driver deadline certification.'
 (folder / 'cpu-comparison.json').write_text(json.dumps(result, indent=2) + '\n')
 print(json.dumps(result, indent=2))
