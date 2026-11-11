@@ -188,10 +188,7 @@ def main():
     edit('scripts/test-installer-windows.ps1',"if(@($factory.presets | Where-Object category -eq 'Vocals')","if($categories -contains 'Percussion') {throw 'Removed Percussion category remains installed.'}\n    if(@($factory.presets | Where-Object category -eq 'Vocals')")
     edit('scripts/test-installer-windows.ps1','0.18.2','0.18.3')
     edit('scripts/test-installer-windows.ps1','0.18.1','0.18.2')
-    text=read('.github/workflows/build.yml')
-    text=re.sub(r'      - uses: actions/upload-artifact@v4\n        if: always\(\)\n        with:\n          name: Percussion-auditions-Windows\n          path: build/expansion-auditions/Percussion/\*\*\n','',text)
-    text=text.replace('run-id: 39600289352','run-id: 39624904122')
-    write('.github/workflows/build.yml',text)
+    # Workflow changes are applied through the repository connection, not the build bot.
     edit('scripts/source_files.py',"REQUIRED = {","REQUIRED = {\n    'Tests/RemovedPercussionPatches.h', 'docs/RELEASE_0_18_3.md',\n    'scripts/remove-percussion-0183.py', '.github/workflows/remove-percussion-0183.yml',")
     edit('scripts/report_presets.py','The 120 groove-pack and 24 new brass designs are individually authored complete patches, without automatic Afterglow variants.','The 120 groove-pack, 24 brass and 56 retained expansion designs are individually authored complete patches, without automatic Afterglow variants. Percussion was removed from the active bank in 0.18.3.')
     text=read('README.md');text=text.replace('# G BOY ADVANCE 2 — 0.18.2','# G BOY ADVANCE 2 — 0.18.3',1)

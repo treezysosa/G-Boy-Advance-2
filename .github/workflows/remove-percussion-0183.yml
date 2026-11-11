@@ -23,6 +23,7 @@ jobs:
           python3 scripts/remove-percussion-0183.py
           python3 scripts/generate_presets.py
           git diff --check
+          git diff --exit-code -- .github
           python3 scripts/check-notices.py
           python3 scripts/package-source.py
       - name: Commit the verified generated source
@@ -31,7 +32,7 @@ jobs:
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add Source/FactoryData.h Presets CMakeLists.txt Tests scripts docs README.md .github/workflows/build.yml
+          git add Source/FactoryData.h Presets CMakeLists.txt Tests scripts docs README.md
           if ! git diff --cached --quiet; then
             git commit -m 'Remove factory Percussion while preserving 654 sounds and 754 program identities (0.18.3) [skip ci]'
             git push origin HEAD:support/percussion-removed-0183

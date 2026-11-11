@@ -86,7 +86,7 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           name: G-Boy-Advance-2-Installer-x64
-          run-id: 39600289352
+          run-id: 39624904122
           github-token: ${{ github.token }}
           path: build/previous-installer
       - name: Exercise install, upgrade, reinstall, standalone launch and uninstall
@@ -167,11 +167,6 @@ jobs:
         with:
           name: UI-skins-and-browser-Windows
           path: build/ui-snapshots/**
-      - uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: Percussion-auditions-Windows
-          path: build/expansion-auditions/Percussion/**
       - uses: actions/upload-artifact@v4
         if: always()
         with:
