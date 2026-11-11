@@ -84,7 +84,7 @@ def main():
     old_rows=[line for line in old_header.splitlines() if line.lstrip().startswith('{"factory.') and '{{' in line and '"Percussion"' not in line]
     assert kept_rows==old_rows and len(kept_rows)==654
     edit('CMakeLists.txt','VERSION 0.18.2 ','VERSION 0.18.3 ')
-    edit('Tests/LibraryTests.cpp','==678','==654')
+    edit('Tests/LibraryTests.cpp','size()==678','size()==654')
     edit('Tests/LibraryTests.cpp','std::size_t(679)','std::size_t(655)')
     edit('Tests/LibraryTests.cpp','std::array<std::pair<const char*,std::size_t>,4>','std::array<std::pair<const char*,std::size_t>,3>')
     edit('Tests/LibraryTests.cpp','{"Percussion",24},','')
