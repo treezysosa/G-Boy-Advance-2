@@ -20,6 +20,38 @@ User presets: `%APPDATA%\Treezy Audio\G Boy Advance 2\Presets`. SoundFont librar
 
 ## Validation and performance
 
-Windows compilation, 40 main/40 advanced screenshots, project-state roundtrips, DSP tests, expanded 846-scene short render comparison, 148 sustained comparisons, paired pad/string/SF2 CPU benchmarks, actual bundle loading, pluginval, Steinberg and installer lifecycle checks are pending. Existing audio bounds remain maximum error 1e-6 and at least 110 dB signal-to-error.
+The latest source passed all nine independent Linux DSP/preset/SoundFont suites. The Linux 846-scene comparison was bit-identical across 14,327,808 floats. The 148 sustained comparisons covered 147,532,832 floats, with maximum error 4.470348358154297e-8 and 170.35 dB signal-to-error. The independent effects-history probe also matched exactly across 196,608 stereo frames. Existing audio bounds remain maximum error 1e-6 and at least 110 dB signal-to-error. Windows runtime validation [43068557417](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/43068557417) passed all 12 suites, including 5,011 application checks and 887/888 actual bundle-host checks. Pluginval strictness 10 and the official Steinberg validator (47 passed /0 failed) passed. All 40 main and 40 advanced skin renders were generated. The Windows 846-scene render comparison was bit-identical; the 148 sustained comparisons had maximum error 4.470348358154297e-8 and 169.05 dB signal-to-error. The final installer lifecycle check is being rerun after correcting a test-only previous-version expectation from 0.18.2 to the pinned 0.18.3 installer. Production source/binaries remain unchanged.
 
-CPU time reduction and reciprocal throughput increase will be reported separately. A 50% throughput increase means one-third less CPU time; it does not mean CPU time was halved. Neither metric predicts an exact FL Studio meter value on every machine. Real FL Studio, physical audio and human listening remain owner checks. Prepared binaries are unsigned; distribution licensing remains deferred by the owner.
+CPU time reduction and reciprocal throughput increase are reported separately. A 50% throughput increase means one-third less CPU time; it does not mean CPU time was halved. Neither metric predicts an exact FL Studio meter value on every machine. Real FL Studio, physical audio and human listening remain owner checks. Prepared binaries are unsigned; distribution licensing remains deferred by the owner.
+
+## Further performance work
+
+The 50% target was not achieved in the matched Windows measurements. Next steps are to profile the remaining per-voice modulation/filter work, prototype SIMD processing across voices while retaining note/automation timing, and benchmark representative user-owned SoundFonts separately. Keep the current audio error limits and full voice/partial counts in every comparison; do not present reduced-polyphony settings as an equivalent engine speedup.
+
+An independent effects-history probe is available as `python scripts/check-drive-bypass-reference.py PATH_TO_EXPORTED_0_18_3 --compiler g++` (or `--compiler cl` in an x64 VS developer shell). It compares 196,608 stereo frames across three rates and eight bypass durations against the old continuously warmed filters; the reference source must be an export of commit `0712bc83bfcad19cac9a1e35a76732078937e58e`. The Linux run was bit-identical.
+
+### Preliminary Linux measurements
+
+GCC 14.2, C++20, Release `-O3`, matching compiler flags, two ABBA-ordered runs per engine, 672 cases per run. Initialization/warm-up are excluded on both sides. Cases include 12 native pad/string patches and two original mathematical SF2 fixtures, three sample rates, 64/256-frame blocks, held chords and overlapping releases. These shared-runner results are observations, not guaranteed changes to FL Studio's CPU meter.
+
+| Voices | Native CPU time reduction | Native throughput increase | SF2 CPU time reduction | SF2 throughput increase |
+|---:|---:|---:|---:|---:|
+| 4 | 6.42% | 6.86% | -0.40% | -0.40% |
+| 8 | 8.52% | 9.31% | 4.56% | 4.78% |
+| 16 | 9.73% | 10.78% | 1.50% | 1.53% |
+| 32 | 10.71% | 12.00% | 2.02% | 2.07% |
+
+The 50% target was not achieved in these Linux workloads. Small negative measurements indicate a measured regression in that group; SF2 changes were modest and variable. Final Windows numbers are reported separately.
+
+### Windows measurements
+
+MSVC /Visual Studio 2022 x64 Release, identical driver/compiler flags and the same ABBA ordering/workload definitions as above. The runtime binaries were compiled at `d215baddfbc1f168205c796953e4ee3a64a8815f`. Source and preset checks guard final repackaging against production changes.
+
+| Voices | Native CPU time reduction | Native throughput increase | SF2 CPU time reduction | SF2 throughput increase |
+|---:|---:|---:|---:|---:|
+| 4 | 6.27% | 6.69% | -0.48% | -0.48% |
+| 8 | 8.40% | 9.17% | -0.70% | -0.69% |
+| 16 | 9.23% | 10.17% | -0.69% | -0.69% |
+| 32 | 9.93% | 11.02% | -0.33% | -0.33% |
+
+The native pad/string groups used 6.27–9.93% less measured CPU time (6.69–11.02% more throughput). The two SF2 fixtures were 0.33–0.70% slower; this build does not establish an SF2 speedup. No callbacks exceeded the measured budget in these paired pad/string/SF2 groups. These observations do not certify real driver deadlines or older hardware. **Neither a 50% CPU time reduction nor a 50% throughput increase was achieved.** Voice counts and sound settings were not reduced to manufacture a gain.

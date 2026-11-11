@@ -6,11 +6,11 @@ The additive engine caches its original harmonic curve while controls are settle
 
 All 654 factory parameter dictionaries and 754 host slots (100 reserved) stay unchanged. SoundFont drag/drop, default/custom folders, saved projects, user presets and the SoundFonts navigation folder remain available. Percussion and previously removed vocal categories remain removed.
 
-[Changes and validation](docs/RELEASE_0_19_0.md) · [Source branch](https://github.com/treezysosa/G-Boy-Advance-2/tree/feature/skins-performance-0190). Windows installer validation and matched CPU measurements are pending for this source candidate. The requested 50% gain is a benchmark target, not a blanket promise. Prepared binaries are unsigned; the owner's licensing decision remains deferred. Actual FL Studio and physical audio/MIDI checks remain manual acceptance.
+[Changes and validation](docs/RELEASE_0_19_0.md) · [Source branch](https://github.com/treezysosa/G-Boy-Advance-2/tree/feature/skins-performance-0190). Windows VST3 builds, all 12 test suites, 40 skin roundtrips, pluginval strictness 10 and Steinberg 47/0 passed. Final installer validation is pending its corrected upgrade check. Matched Windows native pad/string workloads used 6.27–9.93% less CPU time; the SF2 fixtures were 0.33–0.70% slower. **The 50% target was not achieved.** These measurements do not guarantee an exact gain on an older computer. Prepared binaries are unsigned; the owner's licensing decision remains deferred. Actual FL Studio and physical audio/MIDI checks remain manual acceptance.
 
-![G Boy Advance 2 Phase 2 native JUCE editor](docs/images/phase2-main.png)
+![Ten new native Windows UI skins](docs/images/skins-0190.jpg)
 
-Actual Phase 2 Windows JUCE component render at 1280×646 from [passing CI run 39007537286](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39007537286). All controls are native components with vector painting; no reference bitmap is used. Interactive Windows high-DPI and DAW testing remain pending.
+Native Windows JUCE component renders of the ten added skins. All 40 main/advanced appearances and project-state roundtrips passed. The ROM Hacks cartridge stays beside the volume knob.
 
 ## Build on Windows
 
