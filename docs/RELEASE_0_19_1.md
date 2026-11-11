@@ -55,4 +55,18 @@ CPU time reduction and reciprocal throughput are both in `cpu-comparison.json`. 
 | held-chord | 9.48% | 10.03% | 10.70% | 11.30% |
 | release-overlap | 3.75% | 1.86% | 0.64% | 0.25% |
 
-Held chords use simultaneous note starts. Release-overlap cases stagger notes by 32 frames and mix releases with held notes; their gains are smaller. Neither table guarantees results for every playing style or PC. Final packaging/source verification is pending; production binaries are frozen at `3ac7cb29e939ed1a7e2039586038160a304e1518`.
+Held chords use simultaneous note starts. Release-overlap cases stagger notes by 32 frames and mix releases with held notes; their gains are smaller. Neither table guarantees results for every playing style or PC. [Final packaging/source verification 43091697845](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/43091697845) passed, including all six repeated installer checks, all 80 native skin renders, source/archive CRCs, native x64 headers and all payload hashes. Production binaries are frozen at `3ac7cb29e939ed1a7e2039586038160a304e1518`.
+
+## Verified downloads and source provenance
+
+[Windows installer](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/43091697845/artifacts/13888772366) · [Portable/manual install](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/43091697845/artifacts/13888952074) · [Complete Windows/source/validation archive](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/43091697845/artifacts/13889186723).
+
+The source ZIP contains 165 complete source/assets at validation commit `6b0d958f5a8a31e0282209fecb33f1a0c0835333`. Final repository notes add the verified links/status; Source, Presets and CMakeLists.txt are identical to compiled commit `3ac7cb29e939ed1a7e2039586038160a304e1518`. The downloaded artifact's CRC, both inner ZIP CRCs and all five payload SHA-256 values were independently verified.
+
+| Payload | SHA-256 |
+|---|---|
+| `build/GBoyAdvance2_artefacts/Release/VST3/G Boy Advance 2.vst3/Contents/x86_64-win/G Boy Advance 2.vst3` | `f5940108cf11889c1404760258f0d01458f916285842a4b14e08f0b192ce52fe` |
+| `build/GBoyAdvance2_artefacts/Release/Standalone/G Boy Advance 2.exe` | `2f7527bccd8ea35756748f304381c01597700b24d7bc667c7df967465047ddb4` |
+| `dist/G-Boy-Advance-2-Setup-x64.exe` | `a857e143f72ab30f802c3652ae94b64a114081bae4a96f2c24fd613216e34cf8` |
+| `dist/G-Boy-Advance-2-Windows-x64.zip` | `9dc8977d66854fb105c389ecf8c6807765faa285925790b0a0a79ee038b61528` |
+| `dist/G-Boy-Advance-2-Source.zip` | `67993f9c7cfbd1bfe7822e4375708c7a73247df7b16a3de7d1fa4c160440274e` |
