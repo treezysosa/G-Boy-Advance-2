@@ -1,8 +1,8 @@
 # G BOY ADVANCE 2 — 0.19.1
 
-This candidate reduces repeated modulation and effects work during sustained pad/string chords and SoundFont playback. It retains 654 factory presets, 20 categories, 40 skins and the original voice counts, sound parameters, envelopes and effects quality.
+This build reduces repeated modulation and effects work during sustained pad/string chords and SoundFont playback. It retains 654 factory presets, 20 categories, 40 skins and the original voice counts, sound parameters, envelopes and effects quality.
 
-[Changes, audio checks and CPU results](docs/RELEASE_0_19_1.md) · [Source branch](https://github.com/treezysosa/G-Boy-Advance-2/tree/feature/pad-sf2-performance-0191). Linux audio comparisons and core tests passed. Windows build, real bundle loading, matched CPU results and 0.19.0-to-0.19.1 installer validation are pending. The 50% target is not established. Measurements on real user banks and an older physical PC remain separate acceptance work.
+[Changes, audio checks and CPU results](docs/RELEASE_0_19_1.md) · [Source branch](https://github.com/treezysosa/G-Boy-Advance-2/tree/feature/pad-sf2-performance-0191). Linux and Windows audio comparisons were bit-identical. All 12 Windows suites, pluginval strictness 10, Steinberg 47/0 and six installer lifecycle checks passed. Matched Windows workloads used 4.77–6.37% less native pad/string CPU time, 7.65–9.89% less simple SF2 CPU time and 1.88–4.81% less layered SF2 CPU time. These are additional gains versus 0.19.0. **The 50% target remains unmet.** Final source/package verification is pending. Measurements on real user banks and an older physical PC remain separate acceptance work.
 
 The 64 parameter IDs, 754 host slots including 100 reserved slots, saved project settings, user presets, SF2 library behavior and all 40 skin IDs are preserved. Prepared binaries are unsigned; the owner deferred licensing.
 
