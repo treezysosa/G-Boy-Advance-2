@@ -1,16 +1,16 @@
-# G BOY ADVANCE 2 — 0.18.2
+# G BOY ADVANCE 2 — 0.18.3
 
-**0.18.2 adds SoundFonts to the preset-folder menu. Open START → SoundFonts to choose a bank and instrument from your existing default/custom SF2 library. The Windows build, complete application/UI tests, plugin validators and installer upgrade checks passed.**
+**0.18.3 removes the factory Percussion folder and its 24 presets. Remaining sounds and saved project settings are retained; the updated Windows installer is pending verification.**
 
-**678 factory presets across 21 categories and 30 UI skins.** The expansion adds 24 Percussion, 20 Woodwinds, 24 Milwaukee sounds and 12 synthetic Vox stabs inside **Vocals** (86 total). The four regional folders remain Detroit, West Coast, Florida and Chicago; Brass still includes all 16 sax sounds. Removed vocal categories remain removed.
+**654 factory presets across 20 categories and 30 UI skins.** Woodwinds (20), Milwaukee (24) and Vox stabs inside Vocals remain available. START → SoundFonts still opens your SF2 library. All other categories keep their sounds.
 
 The 10 new skins are Amethyst, Seafoam, Sunset, Ice Blue, Wine Red, Olive, Pearl, Bronze, Bubblegum and Smoke. SELECT → SKIN changes the appearance; NEW COLOUR ON LOAD keeps choosing a different color for each launch, or turn it off to pin a project color. Appearance never changes audio settings.
 
 The audio engine now uses four interleaved SSE2 double-precision additive recurrences, legacy-accurate wavetable interpolation, stable per-voice blocks for all eight synthesis engines and a float-accurate output soft-limiter calculation. The SoundFont wrapper avoids redundant channel initialization. Polyphony, harmonic counts, envelopes, oversampling and 16-frame latency are retained. The 50% performance target is measured against immutable 0.17.1 source, with identical patches and events. The Windows results below do not establish the requested 50% gain.
 
-All 598 prior factory parameter dictionaries, 674 existing host slots and 64 parameter IDs remain intact. Eighty new host slots are appended (754 total, including 76 reserved); user presets, SoundFonts and projects remain available. ROM Hacks still supports SF2 drag/drop, the default/custom library folder and bank/instrument recall.
+All 654 retained parameter dictionaries and 64 parameter IDs are unchanged. The 754 host slots remain stable, including 100 reserved slots. Projects containing removed Percussion sounds restore their saved settings; user presets and SoundFonts remain available. ROM Hacks still supports SF2 drag/drop, the default/custom library folder and bank/instrument recall.
 
-[Current changes and validation](docs/RELEASE_0_18_2.md) · [Source branch](https://github.com/treezysosa/G-Boy-Advance-2/tree/feature/soundfonts-folder-0182). [Download Windows installer 0.18.2](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39624904122/artifacts/12355949854) · [Portable/manual install](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39624904122/artifacts/12355914996). Close FL Studio and standalone, extract into a fresh folder, and run `G-Boy-Advance-2-Setup-x64.exe`. The prepared build is unsigned; the owner's licensing decision remains deferred. Real FL Studio/physical audio-device checks and human listening remain manual acceptance work.
+[Current changes and validation](docs/RELEASE_0_18_3.md) · [Source branch](https://github.com/treezysosa/G-Boy-Advance-2/tree/feature/percussion-removed-0183). [Previous Windows installer 0.18.2](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39624904122/artifacts/12355949854) · [Portable/manual install](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39624904122/artifacts/12355914996). Close FL Studio and standalone, extract into a fresh folder, and run `G-Boy-Advance-2-Setup-x64.exe`. The prepared build is unsigned; the owner's licensing decision remains deferred. Real FL Studio/physical audio-device checks and human listening remain manual acceptance work.
 
 ## Previous 0.18.0 build and CPU results
 
@@ -34,12 +34,12 @@ Actual Phase 2 Windows JUCE component render at 1280×646 from [passing CI run 3
 Install Visual Studio 2022 with **Desktop development with C++**, a Windows SDK, CMake 3.24+, and Git. In PowerShell:
 
 ```powershell
-git clone --branch feature/soundfonts-folder-0182 https://github.com/treezysosa/G-Boy-Advance-2.git
+git clone --branch feature/percussion-removed-0183 https://github.com/treezysosa/G-Boy-Advance-2.git
 cd G-Boy-Advance-2
 powershell -ExecutionPolicy Bypass -File scripts/build-windows.ps1
 ```
 
-You can also use [Build and validate in GitHub Actions](https://github.com/treezysosa/G-Boy-Advance-2/actions?query=branch%3Afeature%2Fsoundfonts-folder-0182). Factory/vocal and retro audition files are separate test outputs and are never installed or loaded by the instrument.
+You can also use [Build and validate in GitHub Actions](https://github.com/treezysosa/G-Boy-Advance-2/actions?query=branch%3Afeature%2Fpercussion-removed-0183). Factory/vocal and retro audition files are separate test outputs and are never installed or loaded by the instrument.
 
 The first local build downloads the pinned JUCE 8.0.6 source. For an offline build, supply an existing checkout:
 
@@ -79,7 +79,7 @@ Close your DAW, copy the entire `.vst3` directory into `C:\Program Files\Common 
 - Sine, harmonic-limited triangle, PolyBLEP saw / square / pulse, and noise; resonant low-pass, high-pass, band-pass, notch, and formant filters.
 - Two ADSRs, two routable LFOs, vibrato, tremolo, velocity, 16-channel MIDI pitch bend / modulation / sustain, 1–32 voices, stealing, mono / legato, glide.
 - Reverb, delay, chorus, phaser, flanger, saturation, distortion, bitcrusher, tape wow / flutter, low / high shelves, and stereo width.
-- 678 factory patches across 21 categories, explicit named-instrument, vocal and retro profiles, calibrated levels and stable program identities. Vocal patches are synthesized vowel-like timbres and contain no recorded voices or speech.
+- 654 factory patches across 20 categories, explicit named-instrument, vocal and retro profiles, calibrated levels and stable program identities. Vocal patches are synthesized vowel-like timbres and contain no recorded voices or speech.
 - Reference-based vector UI, playable keyboard, spring-return pitch wheel, functional D-pad, preview A / stop B, START browser, SELECT advanced editor, assignable A–D controls.
 - Thirty colour skins with nonrepeating launch colours or a fixed project choice; SoundFont drag and drop; host-visible parameters, project state, user preset Save As / import / export / rename / delete, favorites / recent patches, category search, tags, keyboard navigation.
 - Windows CI, portable packaging and Inno Setup installer script, DSP and JUCE integration tests.

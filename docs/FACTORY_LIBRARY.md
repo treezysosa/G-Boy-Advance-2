@@ -1,3 +1,5 @@
+> Current 0.18.3 bank: 654 presets in 20 categories; Percussion removed. The retained 654 sound dictionaries and gains are unchanged. The render report below is historical 0.18.0 evidence; current validation is in RELEASE_0_18_3.md.
+
 # Factory library audit
 
 678 parameter-only presets across 21 categories. The 102 named instrument designs, 37 named vocal designs, 28 named retro designs and 60 regional hip-hop designs each have an active Afterglow voicing. The 120 groove-pack, 24 brass and 80 expansion designs are individually authored complete patches, without automatic Afterglow variants. The expansion contains 24 Percussion, 20 Woodwinds, 24 Milwaukee and 12 Vox Stabs inside Vocals. Surviving IDs and all host program indices are frozen; seventy-six removed-category slots are reserved by `Presets/factory-index.json`.

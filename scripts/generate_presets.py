@@ -330,7 +330,7 @@ def brass_patches(specs):
 def expansion_patches(specs):
     data=json.loads((ROOT/'Presets/expansion-designs.json').read_text())
     assert data['format']=='gba2.expansion-designs' and data['schemaVersion']==1
-    counts={'Percussion':24,'Woodwinds':20,'Vocals':12,'Hip Hop Milwaukee':24}
+    counts={'Woodwinds':20,'Vocals':12,'Hip Hop Milwaukee':24}
     actual=dict.fromkeys(counts,0);patches=[]
     for name,profile in data['designs'].items():
         assert profile['category'] in counts and profile['designNotes'] and profile['tags']

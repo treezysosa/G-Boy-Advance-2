@@ -1,4 +1,4 @@
-> Current version: **0.18.2**. 678 presets in 21 categories, 30 skins. Added Percussion (24), Woodwinds (20), Milwaukee (24) and 12 Vox stabs in Vocals (86). SELECT → SKIN selects the new colors. [Current changes](RELEASE_0_18_2.md).
+> Current version: **0.18.3**. 654 presets in 20 factory categories, plus SoundFonts navigation, and 30 skins. Percussion is removed from Factory; existing projects retain their saved sounds. [Current changes](RELEASE_0_18_3.md).
 
 
 
@@ -58,7 +58,7 @@ This development version passes Windows compilation, automated tests and pluginv
 
 ## Factory bank revision 0.6
 
-The bank contains 678 factory sounds in 21 categories. Vocals - Pop and Indie, Vocals - Southern and West Coast, Vocals - Cartoon and Gaming and Vocals - Soul and R&B have been removed, including their seventy-six presets. Surviving sounds, names, IDs and original host program numbers are retained. Named instruments have explicit synthesis profiles and Afterglow variants change active excitation/envelope controls. Factory levels are calibrated using a 100 ms stereo RMS metric; quieter articulations remain quieter when the master knob reaches its gain ceiling. This is not perceptual loudness normalization.
+The bank contains 654 factory sounds in 20 categories. Vocals - Pop and Indie, Vocals - Southern and West Coast, Vocals - Cartoon and Gaming and Vocals - Soul and R&B have been removed, including their seventy-six presets. Surviving sounds, names, IDs and original host program numbers are retained. Named instruments have explicit synthesis profiles and Afterglow variants change active excitation/envelope controls. Factory levels are calibrated using a 100 ms stereo RMS metric; quieter articulations remain quieter when the master knob reaches its gain ceiling. This is not perceptual loudness normalization.
 
 Saved projects restore their actual parameter values, even when their factory ID also exists in the revised bank. Loading the factory preset again selects its new voicing. User presets remain independent. Optional category audition WAVs are original test renders for listening review; they are never loaded by the instrument.
 
@@ -163,9 +163,9 @@ Open START and select **Brass** to see all 40 sounds, including the 16 existing 
 
 The regional factory categories are **Detroit** (60 sounds), **West Coast** (40), **Florida** (40) and **Chicago** (24). These replace the previous Hip-Hop category labels. Individual preset names and their sounds are unchanged. The preset browser and D-pad use the new names; existing projects retain their saved synthesis settings.
 
-## Percussion, Woodwinds, Milwaukee and Vox (0.18.0)
+## Woodwinds, Milwaukee and Vox
 
-START opens the browser. Choose Percussion for 24 original pitched electronic drums, hats, claps and wood/metal hits, or Woodwinds for 20 synthetic clarinet, oboe, bassoon, recorder and pipe sounds. Their subfolder selector narrows the instrument family; All subfolders shows the complete category. These are synthesized approximations, not acoustic recordings. The keyboard transposes percussion; lower notes suit kick/tom bodies and upper notes suit metal/chime sounds.
+START opens the browser. Choose Woodwinds for 20 synthetic clarinet, oboe, bassoon, recorder and pipe sounds. Its subfolder selector narrows the instrument family. The former 24-sound Percussion folder was removed in 0.18.3. Older projects retain their stored Percussion settings under Saved Project; use Save As to keep those sounds as user presets.
 
 Milwaukee contains 24 original bounce-oriented pianos, bells, plucks, basses, leads, brass stabs, vowel cuts and pads. Search a family tag to narrow the results. The 12 new Vox stabs are in Vocals → Vox Stabs, together with the 74 retained Vocals sounds under All subfolders. Vox is not a separate top-level folder. No deleted vocal category is recreated.
 

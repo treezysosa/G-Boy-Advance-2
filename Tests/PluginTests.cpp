@@ -2,6 +2,7 @@
 #include "PluginEditor.h"
 #include "FactoryData.h"
 #include "RemovedVocalStates.h"
+#include "RemovedPercussionPatches.h"
 #include <iostream>
 #include <set>
 #include <stdexcept>
@@ -38,7 +39,7 @@ void removedVocalProjects(const juce::File& root) {
     auto p=std::make_unique<GbaProcessor>(root.getChildFile("RemovedVocals"));
     p->setRateAndBufferSizeDetails(48000,256);p->prepareToPlay(48000,256);
     const auto defaultSettings=p->snapshot();
-    check(p->presets.all().size()==678&&p->presets.categories().size()==21,"Retired categories remain in the factory browser");
+    check(p->presets.all().size()==654&&p->presets.categories().size()==20,"Retired categories remain in the factory browser");
     for(const char* name:{"Vocals - Pop and Indie","Vocals - Southern and West Coast","Vocals - Cartoon and Gaming","Vocals - Soul and R&B"}) {
         PresetManager::Filter f;f.category=name;check(p->presets.filtered(f).empty()&&!p->presets.categories().contains(name),"Removed category remains selectable");
     }
@@ -70,8 +71,46 @@ void removedVocalProjects(const juce::File& root) {
     juce::MemoryBlock lastProject;check(lastProject.fromBase64Encoding(projects->getLast()["state"].toString()),"Last old project fixture is invalid");p->setStateInformation(lastProject.getData(),int(lastProject.getSize()));
     const auto kept=p->snapshot();check(p->presets.saveAs("Kept Project Sound").wasOk(),"Could not keep a restored sound as a user preset");
     const auto userId=p->presetId();p->presets.restoreDefault(false);check(p->presets.load(userId)&&p->snapshot().values==kept.values,"User preset no longer reloads independently of removed factory categories");
-    for(int i=0;i<21;++i){p->presets.stepCategory(1);check(p->presetCategory()!="Vocals - Pop and Indie"&&p->presetCategory()!="Vocals - Southern and West Coast"&&p->presetCategory()!="Vocals - Cartoon and Gaming"&&p->presetCategory()!="Vocals - Soul and R&B","D-pad category navigation reaches a removed category");}
-    std::cout<<"PASS 76 actual 0.16.0 removed-vocal projects: edited settings, audible notes, resave, reserved host slots, surviving program numbers and 21 browser categories\n";
+    for(int i=0;i<20;++i){p->presets.stepCategory(1);check(p->presetCategory()!="Vocals - Pop and Indie"&&p->presetCategory()!="Vocals - Southern and West Coast"&&p->presetCategory()!="Vocals - Cartoon and Gaming"&&p->presetCategory()!="Vocals - Soul and R&B","D-pad category navigation reaches a removed category");}
+    std::cout<<"PASS 76 actual 0.16.0 removed-vocal projects: edited settings, audible notes, resave, reserved host slots, surviving program numbers and 20 browser categories\n";
+}
+void removedPercussionProjects(const juce::File& root) {
+    auto p=std::make_unique<GbaProcessor>(root.getChildFile("RemovedPercussion"));
+    p->setRateAndBufferSizeDetails(48000,256);p->prepareToPlay(48000,256);
+    const auto defaultSettings=p->snapshot();
+    check(p->presets.all().size()==654&&!p->presets.categories().contains("Percussion"),"Percussion remains in factory browsing");
+    for(const auto& patch:removed_percussion::patches) {
+        check(!p->presets.find(patch.id)&&!p->presets.load(patch.id),"Removed percussion remains loadable as a factory patch");
+        check(p->getProgramName(patch.program).startsWith("Reserved "),"Percussion host slot was removed or still advertises a patch");
+        // Reconstruct a legacy project using the captured 0.18.2 parameters and
+        // the unchanged project serializer. This is not an old-binary export.
+        GbaPreset legacy;legacy.id=patch.id;legacy.name=patch.name;legacy.category="Percussion";legacy.tags=patch.tags;legacy.settings.values=patch.values;
+        p->applyPreset(legacy);set(*p,"volume",legacy.settings[gba::Param::Volume]*.9f);set(*p,"fx.eqLow",2.5f);
+        const auto edited=p->snapshot();juce::MemoryBlock state;p->getStateInformation(state);
+        p->presets.restoreDefault(false);p->setStateInformation(state.getData(),int(state.getSize()));
+        check(p->presetId()==patch.id&&p->presetName()==patch.name&&p->getCurrentProgram()==patch.program,"Legacy percussion identity or program moved");
+        check(p->presetCategory()=="Saved Project"&&p->stateNotice().contains("saved in your project was restored"),"Legacy percussion was not restored as a saved project");
+        check(p->snapshot().values==edited.values,"Legacy percussion edits were replaced with current/default settings");
+        p->reset();juce::AudioBuffer<float> audio(2,256);juce::MidiBuffer midi;
+        const int note=juce::String(patch.tags).contains("bass")?48:60;
+        midi.addEvent(juce::MidiMessage::noteOn(1,note,.8f),0);p->processBlock(audio,midi);
+        float peak=audio.getMagnitude(0,256);
+        for(int n=0;n<64;++n){render(*p,audio,1);peak=std::max(peak,audio.getMagnitude(0,256));}
+        check(std::isfinite(peak)&&peak>.00001f,"Restored percussion project produced no audible synthesis");
+        p->panic();render(*p,audio,1);juce::MemoryBlock saved;p->getStateInformation(saved);
+        p->presets.restoreDefault(false);p->setStateInformation(saved.getData(),int(saved.getSize()));
+        check(p->snapshot().values==edited.values&&p->getCurrentProgram()==patch.program,"Resaving a percussion project changed its sound or program");
+        p->setCurrentProgram(patch.program);p->servicePendingProgram();
+        check(p->snapshot().values==edited.values,"Host program echo overwrote restored percussion edits");
+        p->presets.restoreDefault(false);p->setCurrentProgram(patch.program);p->servicePendingProgram();
+        check(p->getCurrentProgram()==patch.program&&p->snapshot().values==defaultSettings.values,"Reserved percussion slot does not select the documented default");
+        p->setStateInformation(saved.getData(),int(saved.getSize()));
+    }
+    const auto kept=p->snapshot();check(p->presets.saveAs("Kept Percussion Project").wasOk(),"Cannot save a removed percussion sound as a user preset");
+    const auto id=p->presetId();p->presets.restoreDefault(false);
+    check(p->presets.load(id)&&p->snapshot().values==kept.values,"Saved percussion user preset cannot reload");
+    for(int i=0;i<20;++i){p->presets.stepCategory(1);check(p->presetCategory()!="Percussion","D-pad reaches the removed Percussion category");}
+    std::cout<<"PASS 24 retired percussion parameter-state projects: edited settings, audible notes, resave, host echo, reserved slots and user Save As\n";
 }
 void unifiedVocals(const juce::File& root) {
     auto p=std::make_unique<GbaProcessor>(root.getChildFile("UnifiedVocals"));
@@ -98,9 +137,9 @@ void unifiedVocals(const juce::File& root) {
         }
     }
     std::set<juce::String> visited;
-    for(int i=0;i<21;++i){p->presets.stepCategory(1);visited.insert(p->presetCategory());}
-    check(visited.size()==21&&visited.count("Vocals")==1,"D-pad navigation did not visit each merged category once");
-    std::cout<<"PASS 86 Vocals presets (12 new Vox stabs), three legacy-category edited projects and 21-category navigation\n";
+    for(int i=0;i<20;++i){p->presets.stepCategory(1);visited.insert(p->presetCategory());}
+    check(visited.size()==20&&visited.count("Vocals")==1,"D-pad navigation did not visit each merged category once");
+    std::cout<<"PASS 86 Vocals presets (12 new Vox stabs), three legacy-category edited projects and 20-category navigation\n";
 }
 void brassLibrary(const juce::File& root) {
     auto p=std::make_unique<GbaProcessor>(root.getChildFile("BrassLibrary"));
@@ -201,6 +240,7 @@ int main(int argc,char** argv) {
     auto root=juce::File::getSpecialLocation(juce::File::tempDirectory).getChildFile("gba2-tests-"+juce::Uuid().toString());
     try {
         removedVocalProjects(root);
+        removedPercussionProjects(root);
         unifiedVocals(root);
         brassLibrary(root);
         launchAppearance(root);
@@ -357,8 +397,9 @@ int main(int argc,char** argv) {
             subfolder->setText("Sax-Style Leads",juce::sendNotificationSync);check(rows()==16,"Sax lead sounds are not inside the Brass browser");query("tenor");check(rows()==2,"Sax family and search did not intersect");query("");
             snapshot(*editor,"ui-snapshots/Sax-in-Brass-960.png");
             subfolder->setText("Trumpets",juce::sendNotificationSync);check(rows()==4,"New trumpet sounds are missing");
-            categoryFilter->setText("Percussion",juce::sendNotificationSync);check(rows()==24&&subfolder->isVisible(),"Percussion browser or family selector is incomplete");
-            subfolder->setText("Kicks",juce::sendNotificationSync);check(rows()==4,"Percussion kicks subfolder is incomplete");snapshot(*editor,"ui-snapshots/Percussion-Browser-960.png");
+            bool percussionShown=false;for(int i=0;i<categoryFilter->getNumItems();++i)percussionShown|=categoryFilter->getItemText(i)=="Percussion";
+            check(!percussionShown&&!p.presets.categories().contains("Percussion"),"Percussion remains in the preset folder menu");
+            snapshot(*editor,"ui-snapshots/Factory-Without-Percussion-960.png");
             categoryFilter->setText("Woodwinds",juce::sendNotificationSync);check(rows()==20,"Woodwinds category retained the old family filter");
             subfolder->setText("Clarinets",juce::sendNotificationSync);check(rows()==4,"Woodwind clarinet subfolder is incomplete");snapshot(*editor,"ui-snapshots/Woodwinds-Browser-960.png");
             categoryFilter->setText("Milwaukee",juce::sendNotificationSync);check(rows()==24&&!subfolder->isVisible(),"Milwaukee bank is incomplete");query("piano");check(rows()==4,"Milwaukee piano tags do not search");query("");snapshot(*editor,"ui-snapshots/Milwaukee-Browser-960.png");

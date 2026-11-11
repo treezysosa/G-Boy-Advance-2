@@ -5,6 +5,8 @@ ROOT = Path(__file__).resolve().parents[1]
 ROOT_FILES = {'CMakeLists.txt', 'README.md', '.gitignore', 'LICENSE', 'LICENSE.md', 'NOTICE', 'CHANGELOG.md'}
 SOURCE_DIRS = {'Source', 'Tests', 'Presets', 'scripts', 'docs', 'packaging', '.github'}
 REQUIRED = {
+    'Tests/RemovedPercussionPatches.h', 'docs/RELEASE_0_18_3.md',
+    'scripts/remove-percussion-0183.py', '.github/workflows/remove-percussion-0183.yml',
     'Presets/expansion-designs.json', 'docs/RELEASE_0_18_0.md',
     'docs/RELEASE_0_17_1.md',
     'Presets/brass-designs.json', 'docs/RELEASE_0_17_0.md',

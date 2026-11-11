@@ -78,7 +78,7 @@ int main(int argc,char** argv){try{
         }
         if(++rendered%64==0)std::cout<<"Audited "<<rendered<<" factory patches\n"<<std::flush;
     }
-    check(gba::factoryPatches.size()==678&&categories.size()==21,"Factory coverage is incomplete");
+    check(gba::factoryPatches.size()==654&&categories.size()==20,"Factory coverage is incomplete");
     if(!levelsOnly){std::ofstream pairs("factory-similarity.csv");pairs<<"id,nearestId,dryAudioDistance\n";int close=0;
         for(std::size_t i=0;i<signatures.size();++i){double best=100;std::size_t nearest=i;for(std::size_t j=0;j<signatures.size();++j)if(i!=j&&signatures[i].note==signatures[j].note){const double d=distance(signatures[i],signatures[j]);if(d<best){best=d;nearest=j;}}pairs<<signatures[i].id<<","<<signatures[nearest].id<<","<<best<<"\n";if(best<.025)++close;}
         std::vector<int> parent(signatures.size());std::iota(parent.begin(),parent.end(),0);
@@ -101,7 +101,7 @@ int main(int argc,char** argv){try{
     }
     std::map<std::string,int> added;
     for(const auto& p:gba::factoryPatches)if(p.program>=674){++added[p.category];check(p.values[gba::index(gba::Param::Voices)]<=8,"New factory patch exceeds its default voice budget");}
-    check(added==std::map<std::string,int>{{"Percussion",24},{"Woodwinds",20},{"Vocals",12},{"Milwaukee",24}},"Expansion bank coverage is wrong or Vox is outside Vocals");
+    check(added==std::map<std::string,int>{{"Woodwinds",20},{"Vocals",12},{"Milwaukee",24}},"Expansion bank coverage is wrong or Vox is outside Vocals");
     if(audition){
         const auto excerpt=[&](const gba::FactoryPatch& p,const std::filesystem::path& directory,int number,std::ofstream& index){
             gba::Settings s;s.values=p.values;auto e=engine(*prototype,s);Audio a(rate*6);int root=middle(p);e->noteOn(1,root,.85f);e->render(a.l.data(),a.r.data(),rate*2);e->noteOff(1,root);e->noteOn(1,root+7,.6f);e->render(a.l.data()+rate*2,a.r.data()+rate*2,rate*2);e->allNotesOff();e->render(a.l.data()+rate*4,a.r.data()+rate*4,rate*2);
@@ -118,7 +118,7 @@ int main(int argc,char** argv){try{
         std::filesystem::create_directories("brass-auditions");std::ofstream brassIndex("brass-auditions/README.txt");number=0;
         brassIndex<<"24 original synthesized brass audition renders. Never installed or loaded by the instrument. Human listening acceptance pending.\n";
         for(const auto& p:gba::factoryPatches)if(p.program>=650&&p.program<674)excerpt(p,"brass-auditions",++number,brassIndex);
-        for(const auto* category:{"Percussion","Woodwinds","Vocals","Milwaukee"}) {
+        for(const auto* category:{"Woodwinds","Vocals","Milwaukee"}) {
             const auto directory=std::filesystem::path("expansion-auditions")/category;
             std::filesystem::create_directories(directory);std::ofstream newIndex(directory/"README.txt");number=0;
             newIndex<<"Original synthesized 0.18.0 audit renders. Not loaded or installed with the instrument. Human listening acceptance pending.\n";

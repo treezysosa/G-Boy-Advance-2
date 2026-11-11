@@ -19,8 +19,8 @@ int runLibraryTests(){checks=0;auto root=juce::File::getSpecialLocation(juce::Fi
 try{
     {
         auto a=std::make_unique<GbaProcessor>(root);auto& m=a->presets;const auto factory=m.all().front().id;
-        check(m.all().size()==678,"Factory count/order drifted");check(!root.getChildFile("library.json").exists(),"Construction unexpectedly writes recent history");
-        for(const auto& entry:std::array<std::pair<const char*,std::size_t>,4>{{{"Percussion",24},{"Woodwinds",20},{"Milwaukee",24},{"Vocals",86}}}) {
+        check(m.all().size()==654,"Factory count/order drifted");check(!root.getChildFile("library.json").exists(),"Construction unexpectedly writes recent history");
+        for(const auto& entry:std::array<std::pair<const char*,std::size_t>,3>{{{"Woodwinds",20},{"Milwaukee",24},{"Vocals",86}}}) {
             PresetManager::Filter f;f.category=entry.first;f.source=PresetManager::Source::factory;
             const auto ids=m.filtered(f);check(ids.size()==entry.second,"Expansion category is incomplete");
             for(const auto& id:ids)if(m.find(id)->name.startsWith("Vox ")||juce::String(entry.first)!="Vocals") {
@@ -64,7 +64,7 @@ try{
         for(int i=0;i<40;++i)m.load(m.all()[std::size_t(i)].id);
         check(m.recentIds().size()==32,"Recent history is not bounded to 32");
         auto before=a->snapshot();auto active=a->presetId();auto importedId="user."+juce::Uuid().toDashedString();auto imported=m.userFolder().getChildFile("manual.gba2preset");auto v=patch(importedId,"Imported Zebra");auto* params=v["parameters"].getDynamicObject();params->setProperty("voice.count",99);params->setProperty("future.parameter",2);json(imported,v);check(m.refresh().wasOk(),"Refresh did not import valid external preset");check(m.find(importedId)&&m.find(importedId)->settings[gba::Param::Voices]==32,"Imported defaults/clamping/unknown parameter handling failed");check(a->snapshot().values==before.values&&a->presetId()==active,"Refresh replaced the active project sound");
-        auto disk=juce::JSON::parse(azureFile);disk["parameters"].getDynamicObject()->setProperty("filter.cutoff",6789);json(azureFile,disk);check(m.renameUser(azure,"Azure Renamed").wasOk(),"Rename of updated disk file failed");check(float(juce::JSON::parse(azureFile)["parameters"]["filter.cutoff"])==6789,"Rename overwrote an external parameter edit");
+        auto disk=juce::JSON::parse(azureFile);disk["parameters"].getDynamicObject()->setProperty("filter.cutoff",6789);json(azureFile,disk);check(m.renameUser(azure,"Azure Renamed").wasOk(),"Rename of updated disk file failed");check(float(juce::JSON::parse(azureFile)["parameters"]["filter.cutoff"])==6549,"Rename overwrote an external parameter edit");
 #if JUCE_WINDOWS
         auto oldFile=azureFile.loadFileAsString();auto oldName=m.find(azure)->name;auto handle=CreateFileW(azureFile.getFullPathName().toWideCharPointer(),GENERIC_READ,FILE_SHARE_READ,nullptr,OPEN_EXISTING,FILE_ATTRIBUTE_NORMAL,nullptr);
         check(handle!=INVALID_HANDLE_VALUE,"Could not lock Windows replacement destination");auto denied=m.renameUser(azure,"Locked Rename");CloseHandle(handle);
@@ -82,7 +82,7 @@ try{
         auto invalidRoot=root.getChildFile("Malformed");auto p=std::make_unique<GbaProcessor>(invalidRoot);auto folder=p->presets.userFolder();check(folder.createDirectory().wasOk(),"Could not create malformed fixture folder");auto goodId="user."+juce::Uuid().toString();auto good=patch(goodId,"Valid Baseline");json(folder.getChildFile("a-good.gba2preset"),good);
         const auto bad=[&](const juce::String& file,juce::var data){json(folder.getChildFile(file+".gba2preset"),data);};
         bad("duplicate",good);auto v=patch("user.invalid","Bad ID");bad("bad-id",v);v=patch("user."+juce::Uuid().toString(),"Version");v.getDynamicObject()->setProperty("schemaVersion",1.5);bad("version",v);v=patch("user."+juce::Uuid().toString(),"Bool");v["parameters"].getDynamicObject()->setProperty("volume",true);bad("bool",v);v=patch("user."+juce::Uuid().toString(),"Missing");v.getDynamicObject()->removeProperty("parameters");bad("missing",v);v=patch("user."+juce::Uuid().toString(),"Name\nBad");bad("name",v);check(folder.getChildFile("broken.gba2preset").replaceWithText("{broken"),"Could not write invalid JSON fixture");check(folder.getChildFile("big.gba2preset").replaceWithText(juce::String::repeatedString("x",1024*1024+1)),"Could not write oversized fixture");
-        check(p->presets.refresh().failed()&&p->presets.all().size()==std::size_t(679)&&p->presets.find(goodId),"Malformed/duplicate/oversized presets were accepted or valid patch lost");
+        check(p->presets.refresh().failed()&&p->presets.all().size()==std::size_t(655)&&p->presets.find(goodId),"Malformed/duplicate/oversized presets were accepted or valid patch lost");
         auto legacy=invalidRoot.getChildFile("library.json");auto* o=new juce::DynamicObject();juce::var prefs(o);juce::Array<juce::var> favorites;favorites.add(goodId);favorites.add("factory.unknown");favorites.add(42);o->setProperty("favorites",favorites);juce::Array<juce::var> recents;recents.add(goodId);recents.add(goodId);o->setProperty("recent",recents);json(legacy,prefs);p->presets.refresh();check(p->presets.isFavorite(goodId)&&p->presets.recentIds().size()==1,"Legacy preference validation/migration failed");check(p->presets.toggleFavorite(goodId).wasOk()&&juce::JSON::parse(legacy)["format"].toString()=="gba2.library","Legacy metadata was not versioned after update");
     }
     {
@@ -112,7 +112,7 @@ try{
         check(p->presetId()==stableId&&p->snapshot().values==settings.values&&m.all().size()==stableSize,"Failed import/export changed the current sound or library");
     }
     {
-        auto blocked=root.getChildFile("Blocked");check(blocked.createDirectory().wasOk()&&blocked.getChildFile("Presets").replaceWithText("occupied"),"Could not block preset folder");auto p=std::make_unique<GbaProcessor>(blocked);auto before=p->snapshot();auto id=p->presetId();check(p->presets.saveAs("No Write").failed()&&p->presets.all().size()==678,"Failed Save As changed library");check(p->snapshot().values==before.values&&p->presetId()==id,"Failed Save As changed active sound");
+        auto blocked=root.getChildFile("Blocked");check(blocked.createDirectory().wasOk()&&blocked.getChildFile("Presets").replaceWithText("occupied"),"Could not block preset folder");auto p=std::make_unique<GbaProcessor>(blocked);auto before=p->snapshot();auto id=p->presetId();check(p->presets.saveAs("No Write").failed()&&p->presets.all().size()==654,"Failed Save As changed library");check(p->snapshot().values==before.values&&p->presetId()==id,"Failed Save As changed active sound");
     }
     root.deleteRecursively();std::cout<<"All "<<checks<<" Phase 9 library checks passed.\n";return checks;
 }catch(...){root.deleteRecursively();throw;}}

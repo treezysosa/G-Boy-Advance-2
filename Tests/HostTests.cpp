@@ -1,9 +1,11 @@
 #include <juce_audio_utils/juce_audio_utils.h>
 #include "dsp/Parameters.h"
 #include "RemovedVocalStates.h"
+#include "RemovedPercussionPatches.h"
 #include <atomic>
 #include <chrono>
 #include <cmath>
+#include <limits>
 #include <iostream>
 #include <stdexcept>
 #include <thread>
@@ -150,6 +152,42 @@ int main(int argc,char** argv) {
             p->setCurrentProgram(slot);pump(60);juce::MemoryBlock echoed;p->getStateInformation(echoed);
             check(echoed==saved,"Host program echo replaced an old removed-category project's explicit sound");
         }
+        // Previous-bank parameter fixtures reconstructed into the processor's
+        // schema and fed through the actual VST3 IComponent wrapper.
+        for(const auto& patch:removed_percussion::patches) {
+            juce::MemoryBlock seed;p->getStateInformation(seed);
+            auto outer=juce::AudioProcessor::getXmlFromBinary(seed.getData(),int(seed.getSize()));
+            const auto* component=outer?outer->getChildByName("IComponent"):nullptr;juce::MemoryBlock bytes;
+            check(component&&bytes.fromBase64Encoding(component->getAllSubText()),"Cannot decode hosted state for percussion compatibility");
+            auto xml=juce::AudioProcessor::getXmlFromBinary(bytes.getData(),int(bytes.getSize()));
+            check(xml!=nullptr,"Missing hosted processor state");
+            xml->setAttribute("presetId",patch.id);xml->setAttribute("presetName",patch.name);xml->setAttribute("presetCategory","Percussion");
+            auto expected=patch.values;expected[gba::index(gba::Param::Volume)]*=.9f;expected[gba::index(gba::Param::EqLow)]=2.5f;
+            int parameters=0;
+            for(auto* child:xml->getChildIterator())for(std::size_t i=0;i<gba::parameterCount;++i)
+                if(child->getStringAttribute("id")==gba::specs[i].id.data()){child->setAttribute("value",double(expected[i]));++parameters;}
+            check(parameters==64,"Legacy percussion hosted fixture lost parameters");
+            juce::MemoryBlock legacy;juce::AudioProcessor::copyXmlToBinary(*xml,legacy);
+            juce::XmlElement envelope("VST3PluginState");envelope.createNewChildElement("IComponent")->addTextElement(legacy.toBase64Encoding());
+            juce::MemoryBlock input;juce::AudioProcessor::copyXmlToBinary(envelope,input);p->setStateInformation(input.getData(),int(input.getSize()));
+            check(p->getCurrentProgram()==patch.program&&p->getProgramName(patch.program).startsWith("Reserved "),"VST3 wrapper moved a retired percussion slot");
+            juce::MemoryBlock saved;p->getStateInformation(saved);auto savedOuter=juce::AudioProcessor::getXmlFromBinary(saved.getData(),int(saved.getSize()));
+            const auto* savedComponent=savedOuter?savedOuter->getChildByName("IComponent"):nullptr;juce::MemoryBlock savedBytes;
+            check(savedComponent&&savedBytes.fromBase64Encoding(savedComponent->getAllSubText()),"Cannot decode restored percussion host state");
+            auto restoredXml=juce::AudioProcessor::getXmlFromBinary(savedBytes.getData(),int(savedBytes.getSize()));
+            check(restoredXml&&restoredXml->getStringAttribute("presetId")==patch.id&&restoredXml->getStringAttribute("presetCategory")=="Saved Project","Hosted percussion lost saved-project metadata");
+            bool matches=true;int matched=0;
+            for(auto* child:restoredXml->getChildIterator())for(std::size_t i=0;i<gba::parameterCount;++i)
+                if(child->getStringAttribute("id")==gba::specs[i].id.data()){matches&=std::abs(float(child->getDoubleAttribute("value"))-expected[i])<=std::max(.0000001f,(gba::specs[i].max-gba::specs[i].min)*4*std::numeric_limits<float>::epsilon());++matched;}
+            check(matches&&matched==64,"Actual VST3 percussion restore changed edited sound settings");
+            p->setCurrentProgram(patch.program);pump(60);juce::MemoryBlock echo;p->getStateInformation(echo);
+            check(echo==saved,"Actual VST3 program echo overwrote restored percussion settings");
+            prepare(*p,48000,256);juce::AudioBuffer<float> percussionAudio(2,256);juce::MidiBuffer note;
+            note.addEvent(juce::MidiMessage::noteOn(1,juce::String(patch.tags).contains("bass")?48:60,.8f),0);
+            float peak=process(*p,percussionAudio,note);peak=std::max(peak,render(*p,percussionAudio,64));
+            check(peak>.00001f,"Actual VST3 restored percussion project is silent");p->releaseResources();
+        }
+        std::cout<<"PASS 24 retired percussion VST3 parameter-state projects: settings, audible notes, reserved programs and host echo\n";
         p=load(); // Keep the general host tests independent of fixture voicings.
         // Confirm all 64 public controls are present, not just a generic host bypass.
         for(std::size_t i=0;i<gba::parameterCount;++i)check(parameter(*p,gba::Param(i))!=nullptr,"Hosted parameter missing");

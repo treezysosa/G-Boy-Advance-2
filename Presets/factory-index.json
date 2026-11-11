@@ -3493,145 +3493,169 @@
       "id": "factory.2484b7c28d99e5d3",
       "name": "Round Sub Kick",
       "category": "Percussion",
-      "subcategory": "Kicks"
+      "subcategory": "Kicks",
+      "retired": true
     },
     {
       "id": "factory.dbfc1ff070ec6bd1",
       "name": "FM Thump Kick",
       "category": "Percussion",
-      "subcategory": "Kicks"
+      "subcategory": "Kicks",
+      "retired": true
     },
     {
       "id": "factory.a1cc2cef22047300",
       "name": "Rubber Knock Kick",
       "category": "Percussion",
-      "subcategory": "Kicks"
+      "subcategory": "Kicks",
+      "retired": true
     },
     {
       "id": "factory.67c028b18d54d45c",
       "name": "Broken Speaker Kick",
       "category": "Percussion",
-      "subcategory": "Kicks"
+      "subcategory": "Kicks",
+      "retired": true
     },
     {
       "id": "factory.229cc2daa0027f09",
       "name": "Bright Wire Snare",
       "category": "Percussion",
-      "subcategory": "Snares and Claps"
+      "subcategory": "Snares and Claps",
+      "retired": true
     },
     {
       "id": "factory.be9f90aaec7b17a8",
       "name": "Hollow Room Snare",
       "category": "Percussion",
-      "subcategory": "Snares and Claps"
+      "subcategory": "Snares and Claps",
+      "retired": true
     },
     {
       "id": "factory.4bc5da6a30aea78f",
       "name": "Circuit Snap Snare",
       "category": "Percussion",
-      "subcategory": "Snares and Claps"
+      "subcategory": "Snares and Claps",
+      "retired": true
     },
     {
       "id": "factory.f841ef7c80e3375b",
       "name": "Paper Handclap",
       "category": "Percussion",
-      "subcategory": "Snares and Claps"
+      "subcategory": "Snares and Claps",
+      "retired": true
     },
     {
       "id": "factory.262dfd93c99daee6",
       "name": "Wide Neon Clap",
       "category": "Percussion",
-      "subcategory": "Snares and Claps"
+      "subcategory": "Snares and Claps",
+      "retired": true
     },
     {
       "id": "factory.5254e0199cbcb4fe",
       "name": "Tight Noise Hat",
       "category": "Percussion",
-      "subcategory": "Hats and Cymbals"
+      "subcategory": "Hats and Cymbals",
+      "retired": true
     },
     {
       "id": "factory.5c9610d535b81617",
       "name": "Open Air Hat",
       "category": "Percussion",
-      "subcategory": "Hats and Cymbals"
+      "subcategory": "Hats and Cymbals",
+      "retired": true
     },
     {
       "id": "factory.ac143933d0f3d9d3",
       "name": "Metal FM Hat",
       "category": "Percussion",
-      "subcategory": "Hats and Cymbals"
+      "subcategory": "Hats and Cymbals",
+      "retired": true
     },
     {
       "id": "factory.3096db51da6486af",
       "name": "Pocket Shaker",
       "category": "Percussion",
-      "subcategory": "Hats and Cymbals"
+      "subcategory": "Hats and Cymbals",
+      "retired": true
     },
     {
       "id": "factory.906d825c6e2a7cc2",
       "name": "Bronze Splash Cymbal",
       "category": "Percussion",
-      "subcategory": "Hats and Cymbals"
+      "subcategory": "Hats and Cymbals",
+      "retired": true
     },
     {
       "id": "factory.cd7d57ce46d62025",
       "name": "Soft Low Tom",
       "category": "Percussion",
-      "subcategory": "Toms and Hand Drums"
+      "subcategory": "Toms and Hand Drums",
+      "retired": true
     },
     {
       "id": "factory.8e6d5b25a7577784",
       "name": "Glass High Tom",
       "category": "Percussion",
-      "subcategory": "Toms and Hand Drums"
+      "subcategory": "Toms and Hand Drums",
+      "retired": true
     },
     {
       "id": "factory.7fa7b5dd68db0b3a",
       "name": "Muted Bongo Knock",
       "category": "Percussion",
-      "subcategory": "Toms and Hand Drums"
+      "subcategory": "Toms and Hand Drums",
+      "retired": true
     },
     {
       "id": "factory.45b2a4b3e2701e99",
       "name": "Talking Drum Pulse",
       "category": "Percussion",
-      "subcategory": "Toms and Hand Drums"
+      "subcategory": "Toms and Hand Drums",
+      "retired": true
     },
     {
       "id": "factory.70c9e6d8381a7dca",
       "name": "Dry Wood Clave",
       "category": "Percussion",
-      "subcategory": "Wood and Metal"
+      "subcategory": "Wood and Metal",
+      "retired": true
     },
     {
       "id": "factory.80e1c5e3e29961dd",
       "name": "Hollow Temple Block",
       "category": "Percussion",
-      "subcategory": "Wood and Metal"
+      "subcategory": "Wood and Metal",
+      "retired": true
     },
     {
       "id": "factory.ff1f569e5d617578",
       "name": "Copper Cowbell",
       "category": "Percussion",
-      "subcategory": "Wood and Metal"
+      "subcategory": "Wood and Metal",
+      "retired": true
     },
     {
       "id": "factory.ecd683d3b67bcfee",
       "name": "Rimshot Chrome",
       "category": "Percussion",
-      "subcategory": "Wood and Metal"
+      "subcategory": "Wood and Metal",
+      "retired": true
     },
     {
       "id": "factory.70c6c65fa29d2c3b",
       "name": "Tiny Triangle Chime",
       "category": "Percussion",
-      "subcategory": "Wood and Metal"
+      "subcategory": "Wood and Metal",
+      "retired": true
     },
     {
       "id": "factory.e18275090e4dee80",
       "name": "Sand Grain Tambourine",
       "category": "Percussion",
-      "subcategory": "Wood and Metal"
+      "subcategory": "Wood and Metal",
+      "retired": true
     },
     {
       "id": "factory.023a8da5de7e5e5a",
