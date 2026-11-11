@@ -57,6 +57,7 @@ def main():
     designs=json.loads(read('Presets/expansion-designs.json'));count=len(designs['designs'])
     designs['designs']={name:patch for name,patch in designs['designs'].items() if patch['category']!='Percussion'}
     assert count==80 and len(designs['designs'])==56
+    designs['description']='56 retained independently authored native synthesis patches. Vox additions remain in Vocals. Percussion retired in 0.18.3. No audio assets.'
     dump('Presets/expansion-designs.json',designs)
     edit('scripts/generate_presets.py',"'Percussion':24,",'')
     spec=importlib.util.spec_from_file_location('removed_percussion_generator',ROOT/'scripts/generate_presets.py')
