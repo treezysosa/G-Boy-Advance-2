@@ -62,6 +62,7 @@ void Effects::prepare(float rate) {
     }
     for(auto& c:halfband)c/=float(sum);
     reverbDamping=1-std::exp(-tau*3200/sr);
+    modulationIncrements={.27/double(sr),(.27*.71)/double(sr),(.27*.61)/double(sr),(.27*1.37)/double(sr),(.27*29)/double(sr)};
     delayFadeLength=std::max(1,int(std::round(sr*.02f)));
     ready=true;reset();
 }
@@ -69,6 +70,7 @@ void Effects::reset() noexcept {
     for(auto* lines:{&delay,&mod,&tape})for(auto& line:*lines){std::fill(line.data.begin(),line.data.end(),0.0f);line.pos=0;line.damp=0;}
     for(auto& line:room){std::fill(line.data.begin(),line.data.end(),0.0f);line.pos=0;line.damp=0;}
     allpass={};up={};down={};dry={};held={};lowShelf={};highShelf={};
+    bypassInput={};bypassPosition={};bypassFrames={};firSleeping={};
     chorusPhase={};flangePhase={};phaserPhase={};wowPhase={};flutterPhase={};
     crusherCounter=controlCounter=delayFade=dryPos=0;coefficientsReady=false;delayA=delayB=0;
     eqReady=false;
@@ -84,12 +86,26 @@ void Effects::update(const Settings& s) noexcept {
 }
 float Effects::nonlinear(float x,int c) noexcept {
     const float delayed=dry[c][std::size_t(dryPos)];dry[c][std::size_t(dryPos)]=x;
+    if(driveMix!=0&&firSleeping[std::size_t(c)]) {
+        // A finite 33-tap filter has a bounded history. Reconstruct it from
+        // exact recent dry inputs only when saturation is re-enabled.
+        up[std::size_t(c)]={};down[std::size_t(c)]={};
+        for(int n=0;n<64;++n) {
+            const float input=bypassInput[std::size_t(c)][std::size_t((bypassPosition[std::size_t(c)]+n)&63)];
+            down[c].push(up[c].upEven(2*input,halfband));down[c].push(up[c].next(0,halfband));
+        }
+        firSleeping[std::size_t(c)]=false;
+    }
+    bypassInput[std::size_t(c)][std::size_t(bypassPosition[std::size_t(c)])]=x;
+    bypassPosition[std::size_t(c)]=(bypassPosition[std::size_t(c)]+1)&63;
     if(driveMix==0) {
-        // Preserve both FIR histories for later automation; the unused even
-        // decimator output needs only a history write while fully bypassed.
-        down[c].push(up[c].upEven(2*x,halfband));down[c].push(up[c].next(0,halfband));
+        if(bypassFrames[std::size_t(c)]<64) {
+            down[c].push(up[c].upEven(2*x,halfband));down[c].push(up[c].next(0,halfband));
+            ++bypassFrames[std::size_t(c)];
+        } else firSleeping[std::size_t(c)]=true;
         return delayed;
     }
+    bypassFrames[std::size_t(c)]=0;
     const auto shape=[&](float v) {
         if(driveMix==0)return v;
         const float driven=v*driveGain;
@@ -109,8 +125,8 @@ void Effects::process(float& left,float& right,const Settings& s) noexcept {
     // Keep each delay read head fixed during a crossfade; queue later changes.
     if(delayFade==0&&std::abs(sr*s[Param::DelayTime]-delayB)>.5f){delayA=delayB;delayB=sr*s[Param::DelayTime];delayFade=delayFadeLength;}
     const float delayBlend=delayFade>0?1-float(delayFade)/float(delayFadeLength):1;
-    chorusPhase.advance(.27,sr);flangePhase.advance(.27*.71,sr);phaserPhase.advance(.27*.61,sr);
-    wowPhase.advance(.27*1.37,sr);flutterPhase.advance(.27*29,sr);
+    chorusPhase.advanceIncrement(modulationIncrements[0]);flangePhase.advanceIncrement(modulationIncrements[1]);phaserPhase.advanceIncrement(modulationIncrements[2]);
+    wowPhase.advanceIncrement(modulationIncrements[3]);flutterPhase.advanceIncrement(modulationIncrements[4]);
     const float wobble=s[Param::Wow]>0?s[Param::Wow]*(.0015f*wowPhase.value()+.00025f*flutterPhase.value()):0;
     float* channels[]{&left,&right};
     for(int c=0;c<2;++c) {

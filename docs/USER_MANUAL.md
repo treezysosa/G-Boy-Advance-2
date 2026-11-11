@@ -1,4 +1,4 @@
-> Current version: **0.18.3**. 654 presets in 20 factory categories, plus SoundFonts navigation, and 30 skins. Percussion is removed from Factory; existing projects retain their saved sounds. [Current changes](RELEASE_0_18_3.md).
+> Current version: **0.19.0**. 654 presets in 20 factory categories, plus SoundFonts navigation, and 40 skins. Percussion is removed from Factory; existing projects retain their saved sounds. [Current changes](RELEASE_0_19_0.md).
 
 
 
@@ -181,3 +181,11 @@ Press START, open the category/folder menu and select **SoundFonts**. Choose an 
 Use OPEN FOLDER to open your configured library folder, add your `.sf2` files there and click REFRESH (or F5). CHOOSE FOLDER changes the library folder; LOAD SF2 can load an individual bank. The default folder remains `%APPDATA%\Treezy Audio\G Boy Advance 2\SoundFont Library`. Personal banks are not bundled with the plugin.
 
 While SoundFonts is selected, bank/instrument controls replace the synthesis search, favorites, recent and Save As controls. Changing back to a native folder restores your synthesis filters. Click a native preset to return to synthesis playback. Browsing folders alone does not change the sound. BACK / START closes the browser while SoundFont playback continues. Esc inside the SoundFont controls returns to the native preset folders. ROM Hacks, SF2 drag/drop, project bank/instrument restoration and the existing 678 factory sounds remain available. SoundFonts is a navigation folder; it does not add or renumber factory programs.
+
+## Two-tone skins and lower CPU use (0.19.0)
+
+SELECT → SKIN includes ten new two-tone finishes: Onyx & Gold, Neon Circuit, Polar Cobalt, Sakura Peach, Desert Sand, Aurora, Ruby Noir, Espresso Cream, Glacier Night and Lilac Mint. Existing colors, fixed project colors and NEW COLOUR ON LOAD remain available.
+
+The additive engine caches its mathematically generated harmonic curve after brightness settles. Every harmonic remains present, with the original high-note Nyquist handling and exact synthesis path during automation/cache preparation. This adds about 224 KiB per instance, avoids new audio-thread allocations and retains the same voice limits and 16-frame latency. Bypassed drive filters sleep after their finite history becomes inaudible and reconstruct that history before reactivation. Modulation clocks still run at the original rate.
+
+On older computers, use a 44.1 or 48 kHz project and an ASIO buffer of 256 or 512 samples if your playing latency permits. Very large SoundFonts and many sustained release voices can still consume substantial CPU. See the release notes for measured workload results; a percentage improvement is not guaranteed for every patch or computer.

@@ -41,9 +41,13 @@ private:
     bool eqReady=false;
     float cachedEqLow=0,cachedEqHigh=0;
     LfoPhase chorusPhase,flangePhase,phaserPhase,wowPhase,flutterPhase;
+    std::array<double,5> modulationIncrements{};
     std::array<float,2> held{};
     std::array<float,33> halfband{};
     std::array<Fir,2> up,down;
+    std::array<std::array<float,64>,2> bypassInput{};
+    std::array<int,2> bypassPosition{},bypassFrames{};
+    std::array<bool,2> firSleeping{};
     std::array<std::array<float,latencySamples>,2> dry{};
     std::array<Line,2> delay,mod,tape;
     std::array<Line,4> room;

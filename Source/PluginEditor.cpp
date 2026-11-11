@@ -284,11 +284,21 @@ juce::Colour ConsoleLook::colour(juce::Colour source) const {
     if(currentSkin==0)return source;
     // Recolour the existing vector palette, keeping its original shading and contrast.
     const auto& skin=gba_ui::skins[std::size_t(currentSkin)];
+    if(skin.outer!=0&&source.getSaturation()>.025f) {
+        const float brightness=source.getBrightness();
+        const auto base=juce::Colour(brightness<.55f?skin.inner:skin.accent);
+        return base.withMultipliedBrightness(brightness<.55f?brightness/.45f:brightness).withAlpha(source.getFloatAlpha());
+    }
     return juce::Colour::fromHSV(skin.hue,source.getSaturation()*skin.saturation,
                                   source.getBrightness()*skin.brightness,source.getFloatAlpha());
 }
 juce::Colour ConsoleLook::shell(juce::Colour source,bool body) const {
     if(currentSkin==0)return source;
+    const auto& skin=gba_ui::skins[std::size_t(currentSkin)];
+    if(skin.outer!=0) {
+        const auto base=juce::Colour(body?skin.inner:skin.outer);
+        return base.withMultipliedBrightness(juce::jlimit(.2f,1.6f,source.getBrightness()/(body?.42f:.92f))).withAlpha(source.getFloatAlpha());
+    }
     if(currentSkin==2||currentSkin==3) {
         const auto brightness=source.getBrightness();
         const float value=currentSkin==2?(body?.065f+.14f*brightness:.10f+.24f*brightness)

@@ -58,6 +58,24 @@ int main(int argc,char** argv) {
         }
         ++scenes;
     }
+    // Cache construction/invalidation during a held note, including every
+    // harmonic count, high-note Nyquist truncation and bitcrusher thresholds.
+    for(double rate:{44100.,48000.,96000.})for(int harmonics=1;harmonics<=24;++harmonics) {
+        gba::Settings s;s.set(gba::Param::Engine,2);s.set(gba::Param::Harmonics,float(harmonics));
+        s.set(gba::Param::Sustain,1);s.set(gba::Param::Brightness,.333f);
+        e->setSettings(s);e->prepare(rate);e->noteOn(1,48,.8f);e->noteOn(2,105,.6f);
+        for(int block=0;block<256;++block) {
+            if(block==32)s.set(gba::Param::Brightness,1);
+            if(block==64)s.set(gba::Param::Harmonics,float(25-harmonics));
+            if(block==96){s.set(gba::Param::Brightness,0);s.set(gba::Param::CrusherBits,8);}
+            if(block==128)s.set(gba::Param::Brightness,.73f);
+            if(block==160){s.set(gba::Param::Drive,.7f);s.set(gba::Param::Distortion,.5f);}
+            if(block==192){s.set(gba::Param::CrusherBits,16);e->pitchWheel(2,16000);}
+            if(block==224){s.set(gba::Param::Drive,0);s.set(gba::Param::Distortion,0);}
+            e->setSettings(s);if(!write())return 1;
+        }
+        ++scenes;
+    }
     // Every factory patch with a chord and its release, retaining factory arrays.
     for(const auto& patch:gba::factoryPatches) {
         gba::Settings s;s.values=patch.values;e->setSettings(s);e->prepare(48000);

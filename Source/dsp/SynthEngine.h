@@ -99,6 +99,13 @@ private:
     std::array<float,24> harmonicInverseRoot{},harmonicWeight{},harmonicScale{};
     // Eight mip levels, generated once; no samples or external assets.
     std::array<std::array<std::array<float,1024>,8>,4> tables{};
+    static constexpr int additiveCells=4096;
+    std::array<double,additiveCells> additiveSamples{};
+    std::array<std::array<double,6>,additiveCells> additivePolynomial{};
+    float additiveBrightness=-1;
+    int additiveHarmonics=0,additiveBuilt=0;
+    double additiveRaw(float phase,int used) const noexcept;
+    void buildAdditiveCache(int budget) noexcept;
     void buildTables() noexcept;
     void start(Voice&,int channel,int note,float velocity,bool preview,bool legato) noexcept;
     void release(Voice&) noexcept;

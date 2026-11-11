@@ -11,8 +11,8 @@ import sys
 folder = Path(sys.argv[1])
 root=Path(__file__).resolve().parents[1]
 patch_count=len(json.loads((root/'Presets/factory.json').read_text())['presets'])
-scene_count=patch_count+120
-expected_floats=(120*256+patch_count*96)*128
+scene_count=patch_count+192
+expected_floats=(192*256+patch_count*96)*128
 old = (folder / 'cpu-before.f32').read_bytes()
 new = (folder / 'cpu-after.f32').read_bytes()
 if len(old) != len(new) or len(old) != expected_floats * 4:
@@ -76,7 +76,7 @@ for voices in (1,4,8):
         a=sum(float(r['mean_us'])*int(r['callbacks']) for r in chosen(before_play))
         b=sum(float(r['mean_us'])*int(r['callbacks']) for r in chosen(after_play))
         result['playing'][f'{voices}-{workload}']={'beforeMeasuredUs':a,'afterMeasuredUs':b,'reductionPercent':100*(1-b/a)}
-result['baselineDspCommit']='f079323677e6024be8356a6afdfa333eb9db4558'
+result['baselineDspCommit']='0712bc83bfcad19cac9a1e35a76732078937e58e'
 def sustained_comparison():
     before_hash,after_hash=hashlib.sha256(),hashlib.sha256()
     total=changed=0;maximum=energy=noise=0.0

@@ -85,8 +85,8 @@ try {
     }
     Run-Setup $Installer @('/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART','/SP-',"/DIR=`"$app`"","/LOG=`"$(Join-Path $logs 'install.txt')`"")
     $installed=$true;Check-Installed
-    if((Get-ItemProperty $key).DisplayVersion -ne '0.18.3') {throw 'Installed registry version does not match the release candidate.'}
-    $kind=if($PreviousInstaller){'0.18.2-to-0.18.3 upgrade'}else{'clean install'}
+    if((Get-ItemProperty $key).DisplayVersion -ne '0.19.0') {throw 'Installed registry version does not match the release candidate.'}
+    $kind=if($PreviousInstaller){'0.18.3-to-0.19.0 upgrade'}else{'clean install'}
     $report.Add('PASS silent '+$kind+': default common VST3 path, standalone, manual, factory bank, binary hashes')
     $diagnostics=Join-Path $logs 'diagnostics-smoke.txt'
     & (Join-Path $app 'collect-windows-diagnostics.ps1') -OutputPath $diagnostics

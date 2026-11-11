@@ -1,29 +1,12 @@
-# G BOY ADVANCE 2 — 0.18.3
+# G BOY ADVANCE 2 — 0.19.0
 
-**0.18.3 removes the factory Percussion folder and its 24 presets. Remaining sounds and saved project settings are retained. Windows validation and the installer upgrade tests passed.**
+**40 UI skins and lower CPU use, with 654 factory presets across 20 categories.** This build adds ten two-tone finishes: Onyx & Gold, Neon Circuit, Polar Cobalt, Sakura Peach, Desert Sand, Aurora, Ruby Noir, Espresso Cream, Glacier Night and Lilac Mint. SELECT → SKIN changes colors; NEW COLOUR ON LOAD keeps its nonrepeating launch behavior.
 
-**654 factory presets across 20 categories and 30 UI skins.** Woodwinds (20), Milwaukee (24) and Vox stabs inside Vocals remain available. START → SoundFonts still opens your SF2 library. All other categories keep their sounds.
+The additive engine caches its original harmonic curve while controls are settled. Drive-filter bypass avoids inaudible processing and restores finite history on reactivation. Shared effects clocks avoid repeated divisions. Voice counts, harmonics, envelopes, tail lengths, oversampling, stable parameter IDs and 16-frame latency are retained.
 
-The 10 new skins are Amethyst, Seafoam, Sunset, Ice Blue, Wine Red, Olive, Pearl, Bronze, Bubblegum and Smoke. SELECT → SKIN changes the appearance; NEW COLOUR ON LOAD keeps choosing a different color for each launch, or turn it off to pin a project color. Appearance never changes audio settings.
+All 654 factory parameter dictionaries and 754 host slots (100 reserved) stay unchanged. SoundFont drag/drop, default/custom folders, saved projects, user presets and the SoundFonts navigation folder remain available. Percussion and previously removed vocal categories remain removed.
 
-The audio engine now uses four interleaved SSE2 double-precision additive recurrences, legacy-accurate wavetable interpolation, stable per-voice blocks for all eight synthesis engines and a float-accurate output soft-limiter calculation. The SoundFont wrapper avoids redundant channel initialization. Polyphony, harmonic counts, envelopes, oversampling and 16-frame latency are retained. The 50% performance target is measured against immutable 0.17.1 source, with identical patches and events. The Windows results below do not establish the requested 50% gain.
-
-All 654 retained parameter dictionaries and 64 parameter IDs are unchanged. The 754 host slots remain stable, including 100 reserved slots. Projects containing removed Percussion sounds restore their saved settings; user presets and SoundFonts remain available. ROM Hacks still supports SF2 drag/drop, the default/custom library folder and bank/instrument recall.
-
-[Current changes and validation](docs/RELEASE_0_18_3.md) · [Source branch](https://github.com/treezysosa/G-Boy-Advance-2/tree/feature/percussion-removed-0183). [Download Windows installer 0.18.3](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/43060644657/artifacts/13874091563) · [Portable/manual install](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/43060644657/artifacts/13873817144). Close FL Studio and standalone, extract into a fresh folder, and run `G-Boy-Advance-2-Setup-x64.exe`. The prepared build is unsigned; the owner's licensing decision remains deferred. Real FL Studio/physical audio-device checks and human listening remain manual acceptance work.
-
-## Previous 0.18.0 build and CPU results
-
-633,063 common DSP/preset checks, 3,996 Windows application checks, both bundle hosts, pluginval strictness 10, Steinberg 47/0 and six installer lifecycle checks passed. All 30 skins and all 678 presets were validated; there were no duplicate/close-pair flags across 229,503 comparisons. Numerical distinction is not a human listening certificate.
-
-| Voices | Native pad/string CPU time reduction | SF2 fixture CPU time reduction |
-|---:|---:|---:|
-| 4 | 5.34% | 1.68% |
-| 8 | 6.06% | 1.67% |
-| 16 | 6.68% | 1.40% |
-| 32 | 7.21% | 0.91% |
-
-The requested 50% CPU-time reduction was **not achieved** in these matched workloads. Both CPU time and reciprocal throughput are recorded in `cpu-comparison.json`; neither is a promised FL Studio CPU percentage. The optimizations retain voice limits, harmonic counts, envelopes, full-rate modulation, oversampling and tail lengths.
+[Changes and validation](docs/RELEASE_0_19_0.md) · [Source branch](https://github.com/treezysosa/G-Boy-Advance-2/tree/feature/skins-performance-0190). Windows installer validation and matched CPU measurements are pending for this source candidate. The requested 50% gain is a benchmark target, not a blanket promise. Prepared binaries are unsigned; the owner's licensing decision remains deferred. Actual FL Studio and physical audio/MIDI checks remain manual acceptance.
 
 ![G Boy Advance 2 Phase 2 native JUCE editor](docs/images/phase2-main.png)
 
@@ -34,7 +17,7 @@ Actual Phase 2 Windows JUCE component render at 1280×646 from [passing CI run 3
 Install Visual Studio 2022 with **Desktop development with C++**, a Windows SDK, CMake 3.24+, and Git. In PowerShell:
 
 ```powershell
-git clone --branch feature/percussion-removed-0183 https://github.com/treezysosa/G-Boy-Advance-2.git
+git clone --branch feature/skins-performance-0190 https://github.com/treezysosa/G-Boy-Advance-2.git
 cd G-Boy-Advance-2
 powershell -ExecutionPolicy Bypass -File scripts/build-windows.ps1
 ```
@@ -81,7 +64,7 @@ Close your DAW, copy the entire `.vst3` directory into `C:\Program Files\Common 
 - Reverb, delay, chorus, phaser, flanger, saturation, distortion, bitcrusher, tape wow / flutter, low / high shelves, and stereo width.
 - 654 factory patches across 20 categories, explicit named-instrument, vocal and retro profiles, calibrated levels and stable program identities. Vocal patches are synthesized vowel-like timbres and contain no recorded voices or speech.
 - Reference-based vector UI, playable keyboard, spring-return pitch wheel, functional D-pad, preview A / stop B, START browser, SELECT advanced editor, assignable A–D controls.
-- Thirty colour skins with nonrepeating launch colours or a fixed project choice; SoundFont drag and drop; host-visible parameters, project state, user preset Save As / import / export / rename / delete, favorites / recent patches, category search, tags, keyboard navigation.
+- Forty colour skins with nonrepeating launch colours or a fixed project choice; SoundFont drag and drop; host-visible parameters, project state, user preset Save As / import / export / rename / delete, favorites / recent patches, category search, tags, keyboard navigation.
 - Windows CI, portable packaging and Inno Setup installer script, DSP and JUCE integration tests.
 
 ## Factory and user presets

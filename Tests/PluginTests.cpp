@@ -428,7 +428,7 @@ int main(int argc,char** argv) {
             auto* select=button(*editor,"SELECT");select->onClick();check(button(*editor,"BACK / SELECT")!=nullptr,"SELECT did not open advanced editor");
             auto* synthTabs=dynamic_cast<juce::TabbedComponent*>(named(*editor,"Advanced tabs"));
             check(synthTabs&&synthTabs->getNumTabs()==4&&!synthTabs->getTabNames().contains("SAMPLES"),"Sample playback controls remain in the editor");
-            auto* skin=dynamic_cast<juce::ComboBox*>(named(*editor,"UI skin"));check(skin&&skin->getNumItems()==30,"Thirty-skin selector missing");
+            auto* skin=dynamic_cast<juce::ComboBox*>(named(*editor,"UI skin"));check(skin&&skin->getNumItems()==40,"Forty-skin selector missing");
             auto* autoSkin=dynamic_cast<juce::ToggleButton*>(named(*editor,"New colour on load"));check(autoSkin!=nullptr,"Launch-colour preference is missing");
             autoSkin->setToggleState(false,juce::dontSendNotification);autoSkin->onClick();p.setEditorSkin(0);juce::MessageManager::getInstance()->runDispatchLoopUntil(60);
             const auto sound=p.snapshot();const auto presetId=p.presetId();

@@ -13,6 +13,7 @@ void SynthEngine::prepare(double rate) {
     for(std::size_t i=0;i<harmonicInverseRoot.size();++i)harmonicInverseRoot[i]=1/std::sqrt(float(i+1));
     for(std::size_t i=0;i<voices.size();++i)voices[i].stringIndex=int(i);
     effects.prepare(sampleRate);if(!tablesReady){buildTables();tablesReady=true;}reset();prepared=true;
+    if(int(current[Param::Engine])==2){updateHarmonics();buildAdditiveCache(additiveCells*2);}
 }
 void SynthEngine::reset() noexcept {
     for(auto& v:voices) {v.note=-1;v.amp={};v.filterEnv={};v.filter.clear();v.tail=0;v.last=0;v.held=false;v.preview=false;v.filterReady=v.formantsReady=v.vocalReady=false;}
@@ -22,6 +23,7 @@ void SynthEngine::reset() noexcept {
     wave1Fade.reset(int(target[Param::Wave1]));wave2Fade.reset(int(target[Param::Wave2]));filterFade.reset(int(target[Param::FilterType]));
     engineFade.reset(int(target[Param::Engine]));
     lfo1Route.reset(int(target[Param::Lfo1Dest]));lfo2Route.reset(int(target[Param::Lfo2Dest]));
+    additiveBrightness=-1;additiveHarmonics=0;additiveBuilt=0;
     cachedGlide=-1;cachedOscillatorInterval=1000;cachedBrightness=-1;
     scalarCache={};frameCaches={};cachedFormantVowel=cachedVocalVowel=-100;
 }
@@ -39,6 +41,70 @@ void SynthEngine::setSettings(const Settings& s) noexcept {
         allNotesOff();lastMode=mode;lastVoiceCount=count;
     }
 }
+double SynthEngine::additiveRaw(float p,int used) const noexcept {
+    const double phase=double(p)*2*std::numbers::pi_v<double>;
+    const double factor=2*std::cos(phase);
+    double partial=std::sin(phase),sum=0;
+#if !defined(__SSE2__) && !defined(_M_X64)
+            double previous=0;
+#endif
+#if defined(__SSE2__) || defined(_M_X64)
+            // Four interleaved harmonic recurrences share two SSE2 double lanes.
+            // The scalar path below retains portability; both retain every partial.
+            const double sn=partial,cs=factor*.5,sn2=2*sn*cs,sn3=2*cs*sn2-sn,sn4=2*cs*sn3-sn2;
+            const double cs2=2*cs*cs-1;
+            const __m128d step=_mm_set1_pd(2*(2*cs2*cs2-1));
+            __m128d a=_mm_set_pd(sn2,sn),b=_mm_set_pd(sn4,sn3);
+            __m128d pa=_mm_set_pd(-sn2,-sn3),pb=_mm_set_pd(0,-sn),total=_mm_setzero_pd();
+            int h=0;
+            for(;h+3<used;h+=4) {
+                total=_mm_add_pd(total,_mm_add_pd(_mm_mul_pd(a,_mm_set_pd(harmonicWeight[std::size_t(h+1)],harmonicWeight[std::size_t(h)])),_mm_mul_pd(b,_mm_set_pd(harmonicWeight[std::size_t(h+3)],harmonicWeight[std::size_t(h+2)]))));
+                const auto na=_mm_sub_pd(_mm_mul_pd(step,a),pa),nb=_mm_sub_pd(_mm_mul_pd(step,b),pb);pa=a;pb=b;a=na;b=nb;
+            }
+            double lanes[2];_mm_storeu_pd(lanes,total);sum=lanes[0]+lanes[1];
+            double rest[4];_mm_storeu_pd(rest,a);_mm_storeu_pd(rest+2,b);
+            for(int i=0;h<used;++h,++i)sum+=rest[i]*harmonicWeight[std::size_t(h)];
+#else
+            for(int h=0;h<used;++h) {
+                sum+=partial*harmonicWeight[std::size_t(h)];
+                const double next=factor*partial-previous;
+                previous=partial;partial=next;
+            }
+#endif
+    return sum;
+}
+void SynthEngine::buildAdditiveCache(int budget) noexcept {
+    if(engineFade.weights[2]==0)return;
+    const int count=int(current[Param::Harmonics]);
+    if(additiveBrightness!=cachedBrightness||additiveHarmonics!=count) {
+        additiveBrightness=cachedBrightness;additiveHarmonics=count;additiveBuilt=0;
+    }
+    // Only settled controls qualify. Dynamic brightness keeps the original
+    // per-voice recurrence. A fixed work budget prevents preset-change spikes.
+    if(parameterMoving[index(Param::Brightness)])return;
+    static constexpr double coefficients[6][6]={
+        {0.0/1.0,0.0/1.0,1.0/1.0,0.0/1.0,0.0/1.0,0.0/1.0},
+        {1.0/20.0,-1.0/2.0,-1.0/3.0,1.0/1.0,-1.0/4.0,1.0/30.0},
+        {-1.0/24.0,2.0/3.0,-5.0/4.0,2.0/3.0,-1.0/24.0,0.0/1.0},
+        {-1.0/24.0,-1.0/24.0,5.0/12.0,-7.0/12.0,7.0/24.0,-1.0/24.0},
+        {1.0/24.0,-1.0/6.0,1.0/4.0,-1.0/6.0,1.0/24.0,0.0/1.0},
+        {-1.0/120.0,1.0/24.0,-1.0/12.0,1.0/12.0,-1.0/24.0,1.0/120.0}
+    };
+    for(int n=0;n<budget&&additiveBuilt<additiveCells*2;++n,++additiveBuilt) {
+        if(additiveBuilt<additiveCells) {
+            additiveSamples[std::size_t(additiveBuilt)]=additiveRaw(float(additiveBuilt)/additiveCells,count);
+        } else {
+            const int cell=additiveBuilt-additiveCells;
+            auto& polynomial=additivePolynomial[std::size_t(cell)];
+            for(int power=0;power<6;++power) {
+                double sum=0;
+                for(int point=0;point<6;++point)sum+=coefficients[power][point]*additiveSamples[std::size_t((cell+point-2+additiveCells)%additiveCells)];
+                polynomial[std::size_t(power)]=sum;
+            }
+        }
+    }
+}
+
 void SynthEngine::buildTables() noexcept {
     for(int shape=0;shape<4;++shape) for(int mip=0;mip<8;++mip) {
         int harmonics=128>>mip;
@@ -207,42 +273,15 @@ inline float SynthEngine::excitation(Voice& v,int engine,float frequency,float d
         case 0:x=std::lerp(mixedOscillator(wave1Fade,v.p1,dt,s[Param::PulseWidth],v.noise),mixedOscillator(wave2Fade,v.p2,dt2,s[Param::PulseWidth],v.noise),s[Param::OscMix]);break;
         case 1:{float ratio=s[Param::FmRatio],index=s[Param::FmIndex]*(0.15f+0.85f*fenv);float limit=std::max(0.0f,(sampleRate*0.45f/frequency-1)/std::max(1.0f,ratio));index=std::min(index,limit);x=std::sin(tau*v.p1+sine(v.fmPhase)*index);x=std::lerp(x,sine(v.subPhase),s[Param::OscMix]*0.4f);break;}
         case 2:{
-            // sin((n+1)t) = 2 cos(t) sin(nt) - sin((n-1)t).
-            // Double precision keeps the recurrence stable near the phase boundaries.
-            const double phase=double(v.p1)*2*std::numbers::pi_v<double>;
-            const double factor=2*std::cos(phase);
-            double partial=std::sin(phase),sum=0;
-#if !defined(__SSE2__) && !defined(_M_X64)
-            double previous=0;
-#endif
             int used=int(s[Param::Harmonics]);
-            // Most pad/string notes keep the entire bank below Nyquist. Check
-            // its highest partial once; retain the exact original cutoff test
-            // when a high note actually needs fewer harmonics.
             if(float(used)*dt>=0.45f){used=0;while(used<int(s[Param::Harmonics])&&float(used+1)*dt<0.45f)++used;}
-#if defined(__SSE2__) || defined(_M_X64)
-            // Four interleaved harmonic recurrences share two SSE2 double lanes.
-            // The scalar path below retains portability; both retain every partial.
-            const double sn=partial,cs=factor*.5,sn2=2*sn*cs,sn3=2*cs*sn2-sn,sn4=2*cs*sn3-sn2;
-            const double cs2=2*cs*cs-1;
-            const __m128d step=_mm_set1_pd(2*(2*cs2*cs2-1));
-            __m128d a=_mm_set_pd(sn2,sn),b=_mm_set_pd(sn4,sn3);
-            __m128d pa=_mm_set_pd(-sn2,-sn3),pb=_mm_set_pd(0,-sn),total=_mm_setzero_pd();
-            int h=0;
-            for(;h+3<used;h+=4) {
-                total=_mm_add_pd(total,_mm_add_pd(_mm_mul_pd(a,_mm_set_pd(harmonicWeight[std::size_t(h+1)],harmonicWeight[std::size_t(h)])),_mm_mul_pd(b,_mm_set_pd(harmonicWeight[std::size_t(h+3)],harmonicWeight[std::size_t(h+2)]))));
-                const auto na=_mm_sub_pd(_mm_mul_pd(step,a),pa),nb=_mm_sub_pd(_mm_mul_pd(step,b),pb);pa=a;pb=b;a=na;b=nb;
-            }
-            double lanes[2];_mm_storeu_pd(lanes,total);sum=lanes[0]+lanes[1];
-            double rest[4];_mm_storeu_pd(rest,a);_mm_storeu_pd(rest+2,b);
-            for(int i=0;h<used;++h,++i)sum+=rest[i]*harmonicWeight[std::size_t(h)];
-#else
-            for(int h=0;h<used;++h) {
-                sum+=partial*harmonicWeight[std::size_t(h)];
-                const double next=factor*partial-previous;
-                previous=partial;partial=next;
-            }
-#endif
+            double sum;
+            if(additiveBuilt==additiveCells*2&&additiveBrightness==cachedBrightness&&used==additiveHarmonics) {
+                const double at=double(v.p1)*additiveCells;
+                const int cell=std::min(additiveCells-1,int(at));
+                const double t=at-cell;const auto& p=additivePolynomial[std::size_t(cell)];
+                sum=(((((p[5]*t+p[4])*t+p[3])*t+p[2])*t+p[1])*t+p[0]);
+            } else sum=additiveRaw(v.p1,used);
             x=used>0?float(sum)*harmonicScale[std::size_t(used-1)]:0;
             break;
         }
@@ -424,6 +463,7 @@ template<int Engine> void SynthEngine::renderStableEngine(float* left,float* rig
     // bend and filter math. Mixing still visits voices in their original order.
     for(int at=0;at<samples;at+=int(frameCaches.size())) {
         const int count=std::min(int(frameCaches.size()),samples-at);
+        if constexpr(Engine==2)buildAdditiveCache(count*2);
         std::array<float,32> l{},r{};
         for(auto& v:voices)for(int n=0;n<count&&v.amp.stage!=Envelope::Off;++n) {
             const float x=voiceSample<Engine>(v,frameCaches[std::size_t(n)]);
