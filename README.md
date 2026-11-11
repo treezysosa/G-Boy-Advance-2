@@ -1,6 +1,6 @@
 # G BOY ADVANCE 2 — 0.18.3
 
-**0.18.3 removes the factory Percussion folder and its 24 presets. Remaining sounds and saved project settings are retained; the updated Windows installer is pending verification.**
+**0.18.3 removes the factory Percussion folder and its 24 presets. Remaining sounds and saved project settings are retained. Windows validation and the installer upgrade tests passed.**
 
 **654 factory presets across 20 categories and 30 UI skins.** Woodwinds (20), Milwaukee (24) and Vox stabs inside Vocals remain available. START → SoundFonts still opens your SF2 library. All other categories keep their sounds.
 
@@ -10,7 +10,7 @@ The audio engine now uses four interleaved SSE2 double-precision additive recurr
 
 All 654 retained parameter dictionaries and 64 parameter IDs are unchanged. The 754 host slots remain stable, including 100 reserved slots. Projects containing removed Percussion sounds restore their saved settings; user presets and SoundFonts remain available. ROM Hacks still supports SF2 drag/drop, the default/custom library folder and bank/instrument recall.
 
-[Current changes and validation](docs/RELEASE_0_18_3.md) · [Source branch](https://github.com/treezysosa/G-Boy-Advance-2/tree/feature/percussion-removed-0183). [Previous Windows installer 0.18.2](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39624904122/artifacts/12355949854) · [Portable/manual install](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/39624904122/artifacts/12355914996). Close FL Studio and standalone, extract into a fresh folder, and run `G-Boy-Advance-2-Setup-x64.exe`. The prepared build is unsigned; the owner's licensing decision remains deferred. Real FL Studio/physical audio-device checks and human listening remain manual acceptance work.
+[Current changes and validation](docs/RELEASE_0_18_3.md) · [Source branch](https://github.com/treezysosa/G-Boy-Advance-2/tree/feature/percussion-removed-0183). [Download Windows installer 0.18.3](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/43060644657/artifacts/13874091563) · [Portable/manual install](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/43060644657/artifacts/13873817144). Close FL Studio and standalone, extract into a fresh folder, and run `G-Boy-Advance-2-Setup-x64.exe`. The prepared build is unsigned; the owner's licensing decision remains deferred. Real FL Studio/physical audio-device checks and human listening remain manual acceptance work.
 
 ## Previous 0.18.0 build and CPU results
 
