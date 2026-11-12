@@ -10,13 +10,32 @@ The saturation up/downsampling filters now process left and right together. SSE2
 
 The factory-level recipe fingerprint is refreshed for the changed DSP source. Factory volume values and the generated JSON/C++ parameter arrays remain unchanged. User presets, DAW parameters, SF2 libraries, appearance state and the offline listening-feedback bank hash retain their meaning. This is a performance update, not the still-pending human preset listening pass.
 
-## Validation status
+## Measured Windows results
 
-The direct effects reference matches all 196,608 stereo frames exactly, including bypass/re-enable intervals, EQ history and three sample rates. Initial matched Linux profiling observed lower render time; it is not a prediction of FL Studio's CPU meter. The local 846-scene native probe, 148 sustained pad/string/SF2 scenes and sixteen layered-bank scenes also match bit-for-bit: 173,193,464 floating-point samples total, including the complete factory bank, irregular blocks, live controls and 44.1/48/96 kHz plus fractional SF2 rates. Final core-suite completion and Windows CPU/audio comparisons are pending.
+Visual Studio 2022 x64 Release, shared Windows runner, matched to 0.19.2. These are additional render-time reductions for identical settings; they are not FL Studio meter predictions.
 
-The Windows pipeline builds VST3 and standalone with Visual Studio 2022 x64, runs all suites, validates the actual bundle with pluginval strictness 10 and the official Steinberg validator, then compares the current engine with immutable 0.19.2 source `f62e8e02d33bb75013ec1daa00584baf4368ff6c`. Baseline/current drivers and settings match, and repeated CPU measurements alternate order. Numerical tolerances remain maximum error 1e-6 and signal-to-error above 110 dB when outputs differ. Direct effect history is required to remain bit-identical.
+| Voices | Native pads/strings | Simple SF2 | Layered static SF2 | Layered modulated SF2 |
+|---:|---:|---:|---:|---:|
+| 4 | 0.89% | 4.66% | 4.21% | 3.12% |
+| 8 | 0.38% | 4.05% | 3.44% | 2.87% |
+| 16 | 0.18% | 4.56% | 3.22% | 2.04% |
+| 32 | -0.23% | 4.49% | 2.93% | 1.62% |
 
-The installer must pass the real 0.19.2-to-0.19.3 upgrade, same-version reinstall, installed diagnostics, standalone launch and uninstall tests, preserving user presets, SF2 files/cache and launch/library preferences. Source/portable ZIP contents and native AMD64 payloads must be checked before delivery.
+Negative reduction means a measured increase. Native pad/string results range from 0.89% less CPU to 0.23% more; they do not establish a useful improvement for that bank. Simple SF2 workloads measured 4.05–4.66% less CPU. Layered fixtures measured 1.62–4.21% less. Across the broader steady-engine profile, reductions were 4.73% at eight voices and 1.96% at 32. The earlier Linux native pad/string result of approximately 9–10% did not translate to these Windows workloads. The 50% target remains unmet. Further native voice-loop optimization and profiling on the owner’s machine are outstanding.
+
+The final build keeps the validated exact phase/wavetable and stereo FIR changes. No unvalidated experimental clock-state changes are included.
+
+## Validation
+
+[Windows/core runtime run 43247498302](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/43247498302) passed all nine independent core suites and twelve Windows suites, including 6,161 application checks and both actual-bundle hosts (887/888). Pluginval strictness 10 passed; the separate official Steinberg validator passed all 47 checks with zero failures.
+
+Windows and Linux outputs are bit-identical across the 846-scene native probe, 148 eight-second sustained scenes and sixteen layered-bank scenes: 173,193,464 float samples each. The 196,608-stereo-frame direct effects probe is also bit-identical, including bypass/re-enable and EQ history. The scalar FIR fallback matched locally. ASan/UBSan passed all 165 effects checks; leak detection was disabled because the environment tracer does not support it.
+
+The 654-preset all-pair audit still reports zero duplicates and zero close-pair flags at the existing numerical thresholds. This does not certify human listening. The recipe fingerprint alone changed; gains and all factory parameter arrays are unchanged.
+
+All six Windows installer lifecycle checks passed: actual 0.19.2 installation, upgrade to 0.19.3, diagnostics, reinstall, standalone launch smoke test and uninstall, with user presets, SF2 cache/library and preferences preserved. The final packaging workflow reuses the identical validated binaries and checks the complete source archive, x64 payloads and installer again.
+
+Runtime commit: `2293291be4241901915e0518bf89420e1591d596`. Baseline: `f62e8e02d33bb75013ec1daa00584baf4368ff6c`. Machine-readable evidence is `build/validation-logs/cpu-comparison.json` and `release-validation-0193.json` in the final Windows artifact.
 
 ## Building and installing
 

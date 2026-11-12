@@ -1,12 +1,12 @@
 # G BOY ADVANCE 2 — 0.19.3
 
-CPU optimization candidate: faster exact phase wrapping and wavetable indexing, and paired stereo saturation FIR processing. No factory sound, voice budget, release time, oscillator partial, modulation rate or effect is reduced. [Changes and validation](docs/RELEASE_0_19_3.md). Windows compilation, matched performance measurements and release validation are pending.
+CPU optimization build: faster exact phase wrapping and wavetable indexing, and paired stereo saturation FIR processing. No factory sound, voice budget, release time, oscillator partial, modulation rate or effect is reduced. [Changes and validation](docs/RELEASE_0_19_3.md). Windows builds, all suites, both plugin validators and installer lifecycle tests passed. Simple SoundFont workloads measured about 4–5% less CPU; layered banks improved less. Built-in pad/string gains on Windows were minimal, so that remains further work. The 50% target remains unmet.
 
 ## Appearance and compatibility
 
 **50 UI skins**, including ten original themed finishes: Meadow Quest, Ember Trail, Neon Grid, Prism Circuit, Solar Surge, Ink & Ivory, Evergreen Glow, Frosted Berry, Tidal Breeze and Sunset Coast. Nature/adventure, digital fantasy, anime energy, classic cartoon, Christmas and beach directions use original palettes and vector decorations.
 
-SELECT → SKIN selects an appearance. NEW COLOUR ON LOAD includes all 50 skins; disable it for a fixed project color. Existing skins, saved projects, user presets and SoundFont libraries are preserved. The 0.19.1 audio engine and 654 factory presets are unchanged.
+SELECT → SKIN selects an appearance. NEW COLOUR ON LOAD includes all 50 skins; disable it for a fixed project color. Existing skins, saved projects, user presets and SoundFont libraries are preserved. All 654 factory parameter sets are retained.
 
 [Earlier appearance update](docs/RELEASE_0_19_2.md) · [Source branch](https://github.com/treezysosa/G-Boy-Advance-2/tree/feature/pad-string-performance-0193). The 0.19.2 Windows x64 compilation, 50-skin state/render checks, pluginval strictness 10 and Steinberg validator passed. The installer passed the 0.19.1 upgrade, reinstall, launch and uninstall checks with user data preserved. Pattern artwork uses the existing static UI cache. Prepared binaries are unsigned; the owner deferred licensing.
 

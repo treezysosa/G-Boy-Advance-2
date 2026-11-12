@@ -1,3 +1,5 @@
+> Current update: **0.19.3 CPU optimization**, retaining 654 factory presets /20 categories and 50 skins. Phase and stereo FIR optimizations preserve Windows/Linux reference audio exactly. Windows suites, plugin validators and installer lifecycle tests passed; measured simple SF2 gains were about 4–5%, while native pad/string gains were minimal. The 50% target remains unmet. [Current release evidence](RELEASE_0_19_3.md). The full-bank listening pack is prepared; genuine human listening and any resulting sound changes remain pending. Earlier entries below retain their historical counts and baselines.
+
 > Current update: **0.18.0**, verified Windows VST3/standalone and 0.17.1 upgrade. 678 presets in 21 categories, 30 skins, zero all-pair duplicate/close-pair flags. The 50% performance target was not reached. [Current evidence](RELEASE_0_18_0.md). Earlier entries below are historical.
 
 ## Remaining acceptance and performance target
