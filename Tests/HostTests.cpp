@@ -232,14 +232,15 @@ int main(int argc,char** argv) {
         process(*p,audio,midi);check(render(*p,audio,2)>.0001f,"SysEx damaged hosted synthesis");
         // VST3 state calls belong on the message thread. Run actual processing
         // on a worker while the message thread serializes the component/controller.
-        std::atomic<bool> done{false},badAudio{false};bool badState=false;
-        std::jthread audioThread([&]{
+        std::atomic<bool> badAudio{false};bool badState=false;
+        AudioWorker audioWorker;
+        audioWorker.thread=std::thread([&]{
             juce::AudioBuffer<float> concurrentAudio(2,256);int blocks=0;
-            try {while(!done.load()||blocks<80){juce::MidiBuffer events;process(*p,concurrentAudio,events);++blocks;}}
+            try {while(!audioWorker.stop.load()||blocks<80){juce::MidiBuffer events;process(*p,concurrentAudio,events);++blocks;}}
             catch(const std::exception&){badAudio=true;}
         });
         for(int i=0;i<40;++i){juce::MemoryBlock s;p->getStateInformation(s);if(s.getSize()==0)badState=true;}
-        done=true;audioThread.join();
+        audioWorker.stopAndJoin();
         check(!badState&&!badAudio,"Concurrent VST3 processing/serialization failed");
         p->setNonRealtime(true);check(render(*p,audio,4)>.0001f,"Offline VST3 processing failed");p->setNonRealtime(false);
         // Recreate an instance from its project state, then verify release/tail bounds.
