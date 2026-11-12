@@ -5,14 +5,16 @@ import subprocess
 import sys
 
 build=Path(sys.argv[1]).resolve()
-assert subprocess.check_output(['uname','-m'],text=True).strip()=='arm64'
+architecture=sys.argv[2]
+assert architecture in ('arm64','x86_64')
+assert subprocess.check_output(['uname','-m'],text=True).strip()==architecture
 names=['gba2-tests','gba2-core-tests','gba2-advanced-tests','gba2-effects-tests','gba2-vocal-tests',
        'gba2-retro-tests','gba2-preset-tests','gba2-preset-diversity-tests','gba2-soundfont-tests',
        'gba2-integration','gba2-host-tests']
 log=build/'Testing/Temporary/LastTest.log'
 with log.open('w') as output:
     for name in names:
-        command=['arch','-arm64',str(build/'native-tests'/name)]
+        command=['arch','-'+architecture,str(build/'native-tests'/name)]
         if name=='gba2-host-tests':command.append('/Library/Audio/Plug-Ins/VST3/G Boy Advance 2.vst3')
         result=subprocess.run(command,cwd=build,stdout=subprocess.PIPE,stderr=subprocess.STDOUT,text=True,timeout=600)
         output.write(name+'\n'+result.stdout+'\n');output.flush()

@@ -6,7 +6,7 @@ Validation is in progress. This page will distinguish completed builds and tests
 |---|---|---|---|
 | Windows 32-bit | VST3, standalone EXE | x86 / Win32 | Windows supported by JUCE 8 / VS 2022; tested under WOW64 on Windows Server 2022 |
 | Windows 64-bit | VST3, standalone EXE | x86_64 | Existing x64 support retained |
-| macOS universal | VST3, AU, standalone APP | Intel x86_64 and Apple Silicon arm64 in each bundle | macOS 11; automated tests run on macOS 15 |
+| macOS universal | VST3, AU, standalone APP | Intel x86_64 and Apple Silicon arm64 in each bundle | macOS 11; automated test targets macOS 15 ARM and macOS 26 Intel |
 
 Modern macOS uses 64-bit applications; the Windows 32-bit build is separate from the universal Mac build. AU is the Mac format for hosts such as Logic. No VST2 or AUv3 build is claimed.
 
@@ -58,6 +58,6 @@ JUCE is pinned to 8.0.6. The build script accepts an existing `Dependencies/JUCE
 
 Windows x86 must pass all twelve suites in actual 32-bit test processes, both matching-bitness VST3 hosts and the official Steinberg validator built as Win32. The official downloaded pluginval Windows executable is x64, so it is not misused to claim 32-bit validation. A clean/reinstall/launch/uninstall test checks x86 beside an installed verified x64 release and ensures the x64 plugin hash and user data remain unchanged. PE headers must identify both shipped instrument binaries as x86.
 
-The Mac build must pass eleven suites, pluginval strictness 10 and AU validation on Intel. The same universal package and universal test executables are then carried to an Apple Silicon runner and executed with `arch -arm64`; no ARM rebuild substitutes for the delivered binary. Both machines install the actual package and load its VST3/AU. `lipo`, bundle version, code-signature and SHA-256 checks cover all three universal bundles. The standalone receives a process-liveness check; physical audio/MIDI is not inferred from it.
+The Mac build must pass eleven suites, pluginval strictness 10 and AU validation on Apple Silicon. The same universal package and universal test executables are then carried to an Intel runner and executed with `arch -x86_64`; no Intel rebuild substitutes for the delivered binary. Both machines install the actual package and load its VST3/AU. `lipo`, bundle version, code-signature and SHA-256 checks cover all three universal bundles. The standalone receives a process-liveness check; physical audio/MIDI is not inferred from it.
 
 All 50 skin selections, snapshots, preset browser, MIDI, project state, SoundFont import/library behavior and synth tests remain in the test suites. Physical input/display/device behavior and the owner's actual FL Studio/Logic/Ableton/REAPER/Cubase/Studio One sessions remain manual acceptance. The synthetic FL-named host is not FL Studio.

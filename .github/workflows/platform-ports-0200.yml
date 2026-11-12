@@ -8,6 +8,7 @@ permissions:
   actions: read
 jobs:
   windows-x86:
+    if: ${{ !contains(github.event.head_commit.message, '[mac-only]') }}
     runs-on: windows-2022
     timeout-minutes: 45
     steps:
@@ -82,7 +83,7 @@ jobs:
             build-x86/validation-logs/**
             dist/G-Boy-Advance-2-Source.zip
   mac-universal:
-    runs-on: macos-15-intel
+    runs-on: macos-15
     timeout-minutes: 50
     steps:
       - uses: actions/checkout@v4
@@ -95,15 +96,15 @@ jobs:
         run: bash scripts/build-macos.sh
       - name: Package universal VST3, AU and standalone
         run: bash scripts/package-macos.sh
-      - name: Install and validate the actual universal payload on Intel
+      - name: Install and validate the actual universal payload on Apple Silicon
         run: |
-          test "$(uname -m)" = x86_64
+          test "$(uname -m)" = arm64
           sudo installer -pkg dist/G-Boy-Advance-2-macOS-Universal.pkg -target /
           build-macos/gba2-host-tests_artefacts/Release/gba2-host-tests '/Library/Audio/Plug-Ins/VST3/G Boy Advance 2.vst3'
           bash scripts/validate-macos.sh
           python3 scripts/verify-platform.py --platform macos --build build-macos --installed
           python3 scripts/package-source.py
-      - name: Retain exact universal test executables for the Apple Silicon run
+      - name: Retain exact universal test executables for the Intel run
         run: |
           mkdir -p build-macos/native-tests
           for name in gba2-tests gba2-core-tests gba2-advanced-tests gba2-effects-tests gba2-vocal-tests gba2-retro-tests gba2-preset-tests gba2-preset-diversity-tests gba2-soundfont-tests; do
@@ -130,14 +131,14 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: macOS-Intel-validation
+          name: macOS-Apple-Silicon-validation
           path: |
             build-macos/Testing/Temporary/LastTest.log
             build-macos/validation-logs/**
             dist/G-Boy-Advance-2-Source.zip
-  mac-arm64:
+  mac-intel:
     needs: mac-universal
-    runs-on: macos-15
+    runs-on: macos-26-intel
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
@@ -149,19 +150,19 @@ jobs:
         with:
           name: macOS-universal-tests
           path: build-macos
-      - name: Run the exact Intel-built universal payload natively on Apple Silicon
+      - name: Run the exact Apple-Silicon-built universal payload natively on Intel
         run: |
-          test "$(uname -m)" = arm64
+          test "$(uname -m)" = x86_64
           sudo installer -pkg dist/G-Boy-Advance-2-macOS-Universal.pkg -target /
           tar -xzf build-macos/universal-tests.tgz -C build-macos
           mkdir -p build-macos/Testing/Temporary
-          python3 scripts/run-macos-carried-tests.py build-macos
+          python3 scripts/run-macos-carried-tests.py build-macos x86_64
           bash scripts/validate-macos.sh
           python3 scripts/verify-platform.py --platform macos --build build-macos --installed
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: macOS-Apple-Silicon-validation
+          name: macOS-Intel-validation
           path: |
             build-macos/Testing/Temporary/LastTest.log
             build-macos/validation-logs/**
