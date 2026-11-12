@@ -38,7 +38,11 @@ juce::Result boundedJson(const juce::File& file,juce::var& result){
 
 }
 PresetManager::PresetManager(GbaProcessor& p,juce::File dataRoot):processor(p){
-    folder=(dataRoot==juce::File()?juce::File::getSpecialLocation(juce::File::userApplicationDataDirectory).getChildFile("Treezy Audio/G Boy Advance 2"):dataRoot).getChildFile("Presets");preferences=folder.getParentDirectory().getChildFile("library.json");
+    auto applicationData=juce::File::getSpecialLocation(juce::File::userApplicationDataDirectory);
+#if JUCE_MAC
+    applicationData=applicationData.getChildFile("Application Support");
+#endif
+    folder=(dataRoot==juce::File()?applicationData.getChildFile("Treezy Audio/G Boy Advance 2"):dataRoot).getChildFile("Presets");preferences=folder.getParentDirectory().getChildFile("library.json");
     for(const auto& patch:gba::factoryPatches){GbaPreset preset;preset.id=patch.id;preset.name=patch.name;preset.category=patch.category;preset.subcategory=patch.subcategory;preset.tags=patch.tags;preset.settings.values=patch.values;presets.push_back(std::move(preset));}
     refresh();
 }

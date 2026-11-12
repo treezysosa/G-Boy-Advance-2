@@ -21,6 +21,11 @@ namespace {
 int checks=0;
 void check(bool condition,const char* message) {++checks;if(!condition)throw std::runtime_error(message);}
 using Plugin=juce::AudioPluginInstance;
+struct AudioWorker {
+    std::atomic<bool> stop{false};std::thread thread;
+    void stopAndJoin(){stop=true;if(thread.joinable())thread.join();}
+    ~AudioWorker(){stopAndJoin();}
+};
 juce::AudioProcessorParameter* parameter(Plugin& p,gba::Param id) {
     const auto name=juce::String(gba::specs[gba::index(id)].name.data());
     for(auto* param:p.getParameters())if(param->getName(128)==name)return param;
@@ -65,10 +70,11 @@ void editorLifecycle(Plugin& p) {
     parent.addToDesktop(juce::ComponentPeer::windowHasTitleBar);
     parent.setVisible(true);
     std::atomic<bool> bad{false},audible{false};std::atomic<int> blocks{0};
-    std::jthread audio([&](std::stop_token stop) {
+    AudioWorker audio;
+    audio.thread=std::thread([&] {
         try {
             juce::AudioBuffer<float> buffer(2,64);
-            while(!stop.stop_requested()) {
+            while(!audio.stop.load()) {
                 juce::MidiBuffer events;
                 if(process(p,buffer,events)>.0001f)audible=true;
                 ++blocks;
@@ -104,7 +110,7 @@ void editorLifecycle(Plugin& p) {
         parent.removeChildComponent(editor.get());editor.reset();pump(30);
         check(p.getActiveEditor()==nullptr,"Destroyed VST3 editor remains active");
     }
-    audio.request_stop();audio.join();
+    audio.stopAndJoin();
     check(!bad&&blocks>0&&audible,"Editor lifecycle interrupted finite audible processing");
     parent.removeFromDesktop();p.reset();
     std::cout<<"PASS native VST3 editor lifecycle; processed "<<blocks<<" concurrent audio blocks"<<std::endl;

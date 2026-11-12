@@ -1,0 +1,167 @@
+name: Build Windows 32-bit and universal Mac
+on:
+  push:
+    branches: ['feature/windows32-macos-0200']
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  windows-x86:
+    runs-on: windows-2022
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: juce-framework/JUCE
+          ref: 8.0.6
+          path: Dependencies/JUCE
+      - uses: actions/checkout@v4
+        with:
+          repository: steinbergmedia/vst3sdk
+          ref: cc2adc90382dded9e347caf74e4532f1458715db
+          submodules: recursive
+          path: Dependencies/vst3sdk
+      - name: Parse Windows scripts
+        shell: pwsh
+        run: |
+          Get-ChildItem scripts/*.ps1 | ForEach-Object {
+            $tokens=$null; $errors=$null
+            [System.Management.Automation.Language.Parser]::ParseFile($_.FullName,[ref]$tokens,[ref]$errors) | Out-Null
+            if($errors){throw ($errors | Out-String)}
+          }
+      - name: Build actual Win32 VST3, standalone and matching host tests
+        run: |
+          cmake -S . -B build-x86 -G "Visual Studio 17 2022" -A Win32 -DGBA_JUCE_PATH="${{ github.workspace }}/Dependencies/JUCE" -DBUILD_TESTING=ON
+          cmake --build build-x86 --config Release --parallel 2
+      - name: Execute all tests in 32-bit processes
+        run: ctest --test-dir build-x86 -C Release --output-on-failure
+      - name: Validate using the official 32-bit Steinberg host
+        shell: pwsh
+        run: ./scripts/validate-steinberg-windows.ps1 -Architecture x86 -BuildDirectory build-x86
+      - name: Package native 32-bit installer and portable bundle
+        shell: pwsh
+        run: |
+          python scripts/package-source.py
+          ./scripts/package-windows.ps1 -Architecture x86 -BuildDirectory build-x86 -Iscc 'C:\Program Files (x86)\Inno Setup 6\ISCC.exe'
+      - uses: actions/download-artifact@v4
+        with:
+          name: G-Boy-Advance-2-Installer-x64
+          run-id: 43254175776
+          github-token: ${{ github.token }}
+          path: build-x86/previous-x64
+      - name: Verify 32-bit lifecycle alongside the installed 64-bit release
+        shell: pwsh
+        run: |
+          $previous='build-x86/previous-x64/G-Boy-Advance-2-Setup-x64.exe'
+          $p=Start-Process -FilePath (Resolve-Path $previous) -ArgumentList '/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART','/SP-' -Wait -PassThru
+          if($p.ExitCode -ne 0){throw 'Pinned x64 installation failed.'}
+          $old=Join-Path ${env:CommonProgramFiles} 'VST3/G Boy Advance 2.vst3/Contents/x86_64-win/G Boy Advance 2.vst3'
+          $hash=(Get-FileHash $old).Hash
+          ./scripts/test-installer-windows.ps1 -Architecture x86 -BuildDirectory build-x86
+          if((Get-FileHash $old).Hash -ne $hash){throw '32-bit install/uninstall changed the existing x64 plugin.'}
+          'PASS x86 installer coexists with x64 and leaves its binary unchanged' | Add-Content build-x86/validation-logs/installer-acceptance.txt
+          python scripts/verify-platform.py --platform windows-x86 --build build-x86
+      - uses: actions/upload-artifact@v4
+        with:
+          name: G-Boy-Advance-2-Installer-x86
+          path: dist/G-Boy-Advance-2-Setup-x86.exe
+          if-no-files-found: error
+      - uses: actions/upload-artifact@v4
+        with:
+          name: G-Boy-Advance-2-Portable-x86
+          path: dist/G-Boy-Advance-2-Windows-x86.zip
+          if-no-files-found: error
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: Windows-x86-validation
+          path: |
+            build-x86/Testing/Temporary/LastTest.log
+            build-x86/validation-logs/**
+            dist/G-Boy-Advance-2-Source.zip
+  mac-universal:
+    runs-on: macos-15-intel
+    timeout-minutes: 50
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: juce-framework/JUCE
+          ref: 8.0.6
+          path: Dependencies/JUCE
+      - name: Build universal Intel and Apple Silicon bundles and test executables
+        run: bash scripts/build-macos.sh
+      - name: Package universal VST3, AU and standalone
+        run: bash scripts/package-macos.sh
+      - name: Install and validate the actual universal payload on Intel
+        run: |
+          test "$(uname -m)" = x86_64
+          sudo installer -pkg dist/G-Boy-Advance-2-macOS-Universal.pkg -target /
+          build-macos/gba2-host-tests_artefacts/Release/gba2-host-tests '/Library/Audio/Plug-Ins/VST3/G Boy Advance 2.vst3'
+          bash scripts/validate-macos.sh
+          python3 scripts/verify-platform.py --platform macos --build build-macos --installed
+          python3 scripts/package-source.py
+      - name: Retain exact universal test executables for the Apple Silicon run
+        run: |
+          mkdir -p build-macos/native-tests
+          for name in gba2-tests gba2-core-tests gba2-advanced-tests gba2-effects-tests gba2-vocal-tests gba2-retro-tests gba2-preset-tests gba2-preset-diversity-tests gba2-soundfont-tests; do
+            cp "build-macos/$name" build-macos/native-tests/
+          done
+          cp build-macos/gba2-integration_artefacts/Release/gba2-integration build-macos/native-tests/
+          cp build-macos/gba2-host-tests_artefacts/Release/gba2-host-tests build-macos/native-tests/
+          for binary in build-macos/native-tests/*; do codesign --force --sign - --timestamp=none "$binary"; done
+          tar -czf build-macos/universal-tests.tgz -C build-macos native-tests
+      - uses: actions/upload-artifact@v4
+        with:
+          name: G-Boy-Advance-2-macOS-Universal-Installer
+          path: dist/G-Boy-Advance-2-macOS-Universal.pkg
+          if-no-files-found: error
+      - uses: actions/upload-artifact@v4
+        with:
+          name: G-Boy-Advance-2-macOS-Universal-Portable
+          path: dist/G-Boy-Advance-2-macOS-Universal-Portable.zip
+          if-no-files-found: error
+      - uses: actions/upload-artifact@v4
+        with:
+          name: macOS-universal-tests
+          path: build-macos/universal-tests.tgz
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: macOS-Intel-validation
+          path: |
+            build-macos/Testing/Temporary/LastTest.log
+            build-macos/validation-logs/**
+            dist/G-Boy-Advance-2-Source.zip
+  mac-arm64:
+    needs: mac-universal
+    runs-on: macos-15
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: G-Boy-Advance-2-macOS-Universal-Installer
+          path: dist
+      - uses: actions/download-artifact@v4
+        with:
+          name: macOS-universal-tests
+          path: build-macos
+      - name: Run the exact Intel-built universal payload natively on Apple Silicon
+        run: |
+          test "$(uname -m)" = arm64
+          sudo installer -pkg dist/G-Boy-Advance-2-macOS-Universal.pkg -target /
+          tar -xzf build-macos/universal-tests.tgz -C build-macos
+          mkdir -p build-macos/Testing/Temporary
+          python3 scripts/run-macos-carried-tests.py build-macos
+          bash scripts/validate-macos.sh
+          python3 scripts/verify-platform.py --platform macos --build build-macos --installed
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: macOS-Apple-Silicon-validation
+          path: |
+            build-macos/Testing/Temporary/LastTest.log
+            build-macos/validation-logs/**

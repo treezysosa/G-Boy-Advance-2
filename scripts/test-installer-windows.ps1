@@ -1,15 +1,23 @@
-param([string]$Installer='', [string]$BuildDirectory='', [string]$PreviousInstaller='')
+param([string]$Installer='', [string]$BuildDirectory='', [string]$PreviousInstaller='', [ValidateSet('x64','x86')][string]$Architecture='x64', [string]$PreviousVersion='0.19.3')
 $ErrorActionPreference='Stop'
 $root=Split-Path $PSScriptRoot -Parent
-if (-not $Installer) { $Installer=Join-Path $root 'dist/G-Boy-Advance-2-Setup-x64.exe' }
-if (-not $BuildDirectory) { $BuildDirectory=Join-Path $root 'build' }
+if (-not $Installer) { $Installer=Join-Path $root "dist/G-Boy-Advance-2-Setup-$Architecture.exe" }
+if (-not $BuildDirectory) { $BuildDirectory=Join-Path $root $(if($Architecture -eq 'x86'){'build-x86'}else{'build'}) }
+if(-not [IO.Path]::IsPathRooted($BuildDirectory)){$BuildDirectory=Join-Path $root $BuildDirectory}
+$currentVersion=[regex]::Match((Get-Content (Join-Path $root 'CMakeLists.txt') -Raw),'project\(GBoyAdvance2\s+VERSION\s+(\d+\.\d+\.\d+)').Groups[1].Value
 $Installer=(Resolve-Path -LiteralPath $Installer).Path
 $logs=Join-Path $BuildDirectory 'validation-logs'
 New-Item -ItemType Directory -Force $logs | Out-Null
 $app=Join-Path $BuildDirectory 'installer-acceptance-app'
-$vst=Join-Path ${env:CommonProgramFiles} 'VST3/G Boy Advance 2.vst3'
+$common=${env:CommonProgramFiles};$binaryFolder='x86_64-win'
+if($Architecture -eq 'x86'){$common=[Environment]::GetFolderPath('CommonProgramFilesX86');if(-not $common){$common=${env:CommonProgramFiles}};$binaryFolder='x86-win'}
+$vst=Join-Path $common 'VST3/G Boy Advance 2.vst3' 
 # Refuse to touch an existing installation; run this on a disposable Windows VM.
 $key='HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\{2C50A781-6FD5-4B9C-BC20-C0CF1C2D8CA2}_is1'
+if($Architecture -eq 'x86') {
+    $key='HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\{8D4F54E2-73EA-4672-A4C2-8179069EEA31}_is1'
+    if([Environment]::Is64BitOperatingSystem){$key=$key.Replace('SOFTWARE\Microsoft','SOFTWARE\WOW6432Node\Microsoft')}
+}
 if ((Test-Path -LiteralPath $vst) -or (Test-Path -LiteralPath $app) -or (Test-Path $key)) {
     throw 'Installer acceptance requires a clean VM with no G Boy Advance 2 installation.'
 }
@@ -45,9 +53,9 @@ function Run-Setup([string]$Exe,[string[]]$SetupArguments) {
     if ($p.ExitCode -ne 0) { throw "Setup process failed: $($p.ExitCode)" }
 }
 function Check-Installed {
-    $built=Join-Path $root 'build/GBoyAdvance2_artefacts/Release'
+    $built=Join-Path $BuildDirectory 'GBoyAdvance2_artefacts/Release'
     $pairs=@(
-        @((Join-Path $built 'VST3/G Boy Advance 2.vst3/Contents/x86_64-win/G Boy Advance 2.vst3'),(Join-Path $vst 'Contents/x86_64-win/G Boy Advance 2.vst3')),
+        @((Join-Path $built "VST3/G Boy Advance 2.vst3/Contents/$binaryFolder/G Boy Advance 2.vst3"),(Join-Path $vst "Contents/$binaryFolder/G Boy Advance 2.vst3")),
         @((Join-Path $built 'Standalone/G Boy Advance 2.exe'),(Join-Path $app 'G Boy Advance 2.exe'))
     )
     foreach($pair in $pairs) {
@@ -78,20 +86,20 @@ try {
         $previous=(Resolve-Path -LiteralPath $PreviousInstaller).Path
         Run-Setup $previous @('/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART','/SP-',"/DIR=`"$app`"","/LOG=`"$(Join-Path $logs 'install-previous.txt')`"")
         $installed=$true
-        if(-not (Test-Path -LiteralPath (Join-Path $vst 'Contents/x86_64-win/G Boy Advance 2.vst3'))) {throw 'Previous-version VST3 was not installed.'}
-        if((Get-ItemProperty $key).DisplayVersion -ne '0.19.2') {throw 'Upgrade test requires the pinned 0.19.2 installer.'}
+        if(-not (Test-Path -LiteralPath (Join-Path $vst "Contents/$binaryFolder/G Boy Advance 2.vst3"))) {throw 'Previous-version VST3 was not installed.'}
+        if((Get-ItemProperty $key).DisplayVersion -ne $PreviousVersion) {throw "Upgrade test requires the pinned $PreviousVersion installer."}
         if ((Get-FileHash -LiteralPath $sentinel).Hash -ne $sentinelHash) {throw 'Previous installer changed user data.'}
-        $report.Add('PASS pinned 0.19.2 installation before upgrade, default VST3 path and user-data preservation')
+        $report.Add("PASS pinned $PreviousVersion installation before upgrade, default VST3 path and user-data preservation")
     }
     Run-Setup $Installer @('/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART','/SP-',"/DIR=`"$app`"","/LOG=`"$(Join-Path $logs 'install.txt')`"")
     $installed=$true;Check-Installed
-    if((Get-ItemProperty $key).DisplayVersion -ne '0.19.3') {throw 'Installed registry version does not match the release candidate.'}
-    $kind=if($PreviousInstaller){'0.19.2-to-0.19.3 upgrade'}else{'clean install'}
+    if((Get-ItemProperty $key).DisplayVersion -ne $currentVersion) {throw 'Installed registry version does not match the release candidate.'}
+    $kind=if($PreviousInstaller){"${PreviousVersion}-to-${currentVersion} upgrade"}else{'clean install'}
     $report.Add('PASS silent '+$kind+': default common VST3 path, standalone, manual, factory bank, binary hashes')
     $diagnostics=Join-Path $logs 'diagnostics-smoke.txt'
-    & (Join-Path $app 'collect-windows-diagnostics.ps1') -OutputPath $diagnostics
+    & (Join-Path $app 'collect-windows-diagnostics.ps1') -OutputPath $diagnostics -Architecture $Architecture
     $diagnosticText=Get-Content -LiteralPath $diagnostics -Raw
-    $expectedHash=(Get-FileHash -LiteralPath (Join-Path $vst 'Contents/x86_64-win/G Boy Advance 2.vst3') -Algorithm SHA256).Hash
+    $expectedHash=(Get-FileHash -LiteralPath (Join-Path $vst "Contents/$binaryFolder/G Boy Advance 2.vst3") -Algorithm SHA256).Hash
     if ($diagnosticText -notmatch [regex]::Escape($expectedHash)) {throw 'Installed diagnostic script did not report the installed binary hash.'}
     $report.Add('PASS installed read-only diagnostic script writes the actual VST3 hash to its local report')
     Run-Setup $Installer @('/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART','/SP-',"/DIR=`"$app`"","/LOG=`"$(Join-Path $logs 'reinstall.txt')`"")
@@ -110,7 +118,11 @@ try {
     $appearanceHash=(Get-FileHash -LiteralPath $appearance -Algorithm SHA256).Hash
     Run-Setup (Join-Path $app 'unins000.exe') @('/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART',"/LOG=`"$(Join-Path $logs 'uninstall.txt')`"")
     $installed=$false
-    if ((Test-Path -LiteralPath $vst) -or (Test-Path -LiteralPath (Join-Path $app 'G Boy Advance 2.exe')) -or (Test-Path $key)) { throw 'Uninstall left product binaries or registry entry.' }
+    if($Architecture -eq 'x86') {
+    $key='HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\{8D4F54E2-73EA-4672-A4C2-8179069EEA31}_is1'
+    if([Environment]::Is64BitOperatingSystem){$key=$key.Replace('SOFTWARE\Microsoft','SOFTWARE\WOW6432Node\Microsoft')}
+}
+if ((Test-Path -LiteralPath $vst) -or (Test-Path -LiteralPath (Join-Path $app 'G Boy Advance 2.exe')) -or (Test-Path $key)) { throw 'Uninstall left product binaries or registry entry.' }
     if ((Get-FileHash -LiteralPath $sentinel).Hash -ne $sentinelHash) { throw 'Uninstall changed user preset data.' }
     if ((Get-FileHash -LiteralPath $audioSentinel).Hash -ne $audioSentinelHash) { throw 'Uninstall changed personal audio data.' }
     if ((Get-FileHash -LiteralPath $sfSentinel).Hash -ne $sfSentinelHash) { throw 'Uninstall changed the SoundFont cache.' }

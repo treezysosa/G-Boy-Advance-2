@@ -1,18 +1,19 @@
-param([string]$SdkPath='', [string]$Vst3Path='')
+param([string]$SdkPath='', [string]$Vst3Path='', [ValidateSet('x64','x86')][string]$Architecture='x64', [string]$BuildDirectory='build')
 $ErrorActionPreference='Stop'
 $root=Split-Path $PSScriptRoot -Parent
 if (-not $SdkPath) { $SdkPath=Join-Path $root 'Dependencies/vst3sdk' }
-if (-not $Vst3Path) { $Vst3Path=Join-Path $root 'build/GBoyAdvance2_artefacts/Release/VST3/G Boy Advance 2.vst3' }
+if (-not $Vst3Path) { $Vst3Path=Join-Path $root "$BuildDirectory/GBoyAdvance2_artefacts/Release/VST3/G Boy Advance 2.vst3" }
 $SdkPath=(Resolve-Path -LiteralPath $SdkPath).Path
 $Vst3Path=(Resolve-Path -LiteralPath $Vst3Path).Path
-$build=Join-Path $root 'build/steinberg-validator'
-$logs=Join-Path $root 'build/validation-logs'
+$build=Join-Path $root "$BuildDirectory/steinberg-validator"
+$platform=if($Architecture -eq 'x86'){'Win32'}else{'x64'}
+$logs=Join-Path $root "$BuildDirectory/validation-logs"
 New-Item -ItemType Directory -Force $logs | Out-Null
 # Official SDK v3.7.12_build_20, build-time validation only; never bundled.
 $expected='cc2adc90382dded9e347caf74e4532f1458715db'
 $actual=& git -C $SdkPath rev-parse HEAD
 if($LASTEXITCODE -ne 0 -or $actual.Trim() -ne $expected) { throw "Expected official SDK commit $expected" }
-& cmake -S $SdkPath -B $build -G 'Visual Studio 17 2022' -A x64 -DSMTG_ENABLE_VST3_PLUGIN_EXAMPLES=OFF -DSMTG_ENABLE_VSTGUI_SUPPORT=OFF -DSMTG_ENABLE_VST3_HOSTING_EXAMPLES=ON
+& cmake -S $SdkPath -B $build -G 'Visual Studio 17 2022' -A $platform -DSMTG_ENABLE_VST3_PLUGIN_EXAMPLES=OFF -DSMTG_ENABLE_VSTGUI_SUPPORT=OFF -DSMTG_ENABLE_VST3_HOSTING_EXAMPLES=ON
 if($LASTEXITCODE -ne 0) { throw 'Steinberg validator configure failed.' }
 & cmake --build $build --config Release --target validator --parallel 2
 if($LASTEXITCODE -ne 0) { throw 'Steinberg validator build failed.' }

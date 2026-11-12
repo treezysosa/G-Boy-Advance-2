@@ -1,4 +1,8 @@
-# G BOY ADVANCE 2 — 0.19.3
+# G BOY ADVANCE 2 — 0.20.0
+
+Windows x86 (32-bit) and universal macOS VST3/AU/standalone builds are being validated. The Mac binary targets Intel and Apple Silicon with macOS 11 or later. Windows x64 remains available. [Platform builds and installation](docs/PLATFORMS_0_20_0.md). All 654 factory sounds, 50 skins and parameter/program identities are retained. Native hardware and named DAW acceptance are separate from automated validation.
+
+## Previous CPU update
 
 CPU optimization build: faster exact phase wrapping and wavetable indexing, and paired stereo saturation FIR processing. No factory sound, voice budget, release time, oscillator partial, modulation rate or effect is reduced. [Changes and validation](docs/RELEASE_0_19_3.md). Windows builds, all suites, both plugin validators and installer lifecycle tests passed. Simple SoundFont workloads measured about 4–5% less CPU; layered banks improved less. Built-in pad/string gains on Windows were minimal, so that remains further work. The 50% target remains unmet.
 
@@ -19,7 +23,7 @@ Native Windows JUCE component renders of the ten added skins. All 50 main/advanc
 Install Visual Studio 2022 with **Desktop development with C++**, a Windows SDK, CMake 3.24+, and Git. In PowerShell:
 
 ```powershell
-git clone --branch feature/pad-string-performance-0193 https://github.com/treezysosa/G-Boy-Advance-2.git
+git clone --branch feature/windows32-macos-0200 https://github.com/treezysosa/G-Boy-Advance-2.git
 cd G-Boy-Advance-2
 powershell -ExecutionPolicy Bypass -File scripts/build-windows.ps1
 ```

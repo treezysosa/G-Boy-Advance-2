@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.24)
-project(GBoyAdvance2 VERSION 0.19.3 LANGUAGES C CXX)
+project(GBoyAdvance2 VERSION 0.20.0 LANGUAGES C CXX)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
@@ -99,6 +99,10 @@ else()
         GIT_SHALLOW TRUE)
     FetchContent_MakeAvailable(JUCE)
 endif()
+set(GBA_PLUGIN_FORMATS VST3 Standalone)
+if(APPLE)
+    list(APPEND GBA_PLUGIN_FORMATS AU)
+endif()
 juce_add_plugin(GBoyAdvance2
     COMPANY_NAME "Treezy Audio"
     BUNDLE_ID "audio.treezy.gboyadvance2"
@@ -113,7 +117,7 @@ juce_add_plugin(GBoyAdvance2
     EDITOR_WANTS_KEYBOARD_FOCUS TRUE
     COPY_PLUGIN_AFTER_BUILD FALSE
     VST3_CATEGORIES Instrument Synth
-    FORMATS VST3 Standalone)
+    FORMATS ${GBA_PLUGIN_FORMATS})
 juce_generate_juce_header(GBoyAdvance2)
 target_sources(GBoyAdvance2 PRIVATE
     Source/PluginProcessor.cpp Source/PluginEditor.cpp Source/PresetManager.cpp Source/SoundFontManager.cpp
@@ -137,7 +141,7 @@ if(BUILD_TESTING)
     target_link_libraries(gba2-integration PRIVATE gba_soundfont gba_dsp juce::juce_audio_utils juce::juce_audio_processors)
     add_test(NAME plugin-state-and-presets COMMAND gba2-integration)
     set_tests_properties(plugin-state-and-presets PROPERTIES TIMEOUT 180)
-    if(WIN32)
+    if(WIN32 OR APPLE)
         # A separate host loads the built bundle rather than linking our processor.
         juce_add_console_app(gba2-host-tests PRODUCT_NAME "GBA2 VST3 host acceptance")
         target_sources(gba2-host-tests PRIVATE Tests/HostTests.cpp)
@@ -147,16 +151,23 @@ if(BUILD_TESTING)
             JUCE_MODAL_LOOPS_PERMITTED=1)
         target_link_libraries(gba2-host-tests PRIVATE juce::juce_audio_utils)
         add_dependencies(gba2-host-tests GBoyAdvance2_VST3)
-        # Exercise JUCE's FL-specific wrapper paths in a test host. This is not FL Studio.
-        add_custom_command(TARGET gba2-host-tests POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy_if_different "$<TARGET_FILE:gba2-host-tests>"
-                "$<TARGET_FILE_DIR:gba2-host-tests>/FL64.exe")
         add_test(NAME vst3-host-acceptance COMMAND gba2-host-tests
             "$<TARGET_FILE_DIR:GBoyAdvance2_VST3>/../..")
         set_tests_properties(vst3-host-acceptance PROPERTIES TIMEOUT 180)
-        add_test(NAME vst3-fl-hostname-acceptance
-            COMMAND "$<TARGET_FILE_DIR:gba2-host-tests>/FL64.exe"
-                "$<TARGET_FILE_DIR:GBoyAdvance2_VST3>/../.." --fl-hostname)
-        set_tests_properties(vst3-fl-hostname-acceptance PROPERTIES TIMEOUT 180)
+        if(WIN32)
+            # Matching-bitness test host; neither executable is FL Studio.
+            if(CMAKE_SIZEOF_VOID_P EQUAL 4)
+                set(GBA_FL_HOST_NAME FL.exe)
+            else()
+                set(GBA_FL_HOST_NAME FL64.exe)
+            endif()
+            add_custom_command(TARGET gba2-host-tests POST_BUILD
+                COMMAND ${CMAKE_COMMAND} -E copy_if_different "$<TARGET_FILE:gba2-host-tests>"
+                    "$<TARGET_FILE_DIR:gba2-host-tests>/${GBA_FL_HOST_NAME}")
+            add_test(NAME vst3-fl-hostname-acceptance
+                COMMAND "$<TARGET_FILE_DIR:gba2-host-tests>/${GBA_FL_HOST_NAME}"
+                    "$<TARGET_FILE_DIR:GBoyAdvance2_VST3>/../.." --fl-hostname)
+            set_tests_properties(vst3-fl-hostname-acceptance PROPERTIES TIMEOUT 180)
+        endif()
     endif()
 endif()

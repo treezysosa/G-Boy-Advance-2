@@ -1,4 +1,4 @@
-> Current version: **0.19.3**. 654 presets in 20 factory categories, plus SoundFonts navigation, and 50 skins. Percussion is removed from Factory; existing projects retain their saved sounds. [Current changes](RELEASE_0_19_3.md).
+> Current version: **0.20.0**. 654 presets in 20 factory categories, plus SoundFonts navigation, and 50 skins. Percussion is removed from Factory; existing projects retain their saved sounds. [Current platform builds](PLATFORMS_0_20_0.md).
 
 
 
@@ -201,3 +201,8 @@ See the current release notes for matched CPU and audio results against 0.19.0. 
 SELECT → SKIN now offers 50 appearances. Meadow Quest and Ember Trail use original nature/adventure designs; Neon Grid and Prism Circuit use digital-fantasy geometry; Solar Surge uses anime-style energy streaks; Ink & Ivory uses classic-cartoon halftones and ribbons. Evergreen Glow and Frosted Berry provide Christmas/winter colors, and Tidal Breeze and Sunset Coast provide beach colors. The decorations are original vector shapes.
 
 Choose a fixed appearance with NEW COLOUR ON LOAD disabled, or leave it enabled for a different skin on each launch. Saved projects remember their selected skin. The 0.19.1 audio optimizations, presets and SoundFont behavior remain available. Pattern artwork uses the existing static housing cache and adds no animation timer.
+
+
+## Windows 32-bit and Mac builds (0.20.0)
+
+Use the Windows x86 installer with a 32-bit DAW; it installs to the 32-bit Common Files VST3 location and has a separate uninstaller from x64. Both Windows architectures share user preset/SoundFont data. The Mac universal installer contains Intel and Apple Silicon VST3, AU and standalone bundles, with a deployment target of macOS 11. The Mac user library is normally `~/Library/Application Support/Treezy Audio/G Boy Advance 2`; Presets, SoundFonts and SoundFont Library remain separate subfolders. Existing Windows paths to external SF2 files need importing/relinking on Mac. Mac bundles are ad-hoc signed and have not been Developer ID notarized. [Installation and exact validation limits](PLATFORMS_0_20_0.md).

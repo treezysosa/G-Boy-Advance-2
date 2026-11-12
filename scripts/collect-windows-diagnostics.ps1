@@ -1,4 +1,4 @@
-param([string]$OutputPath='', [switch]$OpenReport)
+param([string]$OutputPath='', [switch]$OpenReport, [ValidateSet('auto','x64','x86')][string]$Architecture='auto')
 $ErrorActionPreference='Stop'
 function Get-ExecutableArchitecture([string]$Path) {
     $stream=$null;$reader=$null
@@ -23,6 +23,13 @@ function Get-ExecutableArchitecture([string]$Path) {
         elseif ($stream) {$stream.Dispose()}
     }
 }
+if($Architecture -eq 'auto') {
+    $Architecture='x64'
+    if($PSScriptRoot) {
+        $standalone=Join-Path $PSScriptRoot 'G Boy Advance 2.exe'
+        if((Test-Path -LiteralPath $standalone) -and (Get-ExecutableArchitecture $standalone) -eq 'x86 (32-bit)') {$Architecture='x86'}
+    }
+}
 $documents=[Environment]::GetFolderPath('MyDocuments')
 if (-not $OutputPath) {$OutputPath=Join-Path $documents 'G-Boy-Advance-2-diagnostics.txt'}
 $lines=[System.Collections.Generic.List[string]]::new()
@@ -34,8 +41,14 @@ $lines.Add('64-bit Windows: '+[Environment]::Is64BitOperatingSystem)
 $lines.Add('64-bit diagnostic process: '+[Environment]::Is64BitProcess)
 $common=${env:CommonProgramW6432}
 if (-not $common) {$common=${env:CommonProgramFiles}}
-$vst=Join-Path $common 'VST3/G Boy Advance 2.vst3/Contents/x86_64-win/G Boy Advance 2.vst3'
-$lines.Add('Default x64 VST3 binary present: '+(Test-Path -LiteralPath $vst))
+$binaryFolder='x86_64-win'
+if($Architecture -eq 'x86') {
+    $common=[Environment]::GetFolderPath('CommonProgramFilesX86')
+    if(-not $common){$common=${env:CommonProgramFiles}}
+    $binaryFolder='x86-win'
+}
+$vst=Join-Path $common "VST3/G Boy Advance 2.vst3/Contents/$binaryFolder/G Boy Advance 2.vst3"
+$lines.Add("Default $Architecture VST3 binary present: "+(Test-Path -LiteralPath $vst))
 if (Test-Path -LiteralPath $vst) {
     $item=Get-Item -LiteralPath $vst
     $hash=(Get-FileHash -LiteralPath $vst -Algorithm SHA256).Hash

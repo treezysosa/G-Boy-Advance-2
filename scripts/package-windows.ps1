@@ -1,17 +1,18 @@
-param([string]$Configuration='Release',[string]$Iscc='ISCC.exe')
+param([string]$Configuration='Release',[string]$Iscc='ISCC.exe',[ValidateSet('x64','x86')][string]$Architecture='x64',[string]$BuildDirectory='')
 $ErrorActionPreference='Stop'
 $root=Split-Path $PSScriptRoot -Parent
 # CMake is the single release-version source for plugin and installer.
 $project=Get-Content -LiteralPath (Join-Path $root 'CMakeLists.txt') -Raw
 $version=[regex]::Match($project,'(?m)^project\(GBoyAdvance2\s+VERSION\s+(\d+\.\d+\.\d+)').Groups[1].Value
 if (-not $version) { throw 'Cannot read the product version from CMakeLists.txt.' }
-$artifacts=Join-Path $root "build\GBoyAdvance2_artefacts\$Configuration"
+if(-not $BuildDirectory){$BuildDirectory=if($Architecture -eq 'x86'){'build-x86'}else{'build'}}
+$artifacts=Join-Path $root "$BuildDirectory/GBoyAdvance2_artefacts/$Configuration"
 $vst=Join-Path $artifacts 'VST3\G Boy Advance 2.vst3'
 $standalone=Join-Path $artifacts 'Standalone\G Boy Advance 2.exe'
 if (-not (Test-Path $vst) -or -not (Test-Path $standalone)) { throw 'Build the Windows targets first.' }
 $dist=Join-Path $root 'dist'
 New-Item -ItemType Directory -Force $dist | Out-Null
-$stage=Join-Path $dist 'G Boy Advance 2'
+$stage=Join-Path $dist "G Boy Advance 2-$Architecture"
 # A clean stage prevents stale runtime files from leaking into a new archive.
 if (Test-Path -LiteralPath $stage) { Remove-Item -LiteralPath $stage -Recurse -Force }
 New-Item -ItemType Directory -Force $stage | Out-Null
@@ -23,6 +24,6 @@ New-Item -ItemType Directory -Force $factory | Out-Null
 Copy-Item -Force (Join-Path $root 'Presets\factory.json') $factory
 Copy-Item -Force (Join-Path $root 'docs\LICENSING.md') $stage
 Copy-Item -Recurse -Force (Join-Path $root 'docs\licenses') (Join-Path $stage 'Third-party notices')
-Compress-Archive -Force -Path "$stage\*" -DestinationPath (Join-Path $dist 'G-Boy-Advance-2-Windows-x64.zip')
-& $Iscc "/DAppVersion=$version" "/DArtifacts=$artifacts" "/DOutput=$dist" (Join-Path $root 'packaging\installer.iss')
+Compress-Archive -Force -Path "$stage\*" -DestinationPath (Join-Path $dist "G-Boy-Advance-2-Windows-$Architecture.zip")
+& $Iscc "/DAppVersion=$version" "/DTargetArch=$Architecture" "/DArtifacts=$artifacts" "/DOutput=$dist" (Join-Path $root 'packaging\installer.iss')
 if ($LASTEXITCODE -ne 0) { throw 'Inno Setup compilation failed.' }

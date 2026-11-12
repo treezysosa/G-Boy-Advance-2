@@ -5,6 +5,8 @@ ROOT = Path(__file__).resolve().parents[1]
 ROOT_FILES = {'CMakeLists.txt', 'README.md', '.gitignore', 'LICENSE', 'LICENSE.md', 'NOTICE', 'CHANGELOG.md'}
 SOURCE_DIRS = {'Source', 'Tests', 'Tools', 'Presets', 'scripts', 'docs', 'packaging', '.github'}
 REQUIRED = {
+    'docs/PLATFORMS_0_20_0.md', 'scripts/build-macos.sh', 'scripts/package-macos.sh', 'scripts/validate-macos.sh',
+    'scripts/verify-platform.py', 'scripts/run-macos-carried-tests.py', '.github/workflows/platform-ports-0200.yml',
     'docs/RELEASE_0_19_3.md', 'scripts/verify-release-0193.py', '.github/workflows/finish-performance-0193.yml',
     'Tools/PresetAudition.cpp', 'Tools/listening-review.html', 'scripts/build-listening-pack.py',
     'docs/PRESET_LISTENING.md', 'Tools/test-listening-review.py', '.github/workflows/preset-listening.yml',
