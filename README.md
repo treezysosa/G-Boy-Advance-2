@@ -4,11 +4,11 @@
 
 SELECT → SKIN selects an appearance. NEW COLOUR ON LOAD includes all 50 skins; disable it for a fixed project color. Existing skins, saved projects, user presets and SoundFont libraries are preserved. The 0.19.1 audio engine and 654 factory presets are unchanged.
 
-[Changes and validation](docs/RELEASE_0_19_2.md) · [Source branch](https://github.com/treezysosa/G-Boy-Advance-2/tree/feature/themed-skins-0192). Windows builds, 50-skin state/render checks and installer validation are pending. Pattern artwork uses the existing static UI cache. Prepared binaries are unsigned; the owner deferred licensing.
+[Changes and validation](docs/RELEASE_0_19_2.md) · [Source branch](https://github.com/treezysosa/G-Boy-Advance-2/tree/feature/themed-skins-0192). Windows x64 compilation, 50-skin state/render checks, pluginval strictness 10 and the Steinberg validator passed. The installer passed the 0.19.1 upgrade, reinstall, launch and uninstall checks with user data preserved. Pattern artwork uses the existing static UI cache. Prepared binaries are unsigned; the owner deferred licensing.
 
-![Ten new native Windows UI skins](docs/images/skins-0190.jpg)
+![Ten new native Windows UI skins](docs/images/skins-0192.jpg)
 
-Native Windows JUCE component renders of the ten added skins. All 40 main/advanced appearances and project-state roundtrips passed. The ROM Hacks cartridge stays beside the volume knob.
+Native Windows JUCE component renders of the ten added skins. All 50 main/advanced appearances and project-state roundtrips passed. The ten new themes also have browser and 150% density captures. The ROM Hacks cartridge stays beside the volume knob.
 
 ## Build on Windows
 
@@ -20,7 +20,7 @@ cd G-Boy-Advance-2
 powershell -ExecutionPolicy Bypass -File scripts/build-windows.ps1
 ```
 
-You can also use [Build and validate in GitHub Actions](https://github.com/treezysosa/G-Boy-Advance-2/actions?query=branch%3Afeature%2Fpercussion-removed-0183). Factory/vocal and retro audition files are separate test outputs and are never installed or loaded by the instrument.
+You can also use [Build and validate in GitHub Actions](https://github.com/treezysosa/G-Boy-Advance-2/actions?query=branch%3Afeature%2Fthemed-skins-0192). Factory/vocal and retro audition files are separate test outputs and are never installed or loaded by the instrument.
 
 The first local build downloads the pinned JUCE 8.0.6 source. For an offline build, supply an existing checkout:
 
@@ -62,7 +62,7 @@ Close your DAW, copy the entire `.vst3` directory into `C:\Program Files\Common 
 - Reverb, delay, chorus, phaser, flanger, saturation, distortion, bitcrusher, tape wow / flutter, low / high shelves, and stereo width.
 - 654 factory patches across 20 categories, explicit named-instrument, vocal and retro profiles, calibrated levels and stable program identities. Vocal patches are synthesized vowel-like timbres and contain no recorded voices or speech.
 - Reference-based vector UI, playable keyboard, spring-return pitch wheel, functional D-pad, preview A / stop B, START browser, SELECT advanced editor, assignable A–D controls.
-- Forty colour skins with nonrepeating launch colours or a fixed project choice; SoundFont drag and drop; host-visible parameters, project state, user preset Save As / import / export / rename / delete, favorites / recent patches, category search, tags, keyboard navigation.
+- Fifty colour skins with nonrepeating launch colours or a fixed project choice; SoundFont drag and drop; host-visible parameters, project state, user preset Save As / import / export / rename / delete, favorites / recent patches, category search, tags, keyboard navigation.
 - Windows CI, portable packaging and Inno Setup installer script, DSP and JUCE integration tests.
 
 ## Factory and user presets
@@ -102,7 +102,7 @@ See [performance measurements](docs/PERFORMANCE.md) for the additive-engine opti
 
 `python scripts/package-source.py` creates a complete source ZIP and checks that the Windows build script and GitHub workflow are included.
 
-With Inno Setup 6 installed, run `scripts/package-windows.ps1` after a successful release build. This creates an unsigned Windows archive and installer under `dist/`. Release signing, listening review, the separate Steinberg VST3 validator, interactive installer checks, and DAW testing remain release gates. Pluginval strictness 10 has passed on Windows.
+With Inno Setup 6 installed, run `scripts/package-windows.ps1` after a successful release build. This creates an unsigned Windows archive and installer under `dist/`. Windows builds, pluginval strictness 10, the separate Steinberg VST3 validator and automated installer lifecycle checks passed. Release signing, listening review, interactive installer/device checks and actual DAW acceptance remain owner release checks. This preparation does not decide the deferred licensing terms.
 
 Engine 6 has a revised sound in 0.8.0, including existing chiptune patches; the Phase 7 formant revision remains. Saved parameters retain their IDs, but audio renders may differ.
 

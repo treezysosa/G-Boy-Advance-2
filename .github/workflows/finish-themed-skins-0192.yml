@@ -1,0 +1,80 @@
+name: Verify and package 0.19.2 themed skins
+on:
+  push:
+    branches: ['support/themed-skins-release-0192']
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  windows:
+    runs-on: windows-2022
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Require the validated production source and unchanged audio engine
+        shell: pwsh
+        run: |
+          git diff --exit-code 7cd2a5193cbb2c4db17e7705bd3564f853a730b4 -- Source Presets CMakeLists.txt
+          if ($LASTEXITCODE -ne 0) { throw 'Production source changed after runtime validation.' }
+          git diff --exit-code 60239ebfff5357228bc1c5747ade3bdaa944283d -- Source/dsp Source/FactoryData.h Presets
+          if ($LASTEXITCODE -ne 0) { throw 'The skin release changed audio or factory data.' }
+          python scripts/check-notices.py
+          if ($LASTEXITCODE -ne 0) { throw 'Pinned dependency check failed.' }
+      - uses: actions/download-artifact@v4
+        with:
+          name: G-Boy-Advance-2-Windows-x64
+          run-id: 43225072376
+          github-token: ${{ github.token }}
+          path: .
+      - uses: actions/download-artifact@v4
+        with:
+          name: UI-skins-and-browser-Windows
+          run-id: 43225072376
+          github-token: ${{ github.token }}
+          path: build/ui-snapshots
+      - name: Package validated binaries with the completed manual, source and previews
+        shell: pwsh
+        run: |
+          python scripts/package-source.py
+          if ($LASTEXITCODE -ne 0) { throw 'Source archive validation failed.' }
+          ./scripts/package-windows.ps1 -Iscc 'C:\Program Files (x86)\Inno Setup 6\ISCC.exe'
+      - uses: actions/download-artifact@v4
+        with:
+          name: G-Boy-Advance-2-Installer-x64
+          run-id: 43091697845
+          github-token: ${{ github.token }}
+          path: build/previous-installer
+      - name: Check the final installer lifecycle and preservation of user data
+        shell: pwsh
+        run: ./scripts/test-installer-windows.ps1 -PreviousInstaller build/previous-installer/G-Boy-Advance-2-Setup-x64.exe
+      - name: Verify archives, binaries, validation evidence and all 50 skins
+        run: python scripts/verify-release-0192.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: G-Boy-Advance-2-Installer-x64
+          path: dist/G-Boy-Advance-2-Setup-x64.exe
+          if-no-files-found: error
+      - uses: actions/upload-artifact@v4
+        with:
+          name: G-Boy-Advance-2-Portable-x64
+          path: dist/G Boy Advance 2/**
+          if-no-files-found: error
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: G-Boy-Advance-2-Windows-x64
+          path: |
+            dist/*.zip
+            dist/*.exe
+            build/GBoyAdvance2_artefacts/Release/VST3/**
+            build/GBoyAdvance2_artefacts/Release/Standalone/**
+            build/Testing/Temporary/LastTest.log
+            build/validation-logs/**
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: UI-skins-and-browser-Windows
+          path: build/ui-snapshots/**

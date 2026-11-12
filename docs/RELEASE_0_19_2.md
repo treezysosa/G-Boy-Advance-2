@@ -27,7 +27,13 @@ The selector, random/nonrepeating launch choices, fixed project colors and per-i
 
 ## Validation
 
-Windows compilation and all 50 skin selections, project roundtrips, instance isolation, nonrepeating launch selection, main/advanced rendering and high-DPI renders for the ten new themes are pending. Existing engine, plugin-state, real bundle-host, pluginval, Steinberg and installer upgrade/reinstall/uninstall checks remain required. Installer testing uses the verified 0.19.1 release as its previous version.
+The Windows x64 VST3 and standalone compiled with Visual Studio 2022. All 9 independent core suites and 12 Windows suites passed, including skin selection, saved-state roundtrips, per-instance isolation and nonrepeating launch colors. Native captures cover all 50 main and advanced appearances, plus the ten new preset browsers and 150% density renders. The 50 existing/new skin IDs are distinct; all prior 40 palette initializers are unchanged. A pixel comparison of the prior 40 native main views also matched the previous build outside the state-dependent preset-name display.
+
+The actual VST3 passed pluginval strictness 10, all 47 official Steinberg checks and both bundle-host integrations. Automated installer acceptance passed all six stages: pinned 0.19.1 installation, upgrade to 0.19.2, installed diagnostics, same-version reinstall, standalone launch smoke test and uninstall. User presets, launch history, SF2 cache, default SoundFont folder and library preferences were preserved. Source/portable ZIP CRCs, x64 PE payloads and exact source-package contents were checked.
+
+Runtime source: `7cd2a5193cbb2c4db17e7705bd3564f853a730b4`; [Windows/core validation run](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/43225072376). The release packaging workflow reuses those identical production binaries, checks their source identity and verifies the final installer and complete source archive. Its machine-readable evidence is `build/validation-logs/release-validation-0192.json` in the Windows artifact.
+
+[Native preview of the ten new skins](images/skins-0192.jpg). These are JUCE component captures from the Windows build. Physical display scaling, listening, MIDI devices and actual FL Studio remain owner acceptance; an automated host named `FL64.exe` is not a copy of FL Studio.
 
 ## Build and installation
 
