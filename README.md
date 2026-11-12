@@ -1,6 +1,6 @@
 # G BOY ADVANCE 2 — 0.20.0
 
-Windows x86 (32-bit) and universal macOS VST3/AU/standalone builds are being validated. The Mac binary targets Intel and Apple Silicon with macOS 11 or later. Windows x64 remains available. [Platform builds and installation](docs/PLATFORMS_0_20_0.md). All 654 factory sounds, 50 skins and parameter/program identities are retained. Native hardware and named DAW acceptance are separate from automated validation.
+Windows x86 (32-bit) VST3 and standalone passed native builds, all 12 suites, Steinberg's 47 validator tests, and installation alongside x64. Windows x64 regression validation also passed. Universal macOS VST3/AU/standalone support is implemented, but compilation remains pending while GitHub cannot allocate a Mac runner. The Mac target includes Intel and Apple Silicon, with minimum deployment macOS 11. [Platform builds, evidence and installation](docs/PLATFORMS_0_20_0.md). All 654 factory sounds, 50 skins and parameter/program identities are retained. Native hardware and named DAW acceptance are separate from automated validation.
 
 ## Previous CPU update
 
@@ -28,7 +28,7 @@ cd G-Boy-Advance-2
 powershell -ExecutionPolicy Bypass -File scripts/build-windows.ps1
 ```
 
-You can also use [Build and validate in GitHub Actions](https://github.com/treezysosa/G-Boy-Advance-2/actions?query=branch%3Afeature%2Fpad-string-performance-0193). Factory/vocal and retro audition files are separate test outputs and are never installed or loaded by the instrument.
+You can also use [Build and validate in GitHub Actions](https://github.com/treezysosa/G-Boy-Advance-2/actions?query=branch%3Afeature%2Fwindows32-macos-0200). Factory/vocal and retro audition files are separate test outputs and are never installed or loaded by the instrument.
 
 The first local build downloads the pinned JUCE 8.0.6 source. For an offline build, supply an existing checkout:
 

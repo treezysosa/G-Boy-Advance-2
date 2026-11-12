@@ -1,6 +1,6 @@
 # 0.20.0 — Windows 32-bit and universal macOS
 
-Validation is in progress. This page will distinguish completed builds and tests from owner acceptance. The Windows x64 0.19.3 release remains a verified fallback while new-platform validation runs.
+Windows x86 and x64 0.20.0 builds and automated validation passed. Universal Mac source, build, packaging and validation scripts are implemented; Mac compilation is not yet verified. GitHub failed to allocate the first Intel runner before any steps executed, and the Apple Silicon retry is queued. No Mac binary or DAW compatibility is claimed without its native build and validation.
 
 | Platform | Formats | Architecture | Minimum deployment |
 |---|---|---|---|
@@ -54,7 +54,24 @@ bash scripts/package-macos.sh
 
 JUCE is pinned to 8.0.6. The build script accepts an existing `Dependencies/JUCE` checkout; otherwise CMake fetches the pinned dependency. Mac formats are added only on Apple builds. Universal architectures are configured as `arm64;x86_64`. The native code and factory library do not need an internet connection at runtime.
 
-## Validation plan and limits
+## Completed Windows validation
+
+The shipped Windows binaries were compiled from commit `ed0cbdf2d727dc7332a1a9b021ff8883f4925516`. Later Mac workflow/test-thread portability and documentation commits preserve the instrument source, DSP, factory data and parameter identities. Local ZIP CRC, PE machine and VST3/standalone SHA-256 comparisons also passed.
+
+| Check | Windows x86 | Windows x64 |
+|---|---|---|
+| Native build and test suites | 12 passed in 32-bit processes | 12 passed in 64-bit processes |
+| Actual VST3 host checks | 887; 888 under the matching FL-style executable name | Both matching-bitness host suites passed |
+| JUCE application integration | 6,161 checks | 6,161 checks |
+| Official Steinberg validator | 47 passed, 0 failed; validator compiled Win32 | 47 passed, 0 failed |
+| pluginval | Not run: official downloaded Windows tool is x64 | Strictness 10 passed |
+| Installer | Clean/reinstall/launch/uninstall, user data preserved; existing x64 binary unchanged | 0.19.3 upgrade/reinstall/launch/uninstall, user data preserved |
+
+Evidence: [Windows x86 build and validation](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/43259811064) (the Mac allocation failure makes the overall run red, while every Windows step passed), [Windows x64 and independent core suites](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/43259810885), [latest Mac retry](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/43264242887).
+
+## Remaining Mac validation and owner acceptance
+
+If the queued Mac job is cancelled for runner allocation again, rerun the `mac-universal` job when GitHub Mac capacity is available. Alternatively run the documented build/package commands on a Mac, install the resulting package, run `scripts/validate-macos.sh` and `scripts/verify-platform.py --platform macos --build build-macos --installed`, then test the exact package and carried universal test executables on the other CPU architecture. Native compiler/test failures must be resolved before publishing a Mac download. Developer ID signing/notarization remains deferred.
 
 Windows x86 must pass all twelve suites in actual 32-bit test processes, both matching-bitness VST3 hosts and the official Steinberg validator built as Win32. The official downloaded pluginval Windows executable is x64, so it is not misused to claim 32-bit validation. A clean/reinstall/launch/uninstall test checks x86 beside an installed verified x64 release and ensures the x64 plugin hash and user data remain unchanged. PE headers must identify both shipped instrument binaries as x86.
 
