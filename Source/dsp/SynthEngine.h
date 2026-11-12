@@ -32,6 +32,7 @@ private:
     struct FrameCache {
         std::uint64_t modulationGeneration=0;
         std::uint64_t modulationOrigin=~std::uint64_t(0);
+        std::array<double,5> advancedPhases{};
         float modPitch=0,modFilter=0,modAmp=0,modVowel=0,pan=0;
         float syllableMotion=0,syllableGain=1,amplitude=1;
         float pitch=-1000,pitchRatio=1;

@@ -5,7 +5,7 @@ ROOT = Path(__file__).resolve().parents[1]
 ROOT_FILES = {'CMakeLists.txt', 'README.md', '.gitignore', 'LICENSE', 'LICENSE.md', 'NOTICE', 'CHANGELOG.md'}
 SOURCE_DIRS = {'Source', 'Tests', 'Tools', 'Presets', 'scripts', 'docs', 'packaging', '.github'}
 REQUIRED = {
-    'docs/RELEASE_0_19_3.md',
+    'docs/RELEASE_0_19_3.md', 'scripts/verify-release-0193.py', '.github/workflows/finish-performance-0193.yml',
     'Tools/PresetAudition.cpp', 'Tools/listening-review.html', 'scripts/build-listening-pack.py',
     'docs/PRESET_LISTENING.md', 'Tools/test-listening-review.py', '.github/workflows/preset-listening.yml',
     'Source/ThemeArt.h', 'docs/RELEASE_0_19_2.md', 'docs/images/skins-0192.jpg',

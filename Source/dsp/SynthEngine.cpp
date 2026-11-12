@@ -356,8 +356,17 @@ template<int Engine> void SynthEngine::updateModulation(Voice& v,FrameCache& cac
 
 template<int Engine> float SynthEngine::voiceSample(Voice& v,FrameCache& cache) noexcept {
     const auto& s=current;
-    v.lfo1.advanceIncrement(lfo1Increment);v.lfo2.advanceIncrement(lfo2Increment);
-    v.vibrato.advanceIncrement(vibratoIncrement);v.tremolo.advanceIncrement(tremoloIncrement);v.syllable.advanceIncrement(syllableIncrement);
+    // Equal reset origins have identical clock histories under the shared
+    // rates. Reuse the exact advanced phases, retaining independent per-voice
+    // state and the ordinary path whenever another origin replaces the cache.
+    if(cache.modulationGeneration==modulationGeneration&&cache.modulationOrigin==v.modulationOrigin){
+        v.lfo1.phase=cache.advancedPhases[0];v.lfo2.phase=cache.advancedPhases[1];
+        v.vibrato.phase=cache.advancedPhases[2];v.tremolo.phase=cache.advancedPhases[3];v.syllable.phase=cache.advancedPhases[4];
+    }else{
+        v.lfo1.advanceIncrement(lfo1Increment);v.lfo2.advanceIncrement(lfo2Increment);
+        v.vibrato.advanceIncrement(vibratoIncrement);v.tremolo.advanceIncrement(tremoloIncrement);v.syllable.advanceIncrement(syllableIncrement);
+        cache.advancedPhases={v.lfo1.phase,v.lfo2.phase,v.vibrato.phase,v.tremolo.phase,v.syllable.phase};
+    }
     updateModulation<Engine>(v,cache);
     float modPitch=cache.modPitch;const float modFilter=cache.modFilter,modVowel=cache.modVowel;
     v.panMod=cache.pan;

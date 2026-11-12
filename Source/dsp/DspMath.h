@@ -19,6 +19,11 @@ inline float softLimit(float value) noexcept {
 }
 inline float midiHz(float note) noexcept { return 440.0f * std::exp2((note-69.0f)/12.0f); }
 inline float wrap(float p) noexcept {
+#if defined(_MSC_VER)
+    // MSVC already lowers this expression efficiently; branches increased the
+    // cost of its native voice loop in matched Windows measurements.
+    return p-std::floor(p);
+#else
     // Oscillator phases normally advance by less than one cycle. In these two
     // intervals the floor is known exactly, so retain the original subtraction
     // without a general floor operation. Keep signed zero, negative phases,
@@ -26,6 +31,7 @@ inline float wrap(float p) noexcept {
     if(p>0&&p<1)return p;
     if(p>=1&&p<2)return p-1;
     return p-std::floor(p);
+#endif
 }
 inline float blep(float t, float dt) noexcept {
     if (t < dt) { t/=dt; return t+t-t*t-1; }

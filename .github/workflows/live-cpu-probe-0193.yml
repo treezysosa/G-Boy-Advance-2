@@ -1,0 +1,50 @@
+name: Measure native CPU candidate
+on:
+  push:
+    branches: ['probe/native-cpu-0193']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  native-cpu:
+    runs-on: windows-2022
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Build identical native drivers with the released and candidate DSP
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force build-probe/baseline-source,build-probe/logs | Out-Null
+          git archive --format=tar --output=build-probe/baseline.tar f62e8e02d33bb75013ec1daa00584baf4368ff6c
+          if ($LASTEXITCODE -ne 0) { throw 'Baseline export failed.' }
+          tar -xf build-probe/baseline.tar -C build-probe/baseline-source
+          if ($LASTEXITCODE -ne 0) { throw 'Baseline extraction failed.' }
+          foreach($kind in @('before','after')) {
+            $source=if($kind -eq 'before'){'build-probe/baseline-source'}else{'.'}
+            cmake -S $source -B "build-probe/$kind" -G 'Visual Studio 17 2022' -A x64 -DGBA_BUILD_PLUGIN=OFF -DBUILD_TESTING=OFF -DGBA_BUILD_BENCHMARKS=ON
+            if ($LASTEXITCODE -ne 0) { throw 'Native configure failed.' }
+            cmake --build "build-probe/$kind" --config Release --target gba2-pad-string-benchmark gba2-performance-probe --parallel 2
+            if ($LASTEXITCODE -ne 0) { throw 'Native build failed.' }
+            & "build-probe/$kind/Release/gba2-performance-probe.exe" "build-probe/logs/$kind.f32"
+            if ($LASTEXITCODE -ne 0) { throw 'Native reference render failed.' }
+          }
+          if((Get-FileHash build-probe/logs/before.f32).Hash -ne (Get-FileHash build-probe/logs/after.f32).Hash) { throw 'Candidate audio differs from released DSP.' }
+          Remove-Item build-probe/logs/*.f32
+      - name: Alternate matched CPU measurements
+        shell: pwsh
+        run: |
+          foreach($repeat in @(0,1)) {
+            $order=if($repeat -eq 0){@('before','after')}else{@('after','before')}
+            foreach($kind in $order) {
+              & "build-probe/$kind/Release/gba2-pad-string-benchmark.exe" "build-probe/logs/pad-string-$kind-$repeat.csv"
+              if ($LASTEXITCODE -ne 0) { throw 'Profile failed.' }
+            }
+          }
+          python scripts/report-live-cpu.py build-probe/logs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: Native-CPU-probe
+          path: build-probe/logs/**
