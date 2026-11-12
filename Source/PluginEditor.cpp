@@ -1,5 +1,6 @@
 #include "PluginEditor.h"
 #include "PixelText.h"
+#include "ThemeArt.h"
 
 namespace {
 const juce::Colour silver {0xffe6e5e5}, text {0xffeeeeff};
@@ -627,6 +628,8 @@ void GbaEditor::paintHousing(juce::Graphics& g) {
         g.setColour(juce::Colours::white.withAlpha(.035f));g.fillEllipse(x,y+size*.6f,size,size*.5f);
     }
     // Glossy, angular upper housing follows the approved wide rectangular reference.
+    const auto& theme=gba_ui::skins[std::size_t(look.skin())];
+    gba_ui::paintTheme(g,theme,{12,203,1256,242});
     juce::Path shell;shell.startNewSubPath(0,0);shell.lineTo(270,0);shell.lineTo(285,25);shell.lineTo(995,25);shell.lineTo(1010,0);shell.lineTo(1280,0);shell.lineTo(1280,95);shell.lineTo(1165,95);shell.lineTo(1116,148);shell.lineTo(1089,161);shell.lineTo(1084,191);shell.lineTo(194,191);shell.lineTo(187,163);shell.lineTo(157,151);shell.lineTo(112,95);shell.lineTo(0,95);shell.closeSubPath();
     g.setColour(juce::Colours::black.withAlpha(.5f));
     g.strokePath(shell,juce::PathStrokeType(12),juce::AffineTransform::translation(0,5));
@@ -634,6 +637,7 @@ void GbaEditor::paintHousing(juce::Graphics& g) {
     plastic.addColour(.08,look.shell(juce::Colour(0xffa477ff)));plastic.addColour(.14,look.shell(juce::Colour(0xff8450ec)));
     plastic.addColour(.76,look.shell(juce::Colour(0xff7d3df1)));plastic.addColour(.92,look.shell(juce::Colour(0xff9861ff)));
     g.setGradientFill(plastic);g.fillPath(shell);
+    {juce::Graphics::ScopedSaveState decoration(g);g.reduceClipRegion(shell);gba_ui::paintTheme(g,theme,{0,0,1280,205});}
     g.setColour(look.shell(juce::Colour(0xff3b147d)));g.strokePath(shell,juce::PathStrokeType(9));
     g.setColour(look.shell(juce::Colour(0xffa97aff)));g.strokePath(shell,juce::PathStrokeType(5));
     g.setColour(look.shell(juce::Colour(0xffe1c6ff)).withAlpha(.8f));g.strokePath(shell,juce::PathStrokeType(1.5f),juce::AffineTransform::translation(0,-2));
@@ -675,6 +679,7 @@ void GbaEditor::paintHousing(juce::Graphics& g) {
     juce::ColourGradient lowerPlastic(look.shell(juce::Colour(0xffb187ff)),0,455,look.shell(juce::Colour(0xff5630bd)),0,646,false);
     lowerPlastic.addColour(.07,look.shell(juce::Colour(0xff824ff3)));lowerPlastic.addColour(.15,look.shell(juce::Colour(0xff6238cf)));lowerPlastic.addColour(.85,look.shell(juce::Colour(0xff5330b3)));lowerPlastic.addColour(.98,look.shell(juce::Colour(0xff9467ef)));
     g.setGradientFill(lowerPlastic);g.fillPath(lower);
+    {juce::Graphics::ScopedSaveState decoration(g);g.reduceClipRegion(lower);gba_ui::paintTheme(g,theme,{0,455,1280,191});}
     g.setColour(look.shell(juce::Colour(0xff3e1b8a)));g.strokePath(lower,juce::PathStrokeType(11));
     g.setColour(look.shell(juce::Colour(0xff9865ef)));g.strokePath(lower,juce::PathStrokeType(6));
     g.setColour(look.shell(juce::Colour(0xffd4b3ff)));g.strokePath(lower,juce::PathStrokeType(2),juce::AffineTransform::translation(0,-2));

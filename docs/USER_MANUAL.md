@@ -1,4 +1,4 @@
-> Current version: **0.19.1**. 654 presets in 20 factory categories, plus SoundFonts navigation, and 40 skins. Percussion is removed from Factory; existing projects retain their saved sounds. [Current changes](RELEASE_0_19_1.md).
+> Current version: **0.19.2**. 654 presets in 20 factory categories, plus SoundFonts navigation, and 50 skins. Percussion is removed from Factory; existing projects retain their saved sounds. [Current changes](RELEASE_0_19_2.md).
 
 
 
@@ -195,3 +195,9 @@ On older computers, use a 44.1 or 48 kHz project and an ASIO buffer of 256 or 51
 Native voices that reset their modulation clocks on the same audio frame share modulation calculations. Individual clocks, note velocities, wheel/bend controls and release voices keep their original behavior. Flat EQ shelves with zero internal state use an exact identity path. With distortion at zero, saturation uses the original tanh/FIR processing with a simpler blend path. No approximation, reduced polyphony, shortened release or effects-quality setting is introduced.
 
 See the current release notes for matched CPU and audio results against 0.19.0. Results on a specific older computer or user SoundFont require testing that computer and bank. The SoundFont stress bank used in development contains four layers per key and original generated waves; it is test data only.
+
+## Original themed skins (0.19.2)
+
+SELECT → SKIN now offers 50 appearances. Meadow Quest and Ember Trail use original nature/adventure designs; Neon Grid and Prism Circuit use digital-fantasy geometry; Solar Surge uses anime-style energy streaks; Ink & Ivory uses classic-cartoon halftones and ribbons. Evergreen Glow and Frosted Berry provide Christmas/winter colors, and Tidal Breeze and Sunset Coast provide beach colors. The decorations are original vector shapes.
+
+Choose a fixed appearance with NEW COLOUR ON LOAD disabled, or leave it enabled for a different skin on each launch. Saved projects remember their selected skin. The 0.19.1 audio optimizations, presets and SoundFont behavior remain available. Pattern artwork uses the existing static housing cache and adds no animation timer.

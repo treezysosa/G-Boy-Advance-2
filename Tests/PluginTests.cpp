@@ -428,7 +428,7 @@ int main(int argc,char** argv) {
             auto* select=button(*editor,"SELECT");select->onClick();check(button(*editor,"BACK / SELECT")!=nullptr,"SELECT did not open advanced editor");
             auto* synthTabs=dynamic_cast<juce::TabbedComponent*>(named(*editor,"Advanced tabs"));
             check(synthTabs&&synthTabs->getNumTabs()==4&&!synthTabs->getTabNames().contains("SAMPLES"),"Sample playback controls remain in the editor");
-            auto* skin=dynamic_cast<juce::ComboBox*>(named(*editor,"UI skin"));check(skin&&skin->getNumItems()==40,"Forty-skin selector missing");
+            auto* skin=dynamic_cast<juce::ComboBox*>(named(*editor,"UI skin"));check(skin&&skin->getNumItems()==50,"Fifty-skin selector missing");
             auto* autoSkin=dynamic_cast<juce::ToggleButton*>(named(*editor,"New colour on load"));check(autoSkin!=nullptr,"Launch-colour preference is missing");
             autoSkin->setToggleState(false,juce::dontSendNotification);autoSkin->onClick();p.setEditorSkin(0);juce::MessageManager::getInstance()->runDispatchLoopUntil(60);
             const auto sound=p.snapshot();const auto presetId=p.presetId();
@@ -446,6 +446,9 @@ int main(int argc,char** argv) {
                 check(isolated->editorSkin==int(i),"Selected skin failed project roundtrip");isolated->editorSkin=0;
                 snapshot(*editor,"ui-snapshots/Advanced-"+juce::String(gba_ui::skins[i].id.data())+".png");
                 editor->keyPressed(juce::KeyPress(juce::KeyPress::F2Key));snapshot(*editor,"ui-snapshots/Skin-"+juce::String(gba_ui::skins[i].id.data())+".png");
+                if(gba_ui::skins[i].pattern!=gba_ui::Pattern::none){
+                    editor->setSize(1280,646);snapshot(*editor,"ui-snapshots/Theme-"+juce::String(gba_ui::skins[i].id.data())+"-150pct.png",1.5f);editor->setSize(960,485);
+                }
                 editor->keyPressed(juce::KeyPress(juce::KeyPress::F2Key));skin=dynamic_cast<juce::ComboBox*>(named(*editor,"UI skin"));
             }
             check(listener.appearanceChanges==int(gba_ui::skins.size())-1,"Skin changes did not notify the host about unsaved state");p.removeListener(&listener);
