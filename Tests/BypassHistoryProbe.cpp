@@ -2,7 +2,8 @@
 #include <fstream>
 #include <iostream>
 int main(int argc,char** argv) {
-    if(argc!=2)return 1;std::ofstream out(argv[1],std::ios::binary);std::size_t frames=0;
+    if(argc!=2)return 1;
+    std::ofstream out(argv[1],std::ios::binary);std::size_t frames=0;
     for(float rate:{44100.f,48000.f,96000.f})for(int bypass:{0,1,17,63,64,65,128,512})for(int offset:{0,17}) {
         gba::Effects fx;fx.prepare(rate);gba::Settings s;s.set(gba::Param::Reverb,0);s.set(gba::Param::Chorus,0);s.set(gba::Param::Delay,0);
         gba::Random rng;

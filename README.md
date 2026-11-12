@@ -1,10 +1,14 @@
-# G BOY ADVANCE 2 — 0.19.2
+# G BOY ADVANCE 2 — 0.19.3
+
+CPU optimization candidate: faster exact phase wrapping and wavetable indexing, and paired stereo saturation FIR processing. No factory sound, voice budget, release time, oscillator partial, modulation rate or effect is reduced. [Changes and validation](docs/RELEASE_0_19_3.md). Windows compilation, matched performance measurements and release validation are pending.
+
+## Appearance and compatibility
 
 **50 UI skins**, including ten original themed finishes: Meadow Quest, Ember Trail, Neon Grid, Prism Circuit, Solar Surge, Ink & Ivory, Evergreen Glow, Frosted Berry, Tidal Breeze and Sunset Coast. Nature/adventure, digital fantasy, anime energy, classic cartoon, Christmas and beach directions use original palettes and vector decorations.
 
 SELECT → SKIN selects an appearance. NEW COLOUR ON LOAD includes all 50 skins; disable it for a fixed project color. Existing skins, saved projects, user presets and SoundFont libraries are preserved. The 0.19.1 audio engine and 654 factory presets are unchanged.
 
-[Changes and validation](docs/RELEASE_0_19_2.md) · [Source branch](https://github.com/treezysosa/G-Boy-Advance-2/tree/feature/themed-skins-0192). Windows x64 compilation, 50-skin state/render checks, pluginval strictness 10 and the Steinberg validator passed. The installer passed the 0.19.1 upgrade, reinstall, launch and uninstall checks with user data preserved. Pattern artwork uses the existing static UI cache. Prepared binaries are unsigned; the owner deferred licensing.
+[Earlier appearance update](docs/RELEASE_0_19_2.md) · [Source branch](https://github.com/treezysosa/G-Boy-Advance-2/tree/feature/pad-string-performance-0193). The 0.19.2 Windows x64 compilation, 50-skin state/render checks, pluginval strictness 10 and Steinberg validator passed. The installer passed the 0.19.1 upgrade, reinstall, launch and uninstall checks with user data preserved. Pattern artwork uses the existing static UI cache. Prepared binaries are unsigned; the owner deferred licensing.
 
 ![Ten new native Windows UI skins](docs/images/skins-0192.jpg)
 
@@ -15,12 +19,12 @@ Native Windows JUCE component renders of the ten added skins. All 50 main/advanc
 Install Visual Studio 2022 with **Desktop development with C++**, a Windows SDK, CMake 3.24+, and Git. In PowerShell:
 
 ```powershell
-git clone --branch feature/themed-skins-0192 https://github.com/treezysosa/G-Boy-Advance-2.git
+git clone --branch feature/pad-string-performance-0193 https://github.com/treezysosa/G-Boy-Advance-2.git
 cd G-Boy-Advance-2
 powershell -ExecutionPolicy Bypass -File scripts/build-windows.ps1
 ```
 
-You can also use [Build and validate in GitHub Actions](https://github.com/treezysosa/G-Boy-Advance-2/actions?query=branch%3Afeature%2Fthemed-skins-0192). Factory/vocal and retro audition files are separate test outputs and are never installed or loaded by the instrument.
+You can also use [Build and validate in GitHub Actions](https://github.com/treezysosa/G-Boy-Advance-2/actions?query=branch%3Afeature%2Fpad-string-performance-0193). Factory/vocal and retro audition files are separate test outputs and are never installed or loaded by the instrument.
 
 The first local build downloads the pinned JUCE 8.0.6 source. For an offline build, supply an existing checkout:
 

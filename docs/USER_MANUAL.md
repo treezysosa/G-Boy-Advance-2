@@ -1,4 +1,4 @@
-> Current version: **0.19.2**. 654 presets in 20 factory categories, plus SoundFonts navigation, and 50 skins. Percussion is removed from Factory; existing projects retain their saved sounds. [Current changes](RELEASE_0_19_2.md).
+> Current version: **0.19.3**. 654 presets in 20 factory categories, plus SoundFonts navigation, and 50 skins. Percussion is removed from Factory; existing projects retain their saved sounds. [Current changes](RELEASE_0_19_3.md).
 
 
 

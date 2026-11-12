@@ -1,5 +1,6 @@
 #include "dsp/SynthEngine.h"
 #include <atomic>
+#include <bit>
 #include <iostream>
 #include <limits>
 #include <memory>
@@ -13,6 +14,21 @@ extern std::atomic<int> allocations;
 namespace {
 int checks=0;
 void check(bool ok,const std::string& message) {++checks;if(!ok)throw std::runtime_error(message);}
+void phaseWrapping(){
+    bool exact=true;gba::Random rng;
+    const auto compare=[&](float phase){
+        const auto expected=phase-std::floor(phase),actual=gba::wrap(phase);
+        exact&=std::bit_cast<std::uint32_t>(expected)==std::bit_cast<std::uint32_t>(actual);
+    };
+    for(int n=0;n<1000000;++n){compare(rng.next()*16);compare(float(n)/500000);}
+    for(float edge:{-1000000.f,-2.f,-1.f,-0.f,0.f,1.f,2.f,1000000.f}){
+        compare(edge);compare(std::nextafter(edge,-std::numeric_limits<float>::infinity()));compare(std::nextafter(edge,std::numeric_limits<float>::infinity()));
+    }
+    compare(std::numeric_limits<float>::denorm_min());compare(-std::numeric_limits<float>::denorm_min());
+    check(exact,"Phase wrapping differs from floor at oscillator/FM inputs or signed-zero boundaries");
+    check(std::isnan(gba::wrap(std::numeric_limits<float>::infinity()))&&std::isnan(gba::wrap(std::numeric_limits<float>::quiet_NaN())),"Phase wrapping changed non-finite behavior");
+    std::cout<<"PASS two-million-input exact phase-wrap reference and boundary sweep\n";
+}
 struct Audio {std::vector<float> l,r;explicit Audio(int size):l(std::size_t(size)),r(std::size_t(size)) {}};
 double rms(const std::vector<float>& a) {double sum=0;for(float x:a)sum+=double(x)*x;return std::sqrt(sum/double(a.size()));}
 double pitch(const Audio& a,double sr=48000) {
@@ -185,7 +201,7 @@ void stableBlocksAndCopies() {
 }
 int main() {
     try {
-        envelopeTiming();longModulationClock();filters();stableBlocksAndCopies();auto e=std::make_unique<gba::SynthEngine>();oscillators(*e);voicesAndModulation(*e);transitions(*e);
+        phaseWrapping();envelopeTiming();longModulationClock();filters();stableBlocksAndCopies();auto e=std::make_unique<gba::SynthEngine>();oscillators(*e);voicesAndModulation(*e);transitions(*e);
         std::cout<<"All "<<checks<<" Phase 3 core synthesis checks passed.\n";return 0;
     }catch(const std::exception& error){trackAllocations=false;std::cerr<<"FAIL: "<<error.what()<<"\n";return 1;}
 }

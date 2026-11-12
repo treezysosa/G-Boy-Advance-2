@@ -76,7 +76,7 @@ for voices in (1,4,8):
         a=sum(float(r['mean_us'])*int(r['callbacks']) for r in chosen(before_play))
         b=sum(float(r['mean_us'])*int(r['callbacks']) for r in chosen(after_play))
         result['playing'][f'{voices}-{workload}']={'beforeMeasuredUs':a,'afterMeasuredUs':b,'reductionPercent':100*(1-b/a)}
-result['baselineDspCommit']='4d6011fd971e1e0e73a8aeab2e6195811baf4896'
+result['baselineDspCommit']='f62e8e02d33bb75013ec1daa00584baf4368ff6c'
 def sustained_comparison():
     before_hash,after_hash=hashlib.sha256(),hashlib.sha256()
     total=changed=0;maximum=energy=noise=0.0
@@ -157,7 +157,7 @@ for dynamic,label in [('0','static'),('1','modulated')]:
 # reduction target explicit so neither interpretation can inflate the claim.
 for entry in [*(v for group in result['profiles'].values() for k,v in group.items() if isinstance(v,dict)), *result['playing'].values(), *(v for group in result['padStrings'].values() for v in group.values()), *(v for group in result['layeredSoundFonts'].values() for v in group.values())]:
     entry['throughputIncreasePercent']=100*(entry['beforeMeasuredUs']/entry['afterMeasuredUs']-1)
-result['performanceTarget']={'requestedPercent':50,'metric':'CPU render time reduction against 0.19.0; reciprocal throughput is also reported','synthPadStringVoicesMeeting50Percent':[int(k) for k,v in result['padStrings']['synth'].items() if v['reductionPercent']>=50],'sf2PadStringVoicesMeeting50Percent':[int(k) for k,v in result['padStrings']['sf2'].items() if v['reductionPercent']>=50],'universalGainGuaranteed':False}
+result['performanceTarget']={'requestedPercent':50,'metric':'CPU render time reduction against 0.19.2; reciprocal throughput is also reported','synthPadStringVoicesMeeting50Percent':[int(k) for k,v in result['padStrings']['synth'].items() if v['reductionPercent']>=50],'sf2PadStringVoicesMeeting50Percent':[int(k) for k,v in result['padStrings']['sf2'].items() if v['reductionPercent']>=50],'universalGainGuaranteed':False}
 result['limit'] = 'Native DSP on one shared runner with identical current factory arrays; timings are observational, generated SF2 test banks only, not real user banks or measurements on the owner PC; not FL Studio CPU percentages or physical-driver deadline certification.'
 (folder / 'cpu-comparison.json').write_text(json.dumps(result, indent=2) + '\n')
 print(json.dumps(result, indent=2))

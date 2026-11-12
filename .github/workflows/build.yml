@@ -1,7 +1,7 @@
 name: Build and validate
 on:
   push:
-    branches-ignore: ['support/**', 'tools/preset-listening-0192']
+    branches-ignore: ['support/**', 'tools/preset-listening-0192', 'release/performance-0193']
   pull_request:
   workflow_dispatch:
 permissions:
@@ -66,7 +66,7 @@ jobs:
         shell: pwsh
         run: ./scripts/support/Test-report.ps1 -CollectorPath scripts/collect-windows-diagnostics.ps1 -CollectorRevision 3
       - name: Configure Visual Studio 2022 x64
-        run: cmake -S . -B build -G "Visual Studio 17 2022" -A x64 -DGBA_JUCE_PATH="${{ github.workspace }}/Dependencies/JUCE" -DBUILD_TESTING=ON -DGBA_BUILD_BENCHMARKS=OFF
+        run: cmake -S . -B build -G "Visual Studio 17 2022" -A x64 -DGBA_JUCE_PATH="${{ github.workspace }}/Dependencies/JUCE" -DBUILD_TESTING=ON -DGBA_BUILD_BENCHMARKS=ON
       - name: Build VST3, standalone and tests
         run: cmake --build build --config Release --parallel 2
       - name: Run engine and integration tests
@@ -77,13 +77,15 @@ jobs:
       - name: Run separate official Steinberg validator
         shell: pwsh
         run: ./scripts/validate-steinberg-windows.ps1
-      - name: Verify the existing optimized audio engine and factory bank are unchanged
+      - name: Compare audio and CPU against the released 0.19.2 engine
         shell: pwsh
+        run: ./scripts/compare-cpu-windows.ps1
+      - name: Require identical direct effects including bypass history
+        shell: cmd
         run: |
-          git fetch --no-tags --depth=1 origin 60239ebfff5357228bc1c5747ade3bdaa944283d
-          if ($LASTEXITCODE -ne 0) { throw 'Could not fetch the immutable 0.19.1 reference.' }
-          git diff --exit-code 60239ebfff5357228bc1c5747ade3bdaa944283d -- Source/dsp Source/FactoryData.h Presets
-          if ($LASTEXITCODE -ne 0) { throw 'The skin-only build changed synthesis, effects or factory patches.' }
+          call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\Tools\VsDevCmd.bat" -arch=x64
+          if errorlevel 1 exit /b 1
+          python scripts/check-drive-bypass-reference.py build/cpu-baseline-source --compiler cl --report build/validation-logs/drive-bypass-reference.json
       - name: Package portable archive and installer
         shell: pwsh
         run: |
@@ -93,7 +95,7 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           name: G-Boy-Advance-2-Installer-x64
-          run-id: 43091697845
+          run-id: 43228296296
           github-token: ${{ github.token }}
           path: build/previous-installer
       - name: Exercise install, upgrade, reinstall, standalone launch and uninstall

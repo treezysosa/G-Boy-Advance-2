@@ -1,4 +1,7 @@
 #include "Effects.h"
+#if defined(__SSE2__) || defined(_M_X64)
+#include <emmintrin.h>
+#endif
 
 namespace gba {
 float Effects::Line::read(float d) const noexcept {
@@ -11,26 +14,35 @@ float Effects::Line::read(float d) const noexcept {
     return std::lerp(data[std::size_t(a)],data[std::size_t(b)],distance-float(whole));
 }
 void Effects::Line::push(float x) noexcept {data[pos]=x;if(++pos==data.size())pos=0;}
-float Effects::Fir::next(float x,const std::array<float,33>& coefficients) noexcept {
+Effects::Stereo Effects::Fir::next(const Stereo& x,const std::array<float,33>& coefficients) noexcept {
     history[std::size_t(pos)]=history[std::size_t(pos+33)]=x;
-    float y=history[std::size_t(pos+17)]*coefficients[16];
-    // A half-band FIR has zero even taps except for its center.
-    for(int i=1;i<33;i+=2)y+=history[std::size_t(pos+33-i)]*coefficients[std::size_t(i)];
+    Stereo result{};
+#if defined(__SSE2__) || defined(_M_X64)
+    // Each lane follows the old channel's multiply/add order exactly. Pairing
+    // channels saves FIR loop/index work without changing taps or summation.
+    const auto load=[](const Stereo& frame){return _mm_castsi128_ps(_mm_loadl_epi64(reinterpret_cast<const __m128i*>(frame.data())));};
+    __m128 y=_mm_mul_ps(load(history[std::size_t(pos+17)]),_mm_set1_ps(coefficients[16]));
+    for(int i=1;i<33;i+=2)y=_mm_add_ps(y,_mm_mul_ps(load(history[std::size_t(pos+33-i)]),_mm_set1_ps(coefficients[std::size_t(i)])));
+    _mm_storel_epi64(reinterpret_cast<__m128i*>(result.data()),_mm_castps_si128(y));
+#else
+    for(int c=0;c<2;++c){
+        float y=history[std::size_t(pos+17)][std::size_t(c)]*coefficients[16];
+        for(int i=1;i<33;i+=2)y+=history[std::size_t(pos+33-i)][std::size_t(c)]*coefficients[std::size_t(i)];
+        result[std::size_t(c)]=y;
+    }
+#endif
     if(++pos==33)pos=0;
-    return y;
+    return result;
 }
-void Effects::Fir::push(float x) noexcept {
+void Effects::Fir::push(const Stereo& x) noexcept {
     history[std::size_t(pos)]=history[std::size_t(pos+33)]=x;
     if(++pos==33)pos=0;
 }
-float Effects::Fir::upEven(float x,const std::array<float,33>& coefficients) noexcept {
-    // The interpolator always receives (2*x, 0). At its even phase every
-    // noncentral contributing tap multiplies a stored zero. Keep the identical
-    // history/phase and center product, without evaluating those zero products.
+Effects::Stereo Effects::Fir::upEven(const Stereo& x,const std::array<float,33>& coefficients) noexcept {
     history[std::size_t(pos)]=history[std::size_t(pos+33)]=x;
-    const float y=history[std::size_t(pos+17)]*coefficients[16];
+    Stereo result{history[std::size_t(pos+17)][0]*coefficients[16],history[std::size_t(pos+17)][1]*coefficients[16]};
     if(++pos==33)pos=0;
-    return y;
+    return result;
 }
 void Effects::Shelf::coefficients(float hz,float db,float rate,bool high) noexcept {
     const float a=std::pow(10.0f,db/40),w=tau*std::min(hz,rate*.4f)/rate,c=std::cos(w);
@@ -76,7 +88,7 @@ void Effects::reset() noexcept {
     for(auto* lines:{&delay,&mod,&tape})for(auto& line:*lines){std::fill(line.data.begin(),line.data.end(),0.0f);line.pos=0;line.damp=0;}
     for(auto& line:room){std::fill(line.data.begin(),line.data.end(),0.0f);line.pos=0;line.damp=0;}
     allpass={};up={};down={};dry={};held={};lowShelf={};highShelf={};
-    bypassInput={};bypassPosition={};bypassFrames={};firSleeping={};
+    bypassInput={};bypassPosition=bypassFrames=0;firSleeping=false;
     chorusPhase={};flangePhase={};phaserPhase={};wowPhase={};flutterPhase={};
     crusherCounter=controlCounter=delayFade=dryPos=0;coefficientsReady=false;delayA=delayB=0;
     eqReady=false;
@@ -90,47 +102,36 @@ void Effects::update(const Settings& s) noexcept {
     if(!eqReady||cachedEqHigh!=s[Param::EqHigh])for(auto& shelf:highShelf)shelf.coefficients(3800,s[Param::EqHigh],sr,true);
     cachedEqLow=s[Param::EqLow];cachedEqHigh=s[Param::EqHigh];eqReady=true;
 }
-float Effects::nonlinear(float x,int c) noexcept {
-    const float delayed=dry[c][std::size_t(dryPos)];dry[c][std::size_t(dryPos)]=x;
+void Effects::nonlinear(float& left,float& right) noexcept {
+    const Stereo input{left,right},delayed{dry[0][std::size_t(dryPos)],dry[1][std::size_t(dryPos)]};
+    dry[0][std::size_t(dryPos)]=left;dry[1][std::size_t(dryPos)]=right;
     if(driveMix==0) {
-        // Only bypassed input is needed for reconstruction; driven sound avoids
-        // the history writes entirely. Sixty-four consecutive bypass frames
-        // replace the complete history before a filter is allowed to sleep.
-        bypassInput[std::size_t(c)][std::size_t(bypassPosition[std::size_t(c)])]=x;
-        bypassPosition[std::size_t(c)]=(bypassPosition[std::size_t(c)]+1)&63;
-        if(bypassFrames[std::size_t(c)]<64) {
-            down[c].push(up[c].upEven(2*x,halfband));down[c].push(up[c].next(0,halfband));
-            ++bypassFrames[std::size_t(c)];
-        } else firSleeping[std::size_t(c)]=true;
-        return delayed;
+        // Both channels always take the same bypass path and FIR phase. Keep
+        // all 64 recent input frames for exact wake-up, including stereo silence.
+        bypassInput[0][std::size_t(bypassPosition)]=left;bypassInput[1][std::size_t(bypassPosition)]=right;
+        bypassPosition=(bypassPosition+1)&63;
+        if(bypassFrames<64){
+            down.push(up.upEven({2*left,2*right},halfband));down.push(up.next({0,0},halfband));++bypassFrames;
+        }else firSleeping=true;
+        left=delayed[0];right=delayed[1];return;
     }
-    if(firSleeping[std::size_t(c)]) {
-        // A finite 33-tap filter has a bounded history. Reconstruct it from
-        // exact recent dry inputs only when saturation is re-enabled.
-        up[std::size_t(c)]={};down[std::size_t(c)]={};
-        for(int n=0;n<64;++n) {
-            const float input=bypassInput[std::size_t(c)][std::size_t((bypassPosition[std::size_t(c)]+n)&63)];
-            down[c].push(up[c].upEven(2*input,halfband));down[c].push(up[c].next(0,halfband));
+    if(firSleeping){
+        up={};down={};
+        for(int n=0;n<64;++n){
+            const auto at=std::size_t((bypassPosition+n)&63);
+            down.push(up.upEven({2*bypassInput[0][at],2*bypassInput[1][at]},halfband));down.push(up.next({0,0},halfband));
         }
-        firSleeping[std::size_t(c)]=false;
+        firSleeping=false;
     }
-    bypassFrames[std::size_t(c)]=0;
-    if(hardness==0) {
-        // lerp(a,b,0) is a: saturation-only patches need neither a hard clip
-        // nor the generic blend. Retain both FIR phases and float divisions.
-        const float a=down[c].next(std::tanh(up[c].upEven(2*x,halfband)*driveGain)/driveNorm,halfband);
-        down[c].push(std::tanh(up[c].next(0,halfband)*driveGain)/driveNorm);
-        return std::lerp(delayed,a,driveMix);
-    }
-    const auto shape=[&](float v) {
-        const float driven=v*driveGain;
-        return std::lerp(std::tanh(driven),std::clamp(driven,-1.0f,1.0f),hardness)/driveNorm;
+    bypassFrames=0;
+    const auto shape=[&](Stereo frame){
+        if(hardness==0){for(auto& x:frame)x=std::tanh(x*driveGain)/driveNorm;}
+        else for(auto& x:frame){const float driven=x*driveGain;x=std::lerp(std::tanh(driven),std::clamp(driven,-1.0f,1.0f),hardness)/driveNorm;}
+        return frame;
     };
-    const float a=down[c].next(shape(up[c].upEven(2*x,halfband)),halfband);
-    // The odd decimator output is discarded. Only its input history is needed
-    // for the next even output; nonlinear shaping and both FIR histories stay warm.
-    down[c].push(shape(up[c].next(0,halfband)));
-    return std::lerp(delayed,a,driveMix);
+    const auto even=down.next(shape(up.upEven({2*input[0],2*input[1]},halfband)),halfband);
+    down.push(shape(up.next({0,0},halfband)));
+    left=std::lerp(delayed[0],even[0],driveMix);right=std::lerp(delayed[1],even[1],driveMix);
 }
 void Effects::process(float& left,float& right,const Settings& s) noexcept {
     if(!ready){left=right=0;return;}
@@ -143,9 +144,10 @@ void Effects::process(float& left,float& right,const Settings& s) noexcept {
     chorusPhase.advanceIncrement(modulationIncrements[0]);flangePhase.advanceIncrement(modulationIncrements[1]);phaserPhase.advanceIncrement(modulationIncrements[2]);
     wowPhase.advanceIncrement(modulationIncrements[3]);flutterPhase.advanceIncrement(modulationIncrements[4]);
     const float wobble=s[Param::Wow]>0?s[Param::Wow]*(.0015f*wowPhase.value()+.00025f*flutterPhase.value()):0;
+    nonlinear(left,right);
     float* channels[]{&left,&right};
     for(int c=0;c<2;++c) {
-        float x=nonlinear(*channels[c],c);
+        float x=*channels[c];
         // Bypass ends each sample with counter zero (rate one). Re-enabling
         // therefore captures a fresh held value before it can be read; quantizing
         // an inaudible bypassed value adds work without preserving audible history.

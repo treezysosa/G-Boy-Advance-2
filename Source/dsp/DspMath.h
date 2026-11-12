@@ -18,7 +18,15 @@ inline float softLimit(float value) noexcept {
                  (34459425+z*(16216200+z*(945945+z*(13860+z*45)))));
 }
 inline float midiHz(float note) noexcept { return 440.0f * std::exp2((note-69.0f)/12.0f); }
-inline float wrap(float p) noexcept { return p-std::floor(p); }
+inline float wrap(float p) noexcept {
+    // Oscillator phases normally advance by less than one cycle. In these two
+    // intervals the floor is known exactly, so retain the original subtraction
+    // without a general floor operation. Keep signed zero, negative phases,
+    // large FM steps and non-finite values on the original path.
+    if(p>0&&p<1)return p;
+    if(p>=1&&p<2)return p-1;
+    return p-std::floor(p);
+}
 inline float blep(float t, float dt) noexcept {
     if (t < dt) { t/=dt; return t+t-t*t-1; }
     if (t > 1-dt) { t=(t-1)/dt; return t*t+t+t+1; }

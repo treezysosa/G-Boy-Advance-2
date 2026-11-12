@@ -132,7 +132,10 @@ inline float SynthEngine::wavetable(float p,float frequency,float position,Table
         tuning.frequency=frequency;tuning.rate=sampleRate;
     }
     const int m=tuning.level,m2=tuning.next,a=std::clamp(int(position),0,3),b=std::min(a+1,3);
-    float t=p*1024;int i=int(t)&1023,j=(i+1)&1023;float f=t-std::floor(t);
+    // Wrapped oscillator phases are nonnegative. Reuse their integer table
+    // address for the exact fractional part instead of evaluating floor again.
+    const float t=p*1024;const int address=int(t),i=address&1023,j=(i+1)&1023;
+    const float f=t-float(address);
     const auto read=[&](int shape,int level) {const auto& table=tables[shape][level];return table[i]+f*(table[j]-table[i]);};
     float x=std::lerp(read(a,m),read(a,m2),tuning.blend),y=std::lerp(read(b,m),read(b,m2),tuning.blend);
     return std::lerp(x,y,position-float(a));
