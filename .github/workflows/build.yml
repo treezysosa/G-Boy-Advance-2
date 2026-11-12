@@ -1,7 +1,7 @@
 name: Build and validate
 on:
   push:
-    branches-ignore: ['support/**']
+    branches-ignore: ['support/**', 'tools/preset-listening-0192']
   pull_request:
   workflow_dispatch:
 permissions:

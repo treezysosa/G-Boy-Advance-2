@@ -65,6 +65,10 @@ Close your DAW, copy the entire `.vst3` directory into `C:\Program Files\Common 
 - Fifty colour skins with nonrepeating launch colours or a fixed project choice; SoundFont drag and drop; host-visible parameters, project state, user preset Save As / import / export / rename / delete, favorites / recent patches, category search, tags, keyboard navigation.
 - Windows CI, portable packaging and Inno Setup installer script, DSP and JUCE integration tests.
 
+## Offline preset listening review
+
+All 654 current sounds have complete 20-second audition renders and EBU R128 measurements. Human listening and any resulting sound changes remain pending; the installed factory bank is unchanged. The optional native renderer, offline A/B player and feedback export/import are documented in [PRESET_LISTENING.md](docs/PRESET_LISTENING.md).
+
 ## Factory and user presets
 
 Canonical library: [`Presets/factory.json`](Presets/factory.json). The compiled plugin embeds the same parameter values in `Source/FactoryData.h`; users do not need to install an external bank. Regenerate both with `python scripts/generate_presets.py`. Recipe changes require the offline calibration workflow in the preset-format document; no authoring files or audio renders are needed at runtime.

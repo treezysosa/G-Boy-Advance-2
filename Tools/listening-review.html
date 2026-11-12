@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>G Boy Advance 2 — Preset listening review</title>
+<style>
+:root{color-scheme:dark;font:15px system-ui,sans-serif;background:#10131d;color:#ecedf7}*{box-sizing:border-box}body{max-width:1440px;margin:auto;padding:24px}h1{font-size:25px;margin:0 0 8px}h2{font-size:22px}p{line-height:1.55;color:#bdc4d6}button,select,input,textarea{font:inherit;color:inherit;background:#202638;border:1px solid #67708e;border-radius:6px;padding:9px}button{cursor:pointer}button:hover{background:#343e5a}button:disabled{opacity:.45;cursor:default}button.primary{background:#6547b1;border-color:#bfa4ff}label{display:inline-flex;gap:7px;align-items:center}input[type=checkbox]{width:18px;height:18px}textarea{width:100%;min-height:100px;resize:vertical}audio{width:100%;margin:12px 0}header,.card{background:#191e2e;border:1px solid #46506d;border-radius:12px;padding:20px;margin-bottom:18px}.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.toolbar{margin:12px 0}.layout{display:grid;grid-template-columns:minmax(250px,370px) 1fr;gap:18px}.list{max-height:680px;overflow:auto}#list button{display:block;text-align:left;width:100%;border-radius:0;border:0;border-bottom:1px solid #333c54;padding:12px;background:transparent}#list button[aria-current=true]{background:#493b71;border-left:4px solid #c6b3ff}small,.muted{color:#aeb9d0}.metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:14px 0}.metrics div{padding:12px;background:#101623;border-radius:8px}.metrics strong{display:block;font-size:20px;margin-bottom:4px}.badge{background:#37304e;color:#e4d4ff;border-radius:8px;padding:5px 9px}.notice{color:#ffddb0}#error{color:#ffd0ce;white-space:pre-wrap}#search{flex:1;min-width:180px}#count{margin-left:auto}#sections button{font-size:13px}.progress{height:7px;background:#0c101a;border-radius:9px;margin:12px 0;overflow:hidden}.progress div{height:100%;background:#ab91ec;width:0}details{margin:12px 0}summary{cursor:pointer}a{color:#cdbbff}@media(max-width:850px){.layout{grid-template-columns:1fr}.list{max-height:240px}.metrics{grid-template-columns:repeat(2,1fr)}body{padding:12px}}
+</style>
+<header>
+<h1>G Boy Advance 2 · Preset listening review</h1>
+<p>Original synthesis, rendered from your current bank. All sounds start <strong>unreviewed</strong>. Measurements flag listening candidates; they do not judge musical quality.</p>
+<div class="row"><strong id="progressText"></strong><span id="count" class="muted"></span></div>
+<div class="progress"><div id="progress"></div></div>
+<div class="row"><button id="export">Export feedback JSON</button><button id="import">Import feedback JSON</button><input type="file" id="feedbackFile" accept="application/json,.json" hidden><label>Reviewer <input id="reviewer" maxlength="100" placeholder="Your name (optional)"></label></div>
+<details><summary>How to use this review</summary><p>Select and play a sound, then compare it with its closest numerical neighbor. Rate the sound and write what should change. A/B level matching only turns the louder clip down. The chord retains the preset's own mono/poly mode. Soft and strong middle notes use the same pitch. Very long release/effects tails may exceed the 20-second excerpt.</p><p>Factory presets remain unchanged. The gain figure is a bounded proposal based on sound-family LUFS, not an applied correction. Save feedback with Export before moving files or switching browsers; browser storage is a convenience rather than a backup. Space plays/pauses; J/K choose previous/next outside text fields. Take listening breaks.</p></details>
+<div id="error" role="alert"></div>
+</header>
+<div class="toolbar row"><input id="search" placeholder="Search names, categories and tags" aria-label="Search presets"><select id="category" aria-label="Category"><option value="">All categories</option></select><select id="filter" aria-label="Review filter"><option value="all">All sounds</option><option value="unreviewed">Unreviewed</option><option value="flagged">Numerical flags</option><option value="reviewed">Reviewed</option></select><select id="sort" aria-label="Sort"><option value="factory">Factory order</option><option value="level">Largest level differences</option><option value="similar">Closest dry neighbors</option></select></div>
+<div class="layout">
+<nav class="card list" id="list" aria-label="Factory presets"></nav>
+<main class="card">
+<small id="categoryName"></small><h2 id="name"></h2><div class="row" id="flags"></div>
+<p id="description"></p>
+<div class="row"><button id="previous">Previous</button><button id="next">Next</button><button id="playA" class="primary">Play A</button><button id="playB">Play B</button><button id="stop">Stop</button><label><input type="checkbox" id="match" checked>Match A/B loudness</label></div>
+<audio id="player" controls preload="none"></audio><div id="playing" aria-live="polite" class="muted"></div>
+<div class="row" id="sections"></div>
+<div class="metrics" id="metrics"></div>
+<p id="neighbor"></p><div class="row"><label>Compare with <select id="compare" aria-label="Comparison preset"></select></label></div>
+<p id="proposal" class="notice"></p>
+<div class="row"><label>Human verdict <select id="verdict"><option value="unreviewed">Unreviewed</option><option value="keep">Keep</option><option value="too-quiet">Too quiet</option><option value="too-loud">Too loud</option><option value="weak">Weak — redesign</option><option value="similar">Too similar — redesign</option></select></label><label>Requested gain trim (dB) <input type="number" id="trim" min="-6" max="6" step=".1" value="0" style="width:90px"></label></div>
+<p><label for="notes">Listening notes / desired replacement</label></p><textarea id="notes" maxlength="4000" placeholder="Describe the articulation, tone, register, loudness or comparison that needs work."></textarea>
+<div class="row" style="margin-top:10px"><button id="save" class="primary">Save review</button><span id="saved" role="status" class="muted"></span></div>
+</main>
+</div>
+<script>
+'use strict';
+const PACK=/*__PACK_DATA__*/null;
+const $=id=>document.getElementById(id), presets=PACK.presets, byId=new Map(presets.map(p=>[p.id,p]));
+const bankIds=new Set(PACK.bankIds||presets.map(p=>p.id));
+const key='gba2-listening-'+PACK.provenance.factorySha256;
+const verdicts=new Set(['unreviewed','keep','too-quiet','too-loud','weak','similar']);
+let reviews={}, current=presets[0], visible=presets.slice(), playing=null;
+try{const cached=JSON.parse(localStorage.getItem(key)||'{}');reviews=cached.reviews||{};$('reviewer').value=cached.reviewer||'';}catch(e){$('error').textContent='Browser storage is unavailable. Export feedback to keep your work.';}
+const reviewed=id=>reviews[id]&&reviews[id].verdict!=='unreviewed';
+function persist(){try{localStorage.setItem(key,JSON.stringify({reviews,reviewer:$('reviewer').value}));}catch(e){$('error').textContent='Browser storage could not save. Use Export feedback now.';}}
+function save(){const trim=Number($('trim').value);if(!Number.isFinite(trim)||Math.abs(trim)>6){$('error').textContent='Requested trim must be between -6 and +6 dB.';return false;}reviews[current.id]={verdict:$('verdict').value,notes:$('notes').value.trim(),gainDb:trim,compareId:$('compare').value,updatedAt:new Date().toISOString()};persist();$('saved').textContent='Saved locally; export to back up.';renderList();return true;}
+function stats(){const count=presets.filter(p=>reviewed(p.id)).length;$('progressText').textContent=`${count} / ${presets.length} reviewed in this pack`;$('progress').style.width=(100*count/presets.length)+'%';$('count').textContent=`${PACK.factoryPresets} factory sounds · ${presets.length*PACK.phraseSeconds/60} minutes in this pack`;}
+function renderList(){const query=$('search').value.toLowerCase(), category=$('category').value, filter=$('filter').value;
+ visible=presets.filter(p=>(!category||p.category===category)&&[p.name,p.category,...p.tags].join(' ').toLowerCase().includes(query)&&(filter==='all'||(filter==='unreviewed'&&!reviewed(p.id))||(filter==='reviewed'&&reviewed(p.id))||(filter==='flagged'&&p.reviewFlags.length)));
+ if($('sort').value==='level')visible.sort((a,b)=>Math.abs(b.relativeNoteLu)-Math.abs(a.relativeNoteLu));
+ if($('sort').value==='similar')visible.sort((a,b)=>(a.nearest?.dryDistance??Infinity)-(b.nearest?.dryDistance??Infinity));
+ $('list').replaceChildren();for(const p of visible){const button=document.createElement('button');button.textContent=(reviewed(p.id)?'✓ ':'')+p.name;button.setAttribute('aria-current',String(p.id===current.id));button.title=p.category+(p.reviewFlags.length?' · '+p.reviewFlags.join(', '):'');button.onclick=()=>select(p);$('list').append(button);}stats();
+ $('previous').disabled=visible.indexOf(current)<=0;$('next').disabled=visible.indexOf(current)<0||visible.indexOf(current)>=visible.length-1;
+}
+function select(p){$('player').pause();playing=null;current=p;$('name').textContent=p.name;$('categoryName').textContent=p.category;$('description').textContent='Same MIDI phrase for every preset. Voice mode: '+(['Polyphonic','Monophonic','Legato'][p.voiceMode]||'Native')+'.';
+ $('flags').replaceChildren();for(const text of p.reviewFlags){const badge=document.createElement('span');badge.className='badge';badge.textContent=text;$('flags').append(badge);}
+ const review=reviews[p.id]||{};$('verdict').value=review.verdict||'unreviewed';$('notes').value=review.notes||'';$('trim').value=review.gainDb||0;$('saved').textContent='';
+ $('metrics').replaceChildren();for(const [label,value] of [['Phrase LUFS',p.metrics.phrase.lufs],['Strong note LUFS',p.metrics.note.lufs],['Chord LUFS',p.metrics.chord.lufs],['True peak dBTP',p.metrics.phrase.truePeakDbtp],['vs family LU',p.relativeNoteLu],['Tail RMS dBFS',p.tailRmsDbfs]]){const cell=document.createElement('div'),strong=document.createElement('strong'),small=document.createElement('small');strong.textContent=Number(value).toFixed(1);small.textContent=label;cell.append(strong,small);$('metrics').append(cell);}
+ $('neighbor').textContent=p.nearest?`Closest dry-spectrum/envelope neighbor: ${p.nearest.name} (distance ${p.nearest.dryDistance.toFixed(4)}). This is a listening candidate, not a duplicate verdict.`:'No compatible nearest-neighbor report included.';
+ $('compare').replaceChildren();for(const other of presets){if(other.id===p.id)continue;const option=new Option(other.name+' · '+other.category,other.id);$('compare').add(option);}
+ const compareId=byId.has(review.compareId)?review.compareId:p.nearest?.id;
+ if(compareId&&byId.has(compareId)&&compareId!==p.id)$('compare').value=compareId;
+ $('playB').disabled=!$('compare').value;
+ $('proposal').textContent=`Unapplied level proposal: ${p.proposedGainDb>0?'+':''}${p.proposedGainDb.toFixed(2)} dB. Sound-family (${p.listeningFamily}) strong-note median: ${p.familyMedianNoteLufs.toFixed(1)} LUFS. Judge the sound in context before requesting a change.`;
+ $('player').src=p.audio;$('player').volume=.7;$('playing').textContent='Ready: A · '+p.name;renderList();
+}
+function levels(){const a=current,b=byId.get($('compare').value);const target=b?Math.min(a.metrics.phrase.lufs,b.metrics.phrase.lufs):a.metrics.phrase.lufs;return {a:$('match').checked?Math.min(1,10**((target-a.metrics.phrase.lufs)/20)):1,b:$('match').checked&&b?Math.min(1,10**((target-b.metrics.phrase.lufs)/20)):1};}
+async function play(which){const p=which==='B'?byId.get($('compare').value):current;if(!p)return;const audio=$('player');const time=audio.currentTime||0;if(playing!==p.id){audio.src=p.audio;audio.currentTime=Math.min(time,PACK.phraseSeconds-.1);}playing=p.id;const gains=levels();audio.volume=.7*(which==='B'?gains.b:gains.a);$('playing').textContent=which+' · '+p.name+($('match').checked?' · A/B matched by attenuation':' · original bank level');try{await audio.play();}catch(e){$('error').textContent='Audio could not play. Extract the entire ZIP with its audio folder and open Listen.html in Chrome or Edge. '+e.message;}}
+function move(delta){const index=visible.indexOf(current), next=visible[index+delta];if(next)select(next);}
+for(const category of [...new Set(presets.map(p=>p.category))].sort())$('category').add(new Option(category,category));
+for(const id of ['search','category','filter','sort'])$(id).addEventListener(id==='search'?'input':'change',renderList);
+for(const section of PACK.sections){const button=document.createElement('button');button.textContent=section.name;button.onclick=()=>{$('player').currentTime=section.start;play(playing&&playing!==current.id?'B':'A');};$('sections').append(button);}
+$('playA').onclick=()=>play('A');$('playB').onclick=()=>play('B');$('stop').onclick=()=>{$('player').pause();$('player').currentTime=0;};$('previous').onclick=()=>move(-1);$('next').onclick=()=>move(1);$('save').onclick=save;
+for(const id of ['verdict','trim','notes'])$(id).addEventListener('change',save);$('reviewer').addEventListener('change',persist);
+$('match').onchange=()=>{if(playing)play(playing===current.id?'A':'B');};
+$('export').onclick=()=>{if(!save())return;const data={format:'gba2.listening-feedback',schemaVersion:1,factorySha256:PACK.provenance.factorySha256,reviewer:$('reviewer').value.trim(),createdAt:new Date().toISOString(),reviews};const url=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'})),link=document.createElement('a');link.href=url;link.download='G-Boy-Advance-2-listening-feedback.json';link.click();setTimeout(()=>URL.revokeObjectURL(url),5000);};
+$('import').onclick=()=>$('feedbackFile').click();$('feedbackFile').onchange=async()=>{try{const file=$('feedbackFile').files[0];if(!file)return;if(file.size>5*1024*1024)throw Error('Feedback is too large.');const data=JSON.parse(await file.text());if(data.format!=='gba2.listening-feedback'||data.schemaVersion!==1||data.factorySha256!==PACK.provenance.factorySha256||!data.reviews||typeof data.reviews!=='object'||Array.isArray(data.reviews))throw Error('Feedback belongs to a different bank or format.');const imported={};for(const [id,r]of Object.entries(data.reviews)){if(!bankIds.has(id)||!r||!verdicts.has(r.verdict)||typeof r.notes!=='string'||r.notes.length>4000||!Number.isFinite(r.gainDb)||Math.abs(r.gainDb)>6)throw Error('Invalid review: '+id);imported[id]={verdict:r.verdict,notes:r.notes,gainDb:r.gainDb,compareId:bankIds.has(r.compareId)?r.compareId:'',updatedAt:typeof r.updatedAt==='string'?r.updatedAt:''};}reviews={...reviews,...imported};$('reviewer').value=typeof data.reviewer==='string'?data.reviewer.slice(0,100):'';persist();$('error').textContent='';select(current);$('saved').textContent='Feedback imported.';}catch(e){$('error').textContent=e.message;}finally{$('feedbackFile').value='';}};
+$('player').onerror=()=>{$('error').textContent='Audio file unavailable. Keep Listen.html beside its extracted audio folder.';};
+document.addEventListener('keydown',e=>{if(e.target.closest('input,textarea,select,button'))return;if(e.code==='Space'){e.preventDefault();if($('player').paused)play(playing&&playing!==current.id?'B':'A');else $('player').pause();}if(e.key.toLowerCase()==='j')move(-1);if(e.key.toLowerCase()==='k')move(1);});
+select(current);
+</script></html>

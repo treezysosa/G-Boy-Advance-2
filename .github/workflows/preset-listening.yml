@@ -1,0 +1,41 @@
+name: Validate offline preset listening tools
+on:
+  push:
+    branches: ['tools/preset-listening-0192']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  listening-tools:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Require unchanged production sound engine and factory bank
+        run: git diff --exit-code f62e8e02d33bb75013ec1daa00584baf4368ff6c -- Source Presets
+      - name: Install offline review test dependencies
+        run: python -m pip install numpy==2.3.5 playwright==1.62.0
+      - name: Build the optional native authoring tool
+        run: |
+          cmake -S . -B build-listening -DGBA_BUILD_PLUGIN=OFF -DBUILD_TESTING=OFF -DGBA_BUILD_AUDITION_TOOLS=ON -DCMAKE_BUILD_TYPE=Release
+          cmake --build build-listening --target gba2-preset-audition --parallel 2
+      - name: Validate meter controls and render real synthesis fixtures
+        run: |
+          python scripts/build-listening-pack.py --self-test
+          python scripts/build-listening-pack.py --renderer build-listening/gba2-preset-audition --output build-listening/smoke --limit 3
+      - name: Test the actual offline review player
+        run: python Tools/test-listening-review.py build-listening/smoke
+      - name: Validate the complete source archive
+        run: python scripts/package-source.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: Listening-tools-smoke
+          path: |
+            build-listening/smoke/**
+            dist/G-Boy-Advance-2-Source.zip
