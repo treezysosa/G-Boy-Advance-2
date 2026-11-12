@@ -1,12 +1,12 @@
 # 0.20.0 — Windows 32-bit and universal macOS
 
-Windows x86 and x64 0.20.0 builds and automated validation passed. Universal Mac source, build, packaging and validation scripts are implemented; Mac compilation is not yet verified. GitHub failed to allocate the first Intel runner before any steps executed, and the Apple Silicon retry is queued. No Mac binary or DAW compatibility is claimed without its native build and validation.
+Windows x86 and x64 0.20.0 builds and automated validation passed. Universal Mac source, build, packaging and validation scripts are implemented; Mac compilation is not yet verified. GitHub failed to allocate the first Intel runner before any steps executed ("The job was not acquired by Runner of type hosted even after multiple attempts"). Retries using macOS 15 and macOS 26 Apple Silicon pools have also queued without a runner. No Mac binary or DAW compatibility is claimed without its native build and validation.
 
 | Platform | Formats | Architecture | Minimum deployment |
 |---|---|---|---|
 | Windows 32-bit | VST3, standalone EXE | x86 / Win32 | Windows supported by JUCE 8 / VS 2022; tested under WOW64 on Windows Server 2022 |
 | Windows 64-bit | VST3, standalone EXE | x86_64 | Existing x64 support retained |
-| macOS universal | VST3, AU, standalone APP | Intel x86_64 and Apple Silicon arm64 in each bundle | macOS 11; automated test targets macOS 15 ARM and macOS 26 Intel |
+| macOS universal | VST3, AU, standalone APP | Intel x86_64 and Apple Silicon arm64 in each bundle | macOS 11; latest automated test targets macOS 26 ARM and Intel, not yet executed |
 
 Modern macOS uses 64-bit applications; the Windows 32-bit build is separate from the universal Mac build. AU is the Mac format for hosts such as Logic. No VST2 or AUv3 build is claimed.
 
@@ -67,13 +67,13 @@ The shipped Windows binaries were compiled from commit `ed0cbdf2d727dc7332a1a9b0
 | pluginval | Not run: official downloaded Windows tool is x64 | Strictness 10 passed |
 | Installer | Clean/reinstall/launch/uninstall, user data preserved; existing x64 binary unchanged | 0.19.3 upgrade/reinstall/launch/uninstall, user data preserved |
 
-Evidence: [Windows x86 build and validation](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/43259811064) (the Mac allocation failure makes the overall run red, while every Windows step passed), [Windows x64 and independent core suites](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/43259810885), [latest Mac retry](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/43264242887).
+Evidence: [Windows x86 build and validation](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/43259811064) (the Mac allocation failure makes the overall run red, while every Windows step passed), [Windows x64 and independent core suites](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/43259810885), [macOS 15 ARM retry](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/43264242887), [latest macOS 26 ARM retry](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/43265581053).
 
 ## Remaining Mac validation and owner acceptance
 
 If the queued Mac job is cancelled for runner allocation again, rerun the `mac-universal` job when GitHub Mac capacity is available. Alternatively run the documented build/package commands on a Mac, install the resulting package, run `scripts/validate-macos.sh` and `scripts/verify-platform.py --platform macos --build build-macos --installed`, then test the exact package and carried universal test executables on the other CPU architecture. Native compiler/test failures must be resolved before publishing a Mac download. Developer ID signing/notarization remains deferred.
 
-Windows x86 must pass all twelve suites in actual 32-bit test processes, both matching-bitness VST3 hosts and the official Steinberg validator built as Win32. The official downloaded pluginval Windows executable is x64, so it is not misused to claim 32-bit validation. A clean/reinstall/launch/uninstall test checks x86 beside an installed verified x64 release and ensures the x64 plugin hash and user data remain unchanged. PE headers must identify both shipped instrument binaries as x86.
+Windows x86 passed all twelve suites in actual 32-bit test processes, both matching-bitness VST3 hosts and the official Steinberg validator built as Win32. The official downloaded pluginval Windows executable is x64, so it is not misused to claim 32-bit validation. The clean/reinstall/launch/uninstall test checked x86 beside an installed verified x64 release and confirmed the x64 plugin hash and user data remained unchanged. PE headers identified both shipped instrument binaries as x86.
 
 The Mac build must pass eleven suites, pluginval strictness 10 and AU validation on Apple Silicon. The same universal package and universal test executables are then carried to an Intel runner and executed with `arch -x86_64`; no Intel rebuild substitutes for the delivered binary. Both machines install the actual package and load its VST3/AU. `lipo`, bundle version, code-signature and SHA-256 checks cover all three universal bundles. The standalone receives a process-liveness check; physical audio/MIDI is not inferred from it.
 
