@@ -19,7 +19,7 @@ The themes use original names, palettes and hand-coded vector geometry. They inc
 
 ## Implementation and compatibility
 
-Each new skin has a two-tone housing, coordinated highlights and original static decorations. The artwork is clipped to the housing and drawn behind controls and labels. It is generated only when the existing housing cache is rebuilt for size, display density or skin changes; no animation timer is added. Extreme display sizes keep the existing vector fallback.
+Each new skin has a two-tone housing, coordinated highlights and original static decorations. The artwork is clipped to the housing and drawn behind controls and labels. It is generated only when the existing housing cache is rebuilt for size, display density or skin changes; no animation timer is added. The ten new themes use a darker preset-row selection fill with opaque metadata text so pale accents keep white labels legible; all prior skin selection colors are retained. Extreme display sizes keep the existing vector fallback.
 
 The selector, random/nonrepeating launch choices, fixed project colors and per-instance state use all 50 IDs. Existing skins and project IDs are preserved. Synthesis/effects source and factory data are byte-identical to 0.19.1 commit `60239ebfff5357228bc1c5747ade3bdaa944283d`; the pipeline checks this directly. The release introduces no new audio-performance claim. The previous measured improvements and limitations are documented in RELEASE_0_19_1.md.
 

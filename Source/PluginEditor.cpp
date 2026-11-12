@@ -257,7 +257,10 @@ private:
     void paintListBoxItem(int row,juce::Graphics& g,int width,int height,bool selected) override {
         if(row<0||row>=int(visible.size()))return;
         auto* p=processor.presets.find(visible[std::size_t(row)]);if(!p)return;
-        g.fillAll(selected?uiColour(*this,0xff7943ff).darker(.4f):(row%2?uiColour(*this,0xff131c61).withAlpha(.4f):uiColour(*this,0xff080c25)));g.setColour(text);g.setFont(font(15,true));g.drawText((processor.presets.isFavorite(p->id)?"* ":"  ")+p->name,10,1,width-330,height-2,juce::Justification::centredLeft,true);g.setColour(text.withAlpha(.6f));g.setFont(font(12));g.drawText((p->factory?p->category+(p->subcategory.isEmpty()?juce::String():" / "+p->subcategory)+" / FACTORY":juce::String("USER"))+(p->id==processor.presetId()?" / LOADED":""),width-320,0,310,height,juce::Justification::centredRight,true);
+        const auto* console=dynamic_cast<const ConsoleLook*>(&getLookAndFeel());
+        const bool themed=console&&gba_ui::skins[std::size_t(console->skin())].pattern!=gba_ui::Pattern::none;
+        // Pale decorative accents need a darker selection fill for readable white labels.
+        g.fillAll(selected?uiColour(*this,0xff7943ff).darker(themed?1.4f:.4f):(row%2?uiColour(*this,0xff131c61).withAlpha(.4f):uiColour(*this,0xff080c25)));g.setColour(text);g.setFont(font(15,true));g.drawText((processor.presets.isFavorite(p->id)?"* ":"  ")+p->name,10,1,width-330,height-2,juce::Justification::centredLeft,true);g.setColour(text.withAlpha(selected&&themed?1.0f:.6f));g.setFont(font(12));g.drawText((p->factory?p->category+(p->subcategory.isEmpty()?juce::String():" / "+p->subcategory)+" / FACTORY":juce::String("USER"))+(p->id==processor.presetId()?" / LOADED":""),width-320,0,310,height,juce::Justification::centredRight,true);
     }
     void selectedRowsChanged(int) override {if(!updating){message.clear();updateButtons();}}
     void listBoxItemClicked(int,const juce::MouseEvent&) override {activate(false);}

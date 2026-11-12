@@ -448,6 +448,8 @@ int main(int argc,char** argv) {
                 editor->keyPressed(juce::KeyPress(juce::KeyPress::F2Key));snapshot(*editor,"ui-snapshots/Skin-"+juce::String(gba_ui::skins[i].id.data())+".png");
                 if(gba_ui::skins[i].pattern!=gba_ui::Pattern::none){
                     editor->setSize(1280,646);snapshot(*editor,"ui-snapshots/Theme-"+juce::String(gba_ui::skins[i].id.data())+"-150pct.png",1.5f);editor->setSize(960,485);
+                    editor->keyPressed(juce::KeyPress(juce::KeyPress::F1Key));snapshot(*editor,"ui-snapshots/Browser-"+juce::String(gba_ui::skins[i].id.data())+".png");editor->keyPressed(juce::KeyPress(juce::KeyPress::F1Key));
+                    check(p.snapshot().values==sound.values&&p.presetId()==presetId,"Themed browser changed the current sound");
                 }
                 editor->keyPressed(juce::KeyPress(juce::KeyPress::F2Key));skin=dynamic_cast<juce::ComboBox*>(named(*editor,"UI skin"));
             }
