@@ -22,9 +22,15 @@ Choose a sound, then use A/B with the nearest numerical candidate or any other s
 
 The feedback contains the exact factory-bank SHA-256. Wrong-bank feedback is rejected, as are unknown IDs, invalid verdicts and out-of-range trim values. The tool does not apply feedback to the synth automatically. A human can judge transient quality, harshness, musical usefulness and whether two sounds earn separate places in the bank; those decisions are still pending.
 
+## Verification
+
+The native renderer compiled locally with GCC C++20 and warnings treated as errors. All 654 FLAC hashes and stream headers were checked: stereo, 24-bit, 48 kHz, exactly 960,000 samples each. The complete ZIP and 33 independently playable folder parts cover every active preset exactly once. All 37 source/recipe files under Source and Presets match the verified 0.19.2 release.
+
+[Listening-tool CI run 43240810853](https://github.com/treezysosa/G-Boy-Advance-2/actions/runs/43240810853) passed the clean CMake build, known-signal meter controls, three real synthesis fixtures, complete source packaging and actual offline-browser tests. Browser tests covered FLAC A/B playback, attenuation, search/review filters, persistence, feedback export/import and wrong-bank rejection. Test verdicts were explicitly removed. The browser smoke test uses three sounds; the separate complete-bank audit verifies all 654 audio files. No human verdict is implied.
+
 ## Rebuilding the pack
 
-Dependencies: C++20, CMake 3.24+, Python 3.12, NumPy and FFmpeg with the EBU R128 filter. JUCE is not needed. The optional renderer is excluded from normal plugin targets and is never installed.
+Source branch: `tools/preset-listening-0192`. Dependencies: C++20, CMake 3.24+, Python 3.12, NumPy and FFmpeg with the EBU R128 filter. JUCE is not needed. The optional renderer is excluded from normal plugin targets and is never installed.
 
 ```sh
 cmake -S . -B build-listening -DGBA_BUILD_PLUGIN=OFF -DBUILD_TESTING=OFF -DGBA_BUILD_AUDITION_TOOLS=ON -DCMAKE_BUILD_TYPE=Release
